@@ -1,0 +1,20 @@
+# Standalone Word2Vec Lab site. In Netlify, create a second site from this repo with
+# Base directory = sites/word2vec-lab (build command and publish dir come from this file).
+[build]
+  command = "bash build.sh"
+  publish = "dist"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/word2vec/model/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/word2vec/model/*.bin"
+  [headers.values]
+    Content-Type = "application/octet-stream"

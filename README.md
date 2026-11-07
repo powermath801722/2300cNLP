@@ -12,12 +12,32 @@ Static landing page for Braidwater ("Clearer Minds for the Planetary Transition"
 - `training/train_word2vec.py` — script that trains the model and exports it for the browser
 - `tests/e2e.mjs` — Playwright end-to-end check for both pages
 - `assets/vendor/plotly-2.35.2.min.js` — Plotly, used for the 2D/3D plots
-- `netlify.toml` — Netlify config (no build step; publishes repo root)
+- `netlify.toml` — Netlify config for the main site (no build step; publishes repo root)
+- `forms.html` — hidden static forms that register the landing page's forms with Netlify Forms
+- `sites/word2vec-lab/` — build script and Netlify config for deploying the Word2Vec Lab as its own site
 
 ## Deploy
 
-On Netlify: **Add new site → Import from Git**, pick this repo, branch `main`.
-Leave the build command empty and the publish directory as `.` (already set in `netlify.toml`).
+This repo holds two Netlify projects. Create each one in Netlify with **Add new site → Import an existing project → GitHub**, pick this repo and branch `main`. After that, every push to `main` redeploys both.
+
+| Project | Base directory | Build command / publish dir | What it serves |
+|---|---|---|---|
+| Braidwater site | *(leave empty)* | from `netlify.toml`: none / `.` | Landing page at `/`, Word2Vec Lab at `/word2vec/`, Netlify Forms |
+| Word2Vec Lab (standalone) | `sites/word2vec-lab` | from `sites/word2vec-lab/netlify.toml`: `bash build.sh` / `dist` | The lab on its own, at `/` |
+
+### Netlify Forms
+
+The landing page's forms are rendered by JavaScript, so `forms.html` declares them as static hidden forms for Netlify's deploy-time detection. Submissions are POSTed to `/` with a `form-name`:
+
+| Form name | Fields |
+|---|---|
+| `intake` | name, email, where, role, question, source, plan, consent |
+| `steward` | name, email, commons, crew, mind, consent |
+| `calculator-results` | name, email, consent, hoursPerDay, lostMinutesPerDay, decisionsPerWeek, monthlyDividend, sharePercent, reclaimedHoursPerYear |
+| `signin-request` | email (there is no account system yet; this just records the request) |
+| `newsletter` | email |
+
+On the Braidwater site in Netlify, open **Forms** and click **Enable form detection** if it's off, then redeploy once. Submissions appear under **Forms**, and you can add email notifications under **Site configuration → Notifications → Emails and webhooks → Form submission notifications**. Keep `forms.html` in sync if a form's fields change.
 
 ## Local preview
 
@@ -80,5 +100,4 @@ Screenshots go to `tests/screenshots/` (ignored by git; override with `SHOT_DIR`
 
 ## Notes
 
-- Forms (intake, steward, newsletter, calculator email) are front-end only right now and don't send data anywhere yet.
 - Image slots show placeholders until real photography is added.
