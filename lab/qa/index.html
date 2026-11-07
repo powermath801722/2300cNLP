@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Extractive Question Answering — NLP Lab — Braidwater</title>
+<meta name="description" content="A SQuAD-trained DistilBERT finds the answer span in a passage; inspect start/end probabilities, candidate spans and EM/F1.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.passage{font-size:17px;line-height:1.85;white-space:pre-wrap;word-break:break-word;color:var(--muted)}
+.passage mark{color:var(--text);background:color-mix(in srgb,var(--accent) 30%,transparent);border-bottom:2px solid var(--accent);padding:1px 2px}
+.passage mark.alt{background:transparent;border-bottom:1px dashed var(--accent-500);color:inherit}
+.answer{font-family:var(--heading);font-weight:600;font-size:clamp(26px,3.4vw,38px);line-height:1.1;text-transform:none;color:var(--text)}
+.answer.none{color:#e6a58f}
+.meter{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.meter b{color:var(--text);font-variant-numeric:tabular-nums}
+#chart{width:100%;height:280px}
+table.data tr.sel td{color:var(--accent-200)}
+table.data button{all:unset;cursor:pointer;color:var(--accent-300);text-decoration:underline}
+table.data button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.qchips .chip.unans{border-style:dashed}
+</style>
+</head>
+<body data-slug="qa">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Ask a question about a passage</h2>
+      <p class="sub">The model reads the question and passage together and scores every token as a possible answer start and end. The answer is the best-scoring span copied out of the passage, so it can never say something the passage doesn’t contain. First run downloads DistilBERT fine-tuned on SQuAD (about 66 MB, quantized).</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="row">
+          <label class="field-label" for="preset">Passage</label>
+          <select id="preset"></select>
+        </div>
+        <textarea id="context" maxlength="2400" aria-label="Passage text" spellcheck="false"></textarea>
+        <div>
+          <span class="field-label">Questions for this passage</span>
+          <div class="chips qchips" id="qchips" style="margin-top:8px"></div>
+          <p class="note" style="margin-top:6px">Dashed questions can’t be answered from the passage.</p>
+        </div>
+        <label class="field-label" for="question">Question</label>
+        <form class="qrow" id="qform" autocomplete="off">
+          <div class="field"><input type="text" id="question" placeholder="Ask something the passage answers…"></div>
+          <button class="btn btn-primary" id="run" type="submit">Answer</button>
+        </form>
+        <div class="row">
+          <label for="thr" class="note">No-answer threshold: answer only if span probability ≥ <b id="thrv">0.25</b></label>
+          <input type="range" id="thr" min="0" max="0.9" step="0.05" value="0.25" style="flex:1 1 200px">
+        </div>
+        <div id="load"></div>
+        <p class="note" id="status" aria-live="polite"></p>
+      </div>
+
+      <div class="grid2" style="margin-top:24px">
+        <div class="panel pad stack" aria-live="polite">
+          <h3 style="font-size:24px">Answer</h3>
+          <div class="answer" id="answer">—</div>
+          <div class="meter" id="meter"></div>
+          <div class="callout" id="gold" hidden></div>
+        </div>
+        <div class="panel pad stack">
+          <h3 style="font-size:24px">Top candidate spans</h3>
+          <div class="scroll-x"><table class="data" id="cands"><thead><tr><th scope="col">#</th><th scope="col">Span</th><th scope="col">Start + end logit</th><th scope="col">Probability</th></tr></thead><tbody><tr><td colspan="4" class="note">Ask a question to see candidates.</td></tr></tbody></table></div>
+        </div>
+      </div>
+
+      <div class="panel pad stack" style="margin-top:24px">
+        <h3 style="font-size:24px">Answer in context</h3>
+        <div class="passage" id="passage-view"><span class="note">—</span></div>
+      </div>
+
+      <div class="panel pad stack" style="margin-top:24px">
+        <h3 style="font-size:24px">Start and end probabilities per token</h3>
+        <p class="note">Softmax of the start and end logits over the passage tokens. The chosen span runs from the tallest start bar to a compatible end bar. Hover for tokens.</p>
+        <div id="chart" role="img" aria-label="Bar chart of start and end probabilities for each passage token"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">02 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Input packing</h3><p>Question and passage go in as one sequence: <code>[CLS] question [SEP] passage [SEP]</code>. Self-attention lets every passage token look at the question, so the representation of “1843” knows it is being asked about a date.</p></div>
+        <div class="panel card"><h3>Start and end logits</h3><p>Two linear heads on top of each token’s final hidden state produce a start score and an end score. Training maximizes the log-probability of the gold start and the gold end token, each softmaxed over the sequence.</p></div>
+        <div class="panel card"><h3>Span scoring</h3><p>At inference every span (s, e) with s ≤ e and a maximum length (30 tokens here) is scored as start_logit[s] + end_logit[e], equivalently P(start)·P(end). Spans must lie inside the passage and may not start or end in the middle of a word.</p></div>
+        <div class="panel card"><h3>SQuAD 1.1 vs 2.0</h3><p>SQuAD 1.1 (100k+ questions on Wikipedia) always has an answer in the passage, so a model trained on it always returns something. SQuAD 2.0 adds 50k unanswerable questions; models learn to put weight on the <code>[CLS]</code> token as a “null” span and abstain when its score beats the best span by a tuned threshold. This model is a 1.1 model, so the page uses a simpler stand-in: abstain when the best span’s probability falls below the threshold you set.</p></div>
+        <div class="panel card"><h3>Exact match and F1</h3><p>SQuAD scores answers after normalization (lowercase, strip punctuation and the articles a/an/the, collapse whitespace). Exact Match is 1 if the strings are identical; F1 is computed on word overlap between prediction and gold, taking the best over all gold answers. The preset questions here have gold answers so you can see both.</p></div>
+        <div class="panel card"><h3>This model</h3><p><code>distilbert-base-cased-distilled-squad</code>: DistilBERT (6 layers, 66M parameters, distilled from BERT-base) fine-tuned on SQuAD 1.1 with knowledge distillation, reported around 87 F1 on the SQuAD 1.1 dev set. Input is truncated at 384 tokens.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">03 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Rajpurkar, P., Zhang, J., Lopyrev, K. &amp; Liang, P. (2016). SQuAD: 100,000+ Questions for Machine Comprehension of Text. <em>EMNLP</em>.</li>
+        <li>Rajpurkar, P., Jia, R. &amp; Liang, P. (2018). Know What You Don’t Know: Unanswerable Questions for SQuAD. <em>ACL</em>.</li>
+        <li>Seo, M., Kembhavi, A., Farhadi, A. &amp; Hajishirzi, H. (2017). Bidirectional Attention Flow for Machine Comprehension. <em>ICLR</em>.</li>
+        <li>Devlin, J., Chang, M.-W., Lee, K. &amp; Toutanova, K. (2019). BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. <em>NAACL</em>.</li>
+        <li>Sanh, V., Debut, L., Chaumond, J. &amp; Wolf, T. (2019). DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter. <em>NeurIPS EMC² Workshop</em>.</li>
+        <li>Jia, R. &amp; Liang, P. (2017). Adversarial Examples for Evaluating Reading Comprehension Systems. <em>EMNLP</em>.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

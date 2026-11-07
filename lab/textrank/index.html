@@ -3,36 +3,132 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NLP Lab — Braidwater</title>
+<title>Extractive Summarization (TextRank) — NLP Lab — Braidwater</title>
+<meta name="description" content="Build a sentence-similarity graph, run PageRank on it and pick the summary sentences. Includes TextRank keyword extraction and a lead baseline.">
 <meta name="theme-color" content="#121820">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.opts{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;font-size:14px;color:var(--muted)}
+.opts label{display:flex;align-items:center;gap:8px}
+.opts input[type=range]{width:120px}
+.opts output{font-variant-numeric:tabular-nums;color:var(--text);min-width:2.2em}
+.opts select{min-height:38px;padding:4px 8px}
+.summary{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px;font-size:16px;line-height:1.6}
+.summary li::marker{color:var(--accent-300);font-variant-numeric:tabular-nums}
+.summary small{color:var(--faint);font-size:12px;margin-left:6px}
+.doc{font-size:15px;line-height:1.75;color:var(--muted)}
+.doc .sent{all:unset;cursor:pointer;padding:1px 2px;border-radius:2px;background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 22%,transparent) var(--w,0%),transparent var(--w,0%))}
+.doc .sent:focus-visible{outline:2px solid var(--accent)}
+.doc .sent.sel{color:#fff;box-shadow:inset 0 -2px 0 #d8b66a}
+.doc .sent.hl{outline:1px solid var(--accent)}
+.doc .num{font-size:11px;color:var(--faint);vertical-align:super;margin-right:2px;font-variant-numeric:tabular-nums}
+#graph{width:100%;height:clamp(340px,52vh,520px)}
+#conv{width:100%;height:220px}
+.kw{display:flex;flex-wrap:wrap;gap:6px}
+.kw span{border:1px solid var(--divider);padding:4px 10px;font-size:14px}
+.kw span.phrase{border-color:var(--accent-500);color:var(--accent-200)}
+.kw small{color:var(--faint);margin-left:6px;font-variant-numeric:tabular-nums}
+.stat{font-size:14px;color:var(--muted)}
+</style>
 </head>
-<!-- data-slug must match lab/shared/modules.js; lab.js renders header, hero (title/tier/summary), pager and footer -->
 <body data-slug="textrank">
 <main id="main">
   <section class="s" aria-labelledby="try-h">
-    <div class="wrap">
+    <div class="wrap stack">
       <span class="kicker">01 · Try it</span>
-      <h2 id="try-h">Interactive demo</h2>
+      <h2 id="try-h">Summarize by ranking sentences</h2>
+      <p class="sub">TextRank treats every sentence as a node, connects sentences that share words, and runs PageRank: a sentence is important if it is similar to many other important sentences. The summary is the top-ranked sentences in their original order.</p>
+      <div class="load" id="load" role="status"><span class="bar-load"><i id="loadbar"></i></span><span id="loadtext">Loading sample texts…</span></div>
       <div class="panel pad stack">
         <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
-        <!-- demo UI -->
+        <div class="row">
+          <label for="sample" class="field-label">Sample</label>
+          <select id="sample" aria-label="Sample text"></select>
+        </div>
+        <label for="text" class="field-label">Text (edit or paste your own)</label>
+        <textarea id="text" spellcheck="false" style="min-height:180px"></textarea>
+        <div class="opts" role="group" aria-label="TextRank settings">
+          <label>Similarity <select id="sim" aria-label="Sentence similarity">
+            <option value="overlap" selected>Word overlap (Mihalcea &amp; Tarau)</option>
+            <option value="cosine">TF-IDF cosine</option>
+          </select></label>
+          <label>Damping d <input type="range" id="damp" min="0.5" max="0.95" step="0.05" value="0.85"><output id="dampo">0.85</output></label>
+          <label>Summary sentences <input type="range" id="k" min="1" max="8" step="1" value="3"><output id="ko">3</output></label>
+        </div>
+        <div class="row"><button class="btn btn-primary" type="button" id="bRun" disabled>Summarize</button><span class="stat" id="stat" aria-live="polite"></span></div>
+      </div>
+      <div class="grid2">
+        <div class="panel pad stack">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <span class="field-label">TextRank summary</span>
+          <ol class="summary" id="sumTr"></ol>
+        </div>
+        <div class="panel pad stack">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <span class="field-label">Baseline: first <span id="kLead">3</span> sentences (lead-k)</span>
+          <ol class="summary" id="sumLead"></ol>
+          <p class="note" id="agree"></p>
+        </div>
+      </div>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <span class="field-label">Keywords (TextRank on a word co-occurrence graph, window 2)</span>
+        <div class="kw" id="kw"></div>
+      </div>
+      <div class="grid2">
+        <div class="panel pad stack">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <span class="field-label">Sentence graph</span>
+          <div id="graph" role="img" aria-label="Sentences arranged in a circle; node size shows TextRank score, lines show similarity"></div>
+          <p class="note">Sentences sit around the circle in reading order, clockwise from the top. Bigger nodes scored higher; gold nodes are in the summary; lines show the strongest similarities.</p>
+        </div>
+        <div class="panel pad stack">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <span class="field-label">PageRank convergence</span>
+          <div id="conv" role="img" aria-label="Largest score change per PageRank iteration, on a log scale"></div>
+          <span class="field-label">The document, shaded by score</span>
+          <div class="doc" id="doc"></div>
+        </div>
       </div>
     </div>
   </section>
+
   <section class="s" aria-labelledby="how-h">
     <div class="wrap">
       <span class="kicker">02 · Concepts</span>
       <h2 id="how-h">How it works</h2>
-      <div class="concepts"><!-- .panel.card blocks --></div>
+      <div class="concepts">
+        <div class="panel card"><h3>Extractive vs. abstractive</h3>
+          <p>An extractive summarizer copies whole sentences from the source; an abstractive one writes new text. Extraction can’t fix awkward transitions or merge ideas, but it never invents facts, needs no training data, and runs instantly, which is why it remained the default for decades.</p></div>
+        <div class="panel card"><h3>Sentence similarity</h3>
+          <p>Mihalcea &amp; Tarau (2004) connect sentences S<sub>i</sub> and S<sub>j</sub> with weight</p>
+          <p><code>sim = |{w : w ∈ S<sub>i</sub> ∧ w ∈ S<sub>j</sub>}| / (log|S<sub>i</sub>| + log|S<sub>j</sub>|)</code></p>
+          <p>counting shared content words; the log terms stop long sentences from winning just by being long. LexRank (Erkan &amp; Radev, 2004) uses TF-IDF cosine instead, which you can switch to above.</p></div>
+        <div class="panel card"><h3>Weighted PageRank</h3>
+          <p><code>WS(V<sub>i</sub>) = (1 − d) + d · Σ<sub>j</sub> [ w<sub>ji</sub> / Σ<sub>k</sub> w<sub>jk</sub> ] · WS(V<sub>j</sub>)</code></p>
+          <p>A random reader jumps along similarity edges with probability d and restarts at a random sentence otherwise. Iterating until scores stop changing (here, below 10⁻⁴) finds the stationary distribution. Lower d spreads scores more evenly.</p></div>
+        <div class="panel card"><h3>Keywords with TextRank</h3>
+          <p>The same algorithm ranks words: nodes are content words, and two words are linked if they appear within two tokens of each other. The top third of words become keywords, and adjacent keywords merge into phrases (<em>river delta</em>). The original paper also filters candidates by part of speech; this version uses a stopword list.</p></div>
+        <div class="panel card"><h3>The lead baseline</h3>
+          <p>Taking the first k sentences is a famously hard baseline for news, because journalists put the key facts first. It is weaker for speeches and essays that build to their point. Comparing both columns on the three samples shows the difference.</p></div>
+        <div class="panel card"><h3>Evaluation</h3>
+          <p>Summaries are usually scored with ROUGE (Lin, 2004): n-gram overlap with human-written reference summaries. ROUGE-1 and ROUGE-2 count shared unigrams and bigrams; ROUGE-L uses the longest common subsequence. High ROUGE doesn’t guarantee a readable or faithful summary, so human evaluation is still standard.</p></div>
+      </div>
     </div>
   </section>
+
   <section class="s" aria-labelledby="read-h">
     <div class="wrap">
       <span class="kicker">03 · Go further</span>
       <h2 id="read-h">Further reading</h2>
-      <ul class="reading"><!-- real, well-known references only --></ul>
+      <ul class="reading">
+        <li>Mihalcea, R. &amp; Tarau, P. (2004). TextRank: Bringing order into texts. <em>Proceedings of EMNLP 2004</em>.</li>
+        <li>Erkan, G. &amp; Radev, D. R. (2004). LexRank: Graph-based lexical centrality as salience in text summarization. <em>Journal of Artificial Intelligence Research</em>, 22.</li>
+        <li>Page, L., Brin, S., Motwani, R. &amp; Winograd, T. (1999). The PageRank citation ranking: Bringing order to the web. Stanford InfoLab technical report.</li>
+        <li>Lin, C.-Y. (2004). ROUGE: A package for automatic evaluation of summaries. <em>Text Summarization Branches Out</em> (ACL workshop).</li>
+        <li>Nenkova, A. &amp; McKeown, K. (2011). Automatic summarization. <em>Foundations and Trends in Information Retrieval</em>, 5(2–3).</li>
+      </ul>
     </div>
   </section>
 </main>

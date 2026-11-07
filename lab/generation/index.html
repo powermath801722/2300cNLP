@@ -27,7 +27,7 @@ button.tk[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 42%,tran
 .legend i{display:inline-block;width:12px;height:12px;vertical-align:-1px;margin-right:6px}
 .inspector h3{font-size:22px;margin-bottom:4px}
 .cands{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
-.cands li{display:grid;grid-template-columns:minmax(0,9ch) minmax(0,1fr) 5.2ch 5.2ch;gap:10px;align-items:center;font-size:14px}
+.cands li{display:grid;grid-template-columns:minmax(0,12ch) minmax(0,1fr) 5.2ch 5.2ch;gap:10px;align-items:center;font-size:14px}
 .cands .w{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;overflow:hidden;text-overflow:ellipsis}
 .cands .bars{position:relative;height:16px;background:var(--divider)}
 .cands .bars i{position:absolute;left:0;top:0;bottom:0}
@@ -51,7 +51,7 @@ button.tk[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 42%,tran
 .cmp .rep{background:rgba(217,140,122,.28);border-bottom:1px solid #d98c7a}
 .cmp dl{display:grid;grid-template-columns:auto auto;justify-content:start;gap:2px 14px;margin:0;font-size:13px}
 .cmp dt{color:var(--faint)}.cmp dd{margin:0;font-variant-numeric:tabular-nums}
-.formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;color:var(--accent-200);background:var(--bg);border:1px solid var(--divider);padding:8px 10px;margin:8px 0 0;overflow-x:auto;white-space:pre}
+.formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;color:var(--accent-200);background:var(--bg);border:1px solid var(--divider);padding:8px 10px;margin:8px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 </style>
 </head>

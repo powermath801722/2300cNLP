@@ -3,36 +3,124 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NLP Lab — Braidwater</title>
+<title>TF-IDF &amp; BM25 Search — NLP Lab — Braidwater</title>
+<meta name="description" content="A tiny search engine over every U.S. presidential inaugural address: inverted index, TF-IDF vs BM25 ranking, term weights and keyword extraction.">
 <meta name="theme-color" content="#121820">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.qbar{display:flex;flex-wrap:wrap;gap:10px}
+.qbar input[type=search]{flex:1 1 260px;min-width:0;min-height:52px;font-size:18px}
+.opts{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;font-size:14px;color:var(--muted)}
+.opts label{display:flex;align-items:center;gap:8px}
+.opts input[type=range]{width:120px}
+.opts input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.opts output{font-variant-numeric:tabular-nums;color:var(--text);min-width:2.4em}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+@media (max-width:860px){.cols{grid-template-columns:minmax(0,1fr)}}
+.col h3{font-size:24px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.col h3 small{font-family:var(--body);font-weight:400;font-size:13px;letter-spacing:0;text-transform:none;color:var(--faint)}
+ol.hits{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+ol.hits li button{all:unset;box-sizing:border-box;display:block;width:100%;cursor:pointer;padding:12px 14px;border:1px solid var(--divider);background:var(--bg)}
+ol.hits li button:hover,ol.hits li button:focus-visible{border-color:var(--accent-500)}
+ol.hits li button[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+.hmeta{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--faint);margin-bottom:4px}
+.hmeta b{color:var(--accent-200);font-weight:600}
+.hmeta .delta{font-variant-numeric:tabular-nums}
+.delta.up{color:#8fbf9a}.delta.down{color:#d98c7a}
+.snip{font-size:14px;color:var(--muted);line-height:1.5;overflow-wrap:anywhere}
+mark{background:color-mix(in srgb,#d8b66a 35%,transparent);color:#fff;padding:0 2px}
+.full{font-size:16px;line-height:1.7;color:var(--text)}
+.kw{display:flex;flex-wrap:wrap;gap:6px}
+.kw span{border:1px solid var(--divider);padding:4px 10px;font-size:14px}
+.kw small{color:var(--faint);margin-left:6px;font-variant-numeric:tabular-nums}
+.overlap{font-size:14px;color:var(--muted)}
+#timeline{width:100%;height:240px}
+.unk{color:#d98c7a}
+</style>
 </head>
-<!-- data-slug must match lab/shared/modules.js; lab.js renders header, hero (title/tier/summary), pager and footer -->
 <body data-slug="search">
 <main id="main">
   <section class="s" aria-labelledby="try-h">
-    <div class="wrap">
+    <div class="wrap stack">
       <span class="kicker">01 · Try it</span>
-      <h2 id="try-h">Interactive demo</h2>
+      <h2 id="try-h">Search 236 years of inaugural addresses</h2>
+      <p class="sub">The collection is every U.S. presidential inaugural address from Washington (1789) to 2025, split into paragraphs. The same inverted index feeds two classic ranking functions side by side.</p>
+      <div class="load" id="load" role="status"><span class="bar-load"><i id="loadbar"></i></span><span id="loadtext">Loading the collection…</span></div>
       <div class="panel pad stack">
         <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
-        <!-- demo UI -->
+        <form class="qbar" id="qform" role="search" autocomplete="off">
+          <label for="q" class="field-label" style="flex-basis:100%">Query</label>
+          <input type="search" id="q" value="liberty and union" spellcheck="false" autocapitalize="none">
+          <button class="btn btn-primary" type="submit" id="bSearch" disabled>Search</button>
+        </form>
+        <div class="chips" id="chips" aria-label="Example queries"></div>
+        <div class="opts" role="group" aria-label="Ranking options">
+          <label>BM25 k₁ <input type="range" id="k1" min="0" max="3" step="0.1" value="1.2" aria-describedby="k1o"><output id="k1o">1.2</output></label>
+          <label>BM25 b <input type="range" id="b" min="0" max="1" step="0.05" value="0.75" aria-describedby="bo"><output id="bo">0.75</output></label>
+          <label><input type="checkbox" id="stop" checked> Remove stopwords</label>
+        </div>
+        <div class="scroll-x"><table class="data" id="qterms" aria-label="Query term statistics"></table></div>
+        <p class="overlap" id="overlap" aria-live="polite"></p>
+      </div>
+      <div class="cols">
+        <div class="col stack"><h3>TF-IDF cosine <small id="ntf"></small></h3><ol class="hits" id="hitsTf" aria-label="TF-IDF results"></ol></div>
+        <div class="col stack"><h3>Okapi BM25 <small id="nbm"></small></h3><ol class="hits" id="hitsBm" aria-label="BM25 results"></ol></div>
+      </div>
+      <div class="panel pad stack" id="explainPanel" hidden>
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <span class="field-label">Why this paragraph scored as it did</span>
+        <h3 id="exTitle" style="font-size:26px"></h3>
+        <p class="note" id="exMeta"></p>
+        <div class="scroll-x"><table class="data" id="exTable" aria-label="Per-term score contributions"></table></div>
+        <span class="field-label">Keywords: top TF-IDF terms in this paragraph</span>
+        <div class="kw" id="exKw"></div>
+        <span class="field-label">Full paragraph</span>
+        <p class="full" id="exText"></p>
+      </div>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <span class="field-label">When did presidents say it? Matching paragraphs per address</span>
+        <div id="timeline" role="img" aria-label="Number of paragraphs matching the query in each inaugural address"></div>
       </div>
     </div>
   </section>
+
   <section class="s" aria-labelledby="how-h">
     <div class="wrap">
       <span class="kicker">02 · Concepts</span>
       <h2 id="how-h">How it works</h2>
-      <div class="concepts"><!-- .panel.card blocks --></div>
+      <div class="concepts">
+        <div class="panel card"><h3>Inverted index</h3>
+          <p>Instead of scanning every document for every query, the engine stores, for each term, a <em>postings list</em> of the documents that contain it and how often. A query only touches the postings of its own terms. Here the index over ~1,500 paragraphs is built in your browser in a few milliseconds.</p></div>
+        <div class="panel card"><h3>TF-IDF</h3>
+          <p>A term’s weight in a document grows with its frequency and shrinks with how many documents contain it:</p>
+          <p><code>w(t, d) = (1 + log tf<sub>t,d</sub>) · log(N / df<sub>t</sub>)</code></p>
+          <p>Documents and the query become weight vectors, and results are ranked by the cosine of the angle between them, which normalizes away document length.</p></div>
+        <div class="panel card"><h3>Okapi BM25</h3>
+          <p><code>score(d, q) = Σ<sub>t∈q</sub> IDF(t) · tf·(k₁+1) / (tf + k₁·(1 − b + b·|d|/avgdl))</code>, with <code>IDF(t) = ln(1 + (N − df + 0.5)/(df + 0.5))</code>.</p>
+          <p><strong>k₁</strong> controls term-frequency saturation: the tenth occurrence of a word adds much less than the first. <strong>b</strong> controls length normalization: at b = 0 long paragraphs are not penalized; at b = 1 scores are fully divided by relative length. Move the sliders and watch the BM25 column reorder.</p></div>
+        <div class="panel card"><h3>Stopwords and normalization</h3>
+          <p>Very frequent function words (<em>the</em>, <em>of</em>, <em>and</em>) carry almost no IDF weight anyway, but removing them shrinks the index and speeds up queries. Real engines also stem or lemmatize (<em>liberties → liberti</em>) so different forms match; this demo matches exact lowercase words so you can see why that matters.</p></div>
+        <div class="panel card"><h3>Keyword extraction</h3>
+          <p>The terms with the highest TF-IDF weight in a paragraph are frequent there but rare elsewhere, which makes them a cheap, surprisingly good set of keywords. The same idea underlies the classic “characteristic words” of an author or era.</p></div>
+        <div class="panel card"><h3>Evaluating a ranking</h3>
+          <p>Search quality is measured against human relevance judgments: precision@k (how many of the top k are relevant), recall, mean average precision and nDCG, which rewards relevant results near the top. The overlap figure above only says how much the two rankers agree, not which is right.</p></div>
+      </div>
     </div>
   </section>
+
   <section class="s" aria-labelledby="read-h">
     <div class="wrap">
       <span class="kicker">03 · Go further</span>
       <h2 id="read-h">Further reading</h2>
-      <ul class="reading"><!-- real, well-known references only --></ul>
+      <ul class="reading">
+        <li>Manning, C. D., Raghavan, P. &amp; Schütze, H. (2008). <em>Introduction to Information Retrieval</em>. Cambridge University Press. Chapters 1 (inverted index), 6 (tf-idf and the vector space model), 8 (evaluation) and 11 (probabilistic retrieval, including BM25).</li>
+        <li>Jurafsky, D. &amp; Martin, J. H. <em>Speech and Language Processing</em> (3rd ed. draft). The chapters on vector semantics (tf-idf) and on information retrieval and question answering.</li>
+        <li>Spärck Jones, K. (1972). A statistical interpretation of term specificity and its application in retrieval. <em>Journal of Documentation</em>, 28(1).</li>
+        <li>Salton, G. &amp; Buckley, C. (1988). Term-weighting approaches in automatic text retrieval. <em>Information Processing &amp; Management</em>, 24(5).</li>
+        <li>Robertson, S. &amp; Zaragoza, H. (2009). The probabilistic relevance framework: BM25 and beyond. <em>Foundations and Trends in Information Retrieval</em>, 3(4).</li>
+      </ul>
     </div>
   </section>
 </main>

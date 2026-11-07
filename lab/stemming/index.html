@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stemming &amp; Lemmatization — NLP Lab — Braidwater</title>
+<meta name="description" content="Step through the Porter stemmer rule by rule, compare it with a dictionary-checked lemmatizer, and see over- and under-stemming.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.big{font-family:var(--heading);font-weight:600;font-size:clamp(34px,6vw,52px);line-height:1;text-transform:none;letter-spacing:.01em;word-break:break-all}
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.res>div{background:var(--bg);padding:14px 16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.res .lbl{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-300)}
+.res .why{font-size:13px;color:var(--faint)}
+table.trace td.fired{color:var(--accent-200)}
+table.trace tr.skip td{color:var(--faint)}
+table.trace code{white-space:nowrap}
+.mdec{font:500 15px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);word-break:break-all}
+.mdec .c{color:#d8b66a}.mdec .v{color:#8fbf9a}
+.wordrow{display:flex;gap:10px;flex-wrap:wrap}
+.wordrow input{flex:1 1 220px;min-width:0}
+.ok{color:#8fbf9a}.bad{color:#e6a58f}
+.groups td:first-child{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent-200)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.stats div{background:var(--bg);padding:12px 14px}
+.stats b{display:block;font-family:var(--heading);font-weight:600;font-size:30px;line-height:1}
+.stats span{font-size:12px;color:var(--faint)}
+.batch{max-height:420px;overflow:auto}
+</style>
+</head>
+<body data-slug="stemming">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">One word, rule by rule</h2>
+      <p class="sub">The stemmer chops suffixes with fixed rules and never checks a dictionary. The lemmatizer proposes base forms and keeps only real words, so it needs a lexicon and a part of speech.</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <form class="wordrow" id="wform" autocomplete="off">
+          <label class="field-label" for="word" style="flex-basis:100%">Word</label>
+          <input type="search" id="word" value="generalizations" spellcheck="false" autocapitalize="none">
+          <label class="sr" for="pos" style="position:absolute;left:-9999px">Part of speech for the lemmatizer</label>
+          <select id="pos" aria-label="Part of speech for the lemmatizer">
+            <option value="auto">POS: guess</option><option value="noun">noun</option><option value="verb">verb</option><option value="adj">adjective</option>
+          </select>
+          <button class="btn btn-primary" type="submit">Analyze</button>
+        </form>
+        <div class="chips" id="wchips" role="group" aria-label="Example words"></div>
+        <div class="res" aria-live="polite">
+          <div><span class="lbl">Porter stem</span><span class="big" id="stem">—</span><span class="why" id="stemwhy"></span></div>
+          <div><span class="lbl">Lemma</span><span class="big" id="lemma">—</span><span class="why" id="lemmawhy"></span></div>
+        </div>
+        <div class="scroll-x"><table class="data trace" id="trace"><caption class="note" style="text-align:left;caption-side:top;padding-bottom:6px">Porter steps. A rule “fires” when its suffix matches and its condition on the remaining stem holds.</caption>
+          <thead><tr><th scope="col">Step</th><th scope="col">Rule</th><th scope="col">Condition</th><th scope="col">Result</th></tr></thead><tbody></tbody></table></div>
+        <div>
+          <span class="field-label">Measure of the stem</span>
+          <p class="mdec" id="mdec"></p>
+          <p class="note">Porter writes every word as <code>[C](VC)<sup>m</sup>[V]</code>: C = run of consonants, V = run of vowels (y counts as a vowel after a consonant). Most rules only fire when <i>m</i> is large enough, which stops short words like “sing” from losing “-ing”.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="batch-h">
+    <div class="wrap stack">
+      <span class="kicker">02 · Whole texts</span>
+      <h2 id="batch-h">Collapsing a vocabulary</h2>
+      <p class="sub">Both methods merge inflected forms, which shrinks the vocabulary a search engine or classifier has to deal with. The stemmer merges more aggressively, including words that shouldn’t be merged.</p>
+      <div class="grid2">
+        <div class="panel pad stack">
+          <label class="field-label" for="btxt">Text</label>
+          <textarea id="btxt" spellcheck="false"></textarea>
+          <div class="stats" id="bstats" aria-live="polite"></div>
+        </div>
+        <div class="panel pad batch">
+          <table class="data" id="btable"><thead><tr><th scope="col">Word</th><th scope="col">Stem</th><th scope="col">Lemma</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="err-h">
+    <div class="wrap stack">
+      <span class="kicker">03 · Failure modes</span>
+      <h2 id="err-h">Over- and under-stemming</h2>
+      <div class="grid2">
+        <div class="panel pad stack">
+          <h3 style="font-size:22px">Over-stemming: unrelated words collide</h3>
+          <div class="scroll-x"><table class="data groups" id="over"><thead><tr><th scope="col">Stem</th><th scope="col">Words that share it</th><th scope="col">Lemmas</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="panel pad stack">
+          <h3 style="font-size:22px">Under-stemming: related words stay apart</h3>
+          <div class="scroll-x"><table class="data groups" id="under"><thead><tr><th scope="col">Words</th><th scope="col">Stems</th><th scope="col">Lemmas</th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </div>
+      <div class="panel pad">
+        <p class="note" id="valid" aria-live="polite">Checking this implementation against NLTK…</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">04 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Stemming</h3><p>Strips affixes with string rules to reach a <b>stem</b>, which need not be a word (“poni”, “gener”). Porter’s 1980 algorithm runs five ordered steps of about 60 rules. It’s fast, needs no dictionary, and is still a standard baseline in information retrieval.</p></div>
+        <div class="panel card"><h3>Lemmatization</h3><p>Maps a word to its dictionary form, the <b>lemma</b> (“went” → “go”, “mice” → “mouse”). It needs a lexicon, exception lists for irregular forms, and the part of speech: “meeting” is <i>meet</i> as a verb but <i>meeting</i> as a noun.</p></div>
+        <div class="panel card"><h3>How this lemmatizer works</h3><p>Like WordNet’s <i>morphy</i>: check an irregular-forms table, then apply suffix-detachment rules for the part of speech (−ies → −y, −ing → −e or ∅, undoubling “runn” → “run”) and keep candidates that exist in a lexicon. Here the lexicon is the 30,000-word Word2Vec vocabulary; ties go to the more frequent word.</p></div>
+        <div class="panel card"><h3>Morphology</h3><p><b>Inflection</b> changes grammatical features without changing the word’s category (walk, walks, walked). <b>Derivation</b> builds new words, often of a new category (nation → national → nationalize). Porter removes both; lemmatizers usually only undo inflection.</p></div>
+        <div class="panel card"><h3>Precision vs recall</h3><p>In search, stemming raises recall (a query for “connect” also finds “connections”) but can lower precision (“university” matches “universe”). Light stemmers that only strip plurals, or lemmatization, trade some recall back for precision.</p></div>
+        <div class="panel card"><h3>Beyond English</h3><p>Rule-based stemming is far harder in morphologically rich languages like Finnish or Turkish, where one word can carry several suffixes. Snowball provides stemmers for many languages; modern neural models sidestep the issue with subword tokenization.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">05 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Porter, M. F. (1980). An algorithm for suffix stripping. <i>Program</i> 14(3), 130–137.</li>
+        <li>Lovins, J. B. (1968). Development of a stemming algorithm. <i>Mechanical Translation and Computational Linguistics</i> 11(1–2).</li>
+        <li>Paice, C. D. (1990). Another stemmer. <i>ACM SIGIR Forum</i> 24(3). (The Lancaster stemmer.)</li>
+        <li>Miller, G. A. (1995). WordNet: a lexical database for English. <i>Communications of the ACM</i> 38(11).</li>
+        <li>Manning, Raghavan &amp; Schütze (2008), <i>Introduction to Information Retrieval</i>, §2.2.4: Stemming and lemmatization.</li>
+        <li>Jurafsky &amp; Martin, <i>Speech and Language Processing</i> (3rd ed. draft), Chapter 2: Regular Expressions, Tokenization, Edit Distance.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

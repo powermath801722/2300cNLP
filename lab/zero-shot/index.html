@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zero-shot Classification — NLP Lab — Braidwater</title>
+<meta name="description" content="Classify text into labels the model never trained on by recasting classification as natural language inference; see every premise–hypothesis pair.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.bars{display:flex;flex-direction:column;gap:10px;list-style:none;margin:0;padding:0}
+.bars li{display:grid;grid-template-columns:minmax(0,9em) minmax(0,1fr) 4.2em;gap:12px;align-items:center;font-size:15px}
+.bars .lab{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.bars .track{height:12px;background:var(--divider)}
+.bars .track i{display:block;height:100%;background:var(--accent)}
+.bars li:first-child .lab{color:var(--accent-200)}
+.bars .v{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.toggle{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--muted);cursor:pointer}
+.toggle input{accent-color:var(--accent);width:18px;height:18px}
+td.hyp{min-width:14em}
+.mini{display:flex;height:8px;width:120px;background:var(--divider)}
+.mini i{display:block;height:100%}
+.keys{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--faint)}
+.keys i{display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:middle}
+</style>
+</head>
+<body data-slug="zero-shot">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Classify with labels you make up</h2>
+      <p class="sub">An NLI model only knows how to judge whether one sentence follows from another. Turn each label into a hypothesis (“This example is sports.”), ask whether your text entails it, and you have a classifier for any label set. First run downloads DeBERTa-v3-xsmall trained on SNLI and MultiNLI (about 87 MB, quantized).</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <label class="field-label" for="text">Text (the premise)</label>
+        <textarea id="text" maxlength="1500" spellcheck="false"></textarea>
+        <label class="field-label" for="labels">Candidate labels, comma-separated</label>
+        <input type="text" id="labels" autocomplete="off" spellcheck="false">
+        <label class="field-label" for="tmpl">Hypothesis template (<code>{}</code> is replaced by each label)</label>
+        <input type="text" id="tmpl" value="This example is {}." autocomplete="off" spellcheck="false">
+        <div class="row">
+          <label class="toggle"><input type="checkbox" id="multi"> Multi-label (labels scored independently)</label>
+        </div>
+        <div class="row">
+          <button class="btn btn-primary" id="run" type="button">Classify</button>
+          <span class="note" id="status" aria-live="polite"></span>
+        </div>
+        <div id="load"></div>
+        <div>
+          <span class="field-label">Samples</span>
+          <div class="chips" id="samples" style="margin-top:8px"></div>
+          <p class="note" id="sample-note" aria-live="polite" style="margin-top:6px"></p>
+        </div>
+      </div>
+
+      <div class="grid2" style="margin-top:24px">
+        <div class="panel pad stack" aria-live="polite">
+          <h3 style="font-size:24px">Scores</h3>
+          <p class="note" id="mode-note"></p>
+          <ol class="bars" id="bars"><li class="note">Run the classifier to see scores.</li></ol>
+        </div>
+        <div class="panel pad stack">
+          <h3 style="font-size:24px">What the NLI model actually saw</h3>
+          <p class="note">One forward pass per label. Each row is a premise–hypothesis pair with the model’s three-way NLI probabilities.</p>
+          <div class="keys"><span><i style="background:#8fbf9a"></i>entailment</span><span><i style="background:#9aa3ad"></i>neutral</span><span><i style="background:#d98c7a"></i>contradiction</span></div>
+          <div class="scroll-x"><table class="data" id="pairs"><thead><tr><th scope="col">Hypothesis</th><th scope="col">Entail</th><th scope="col">Neutral</th><th scope="col">Contra</th><th scope="col"><span class="sr" style="position:absolute;left:-9999px">Distribution</span></th></tr></thead><tbody><tr><td colspan="5" class="note">—</td></tr></tbody></table></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">02 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Natural language inference</h3><p>NLI asks: given a premise, is a hypothesis definitely true (entailment), definitely false (contradiction), or undetermined (neutral)? SNLI (570k pairs from image captions) and MultiNLI (433k pairs across ten genres) made it a large-scale supervised task. A cross-encoder reads both sentences together and outputs three logits.</p></div>
+        <div class="panel card"><h3>The entailment trick</h3><p>Yin, Hay and Roth (2019) recast classification as NLI: premise = your text, hypothesis = a template filled with a label. The label whose hypothesis is most entailed wins. Because labels are read as natural language, the model can use what it knows about the words “sports” or “complaint” without any task-specific training.</p></div>
+        <div class="panel card"><h3>Single- vs multi-label scoring</h3><p>Single-label: softmax the entailment logits across all labels, so scores sum to 1 and labels compete. Multi-label: for each label separately, softmax over its own entailment and contradiction logits (neutral dropped), so several labels can all score high, or all low.</p></div>
+        <div class="panel card"><h3>Templates matter</h3><p>The hypothesis wording is part of the model input. “This example is positive.” and “The sentiment of this review is positive.” can give different scores for the same text. Prompt sensitivity like this is a known weakness; choosing templates on a small labelled dev set is common practice.</p></div>
+        <div class="panel card"><h3>Cost and limits</h3><p>Each label costs a full forward pass, so 20 labels means 20 passes; bi-encoders that embed text and labels separately are faster but usually less accurate. Zero-shot works best for topical labels the NLI data covers; fine-grained or domain-specific labels usually still need labelled data.</p></div>
+        <div class="panel card"><h3>This model</h3><p><code>cross-encoder/nli-deberta-v3-xsmall</code>: DeBERTa-v3 extra-small (about 22M backbone parameters plus a 128k-token embedding matrix) trained on SNLI and MultiNLI, converted to ONNX and quantized to 8 bits by Xenova. DeBERTa adds disentangled attention over content and relative position; v3 pre-trains with ELECTRA-style replaced-token detection.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">03 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Yin, W., Hay, J. &amp; Roth, D. (2019). Benchmarking Zero-shot Text Classification: Datasets, Evaluation and Entailment Approach. <em>EMNLP-IJCNLP</em>.</li>
+        <li>Bowman, S. R., Angeli, G., Potts, C. &amp; Manning, C. D. (2015). A large annotated corpus for learning natural language inference. <em>EMNLP</em>.</li>
+        <li>Williams, A., Nangia, N. &amp; Bowman, S. R. (2018). A Broad-Coverage Challenge Corpus for Sentence Understanding through Inference. <em>NAACL</em>.</li>
+        <li>He, P., Liu, X., Gao, J. &amp; Chen, W. (2021). DeBERTa: Decoding-enhanced BERT with Disentangled Attention. <em>ICLR</em>.</li>
+        <li>He, P., Gao, J. &amp; Chen, W. (2023). DeBERTaV3: Improving DeBERTa using ELECTRA-Style Pre-Training with Gradient-Disentangled Embedding Sharing. <em>ICLR</em>.</li>
+        <li>Schick, T. &amp; Schütze, H. (2021). Exploiting Cloze Questions for Few Shot Text Classification and Natural Language Inference. <em>EACL</em>.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

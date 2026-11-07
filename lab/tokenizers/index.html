@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Subword Tokenizers (BPE, WordPiece) — NLP Lab — Braidwater</title>
+<meta name="description" content="Train byte-pair encoding from scratch merge by merge, then compare GPT-2, BERT and T5 tokenizers on the same text.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.ctrl{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:flex-end}
+.ctrl .lbl{display:flex;flex-direction:column;gap:6px;min-width:0;max-width:100%}
+.ctrl input[type=range]{width:min(320px,100%)}
+.merges{max-height:360px;overflow:auto;border:1px solid var(--divider)}
+.merges table{margin:0}
+.merges tr.cur td{background:color-mix(in srgb,var(--accent) 22%,transparent);color:var(--text)}
+.merges tr.future td{color:var(--faint)}
+.segs{display:flex;flex-direction:column;gap:6px;font-size:14px}
+.segs .w{display:flex;flex-wrap:wrap;align-items:center;gap:2px}
+.segs .w small{color:var(--faint);min-width:42px;font-variant-numeric:tabular-nums}
+.tok{cursor:default}
+.tok.alt{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.tok.unk{border-color:#e6a58f;color:#e6a58f}
+.tok.sp{color:var(--faint)}
+.tkcard{padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.tkcard h3{font-size:22px}
+.tkline{display:flex;flex-wrap:wrap;gap:0;line-height:1.9}
+.mini{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--faint)}
+.mini b{color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.plot{width:100%;height:280px}
+</style>
+</head>
+<body data-slug="tokenizers">
+<main id="main">
+  <section class="s" aria-labelledby="bpe-h">
+    <div class="wrap">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="bpe-h">Train byte-pair encoding from scratch</h2>
+      <p class="sub">BPE starts from single characters and repeatedly merges the most frequent adjacent pair of symbols into a new symbol (Sennrich, Haddow &amp; Birch, 2016). Frequent words become one token; rare words fall apart into reusable pieces. Edit the training text and step through the merges.</p>
+      <div class="grid2">
+        <div class="panel pad stack">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <label class="field-label" for="corpus">Training text</label>
+          <textarea id="corpus" spellcheck="false"></textarea>
+          <div class="row">
+            <button class="chip" type="button" id="c-classic">Sennrich’s toy corpus</button>
+            <button class="chip" type="button" id="c-prose">Short prose</button>
+          </div>
+          <div class="ctrl">
+            <div class="lbl"><label class="field-label" for="k">Merges applied: <span id="kval">0</span> / <span id="kmax">0</span></label>
+              <input type="range" id="k" min="0" max="0" value="0"></div>
+            <button class="btn btn-secondary" type="button" id="step" aria-label="Apply one more merge">+1 merge</button>
+            <button class="btn btn-secondary" type="button" id="play">Play</button>
+          </div>
+          <p class="note" id="bpestats" aria-live="polite"></p>
+          <label class="field-label" for="heldout">Segment a held-out word with the first <span class="kv">0</span> merges</label>
+          <input type="search" id="heldout" value="lowest" spellcheck="false" autocapitalize="none">
+          <div class="tkline" id="heldseg" aria-live="polite"></div>
+        </div>
+        <div class="panel pad stack">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <span class="field-label">Merge table (learned in order)</span>
+          <div class="merges"><table class="data" id="mergetab"><thead><tr><th>#</th><th>Pair</th><th>New symbol</th><th>Count</th></tr></thead><tbody></tbody></table></div>
+          <span class="field-label">Most frequent training words, segmented</span>
+          <div class="segs" id="segs"></div>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:20px;padding:0"><div id="growth" class="plot" role="img" aria-label="Vocabulary size and corpus length in tokens as merges are added"></div></div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="cmp-h">
+    <div class="wrap">
+      <span class="kicker">02 · Try it</span>
+      <h2 id="cmp-h">Compare pretrained tokenizers</h2>
+      <p class="sub">The same text through three production tokenizers: GPT-2’s byte-level BPE (50,257 tokens), BERT’s WordPiece (30,522, lowercased) and T5’s SentencePiece unigram model (32,100). Only the tokenizer files download (about 1–2.5 MB each), not the models.</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <label class="field-label" for="cmpin">Text to tokenize</label>
+        <textarea id="cmpin" spellcheck="false" style="min-height:90px"></textarea>
+        <div class="row" id="cmpchips" aria-label="Examples"></div>
+        <div class="row"><button class="btn btn-primary" type="button" id="cmpgo">Tokenize</button><div id="cmpload" class="load" aria-live="polite"></div></div>
+        <p class="note">Hover or focus a token for its id. <code>Ġ</code> (GPT-2) and <code>▁</code> (T5) mark a preceding space; <code>##</code> (BERT) marks a word continuation; red tokens are unknown (<code>[UNK]</code>/<code>&lt;unk&gt;</code>).</p>
+      </div>
+      <div class="grid3" id="cmpout" style="margin-top:16px"></div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">03 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Why subwords</h3><p>Word-level vocabularies can’t cover new words (out-of-vocabulary problem); character-level sequences are long and slow to model. Subwords sit in between: a fixed vocabulary that can still spell any word.</p></div>
+        <div class="panel card"><h3>BPE training</h3><p>Split words into characters plus an end-of-word marker <code>&lt;/w&gt;</code>. Count adjacent symbol pairs weighted by word frequency, merge the most frequent pair everywhere, record the merge, repeat. The number of merges sets the vocabulary size.</p></div>
+        <div class="panel card"><h3>BPE encoding</h3><p>To segment a new word, start from characters and apply learned merges in the order they were learned (lowest rank first). The same procedure is deterministic, so training and inference agree.</p></div>
+        <div class="panel card"><h3>Byte-level BPE (GPT-2)</h3><p>Runs BPE over UTF-8 bytes, mapped to printable characters, so there is no unknown token: any string, emoji or script can be encoded. The cost is that rare characters split into several byte tokens.</p></div>
+        <div class="panel card"><h3>WordPiece (BERT)</h3><p>Chooses merges that most increase training-data likelihood rather than raw frequency, and at inference greedily matches the longest vocabulary prefix. Pieces after the first carry <code>##</code>. Characters missing from the vocabulary become <code>[UNK]</code>.</p></div>
+        <div class="panel card"><h3>Unigram LM (T5 / SentencePiece)</h3><p>Starts from a large candidate vocabulary and prunes pieces that least reduce corpus likelihood under a unigram model; segmentation is the most probable split (Viterbi). SentencePiece treats spaces as the symbol <code>▁</code>, so it needs no language-specific pre-tokenizer.</p></div>
+        <div class="panel card"><h3>Why it matters</h3><p>Token counts set cost, context length and even model behavior: arithmetic suffers when numbers split oddly, and languages that need more tokens per word pay more and get less context. Tokenization is a modeling decision, not just preprocessing.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">04 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Gage, P. (1994). A New Algorithm for Data Compression. <em>The C Users Journal</em>, 12(2).</li>
+        <li>Sennrich, R., Haddow, B., &amp; Birch, A. (2016). Neural Machine Translation of Rare Words with Subword Units. <em>ACL</em>.</li>
+        <li>Schuster, M., &amp; Nakajima, K. (2012). Japanese and Korean Voice Search. <em>ICASSP</em> (origin of WordPiece).</li>
+        <li>Wu, Y., et al. (2016). Google’s Neural Machine Translation System: Bridging the Gap between Human and Machine Translation. <em>arXiv:1609.08144</em>.</li>
+        <li>Kudo, T. (2018). Subword Regularization: Improving Neural Network Translation Models with Multiple Subword Candidates. <em>ACL</em>.</li>
+        <li>Kudo, T., &amp; Richardson, J. (2018). SentencePiece: A simple and language independent subword tokenizer and detokenizer for Neural Text Processing. <em>EMNLP (System Demonstrations)</em>.</li>
+        <li>Radford, A., Wu, J., Child, R., Luan, D., Amodei, D., &amp; Sutskever, I. (2019). Language Models are Unsupervised Multitask Learners. OpenAI technical report (byte-level BPE).</li>
+        <li>Petrov, A., La Malfa, E., Torr, P., &amp; Bibi, A. (2023). Language Model Tokenizers Introduce Unfairness Between Languages. <em>NeurIPS</em>.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

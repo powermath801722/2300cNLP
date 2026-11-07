@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HMM Part-of-Speech Tagging — NLP Lab — Braidwater</title>
+<meta name="description" content="A hidden Markov model part-of-speech tagger trained on the Penn Treebank sample, decoded with Viterbi, with the full trellis.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.tagged{display:flex;flex-wrap:wrap;gap:10px 8px}
+.tw{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:44px}
+.tw .w{font-size:17px;font-weight:500}
+.tw .t{font:600 13px ui-monospace,SFMono-Regular,Menlo,monospace;padding:2px 7px;border:1px solid currentColor;cursor:help}
+.tw .b{font:500 11px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--faint)}
+.tw .b.diff{color:#d8b66a}
+.tw.unk .w::after{content:'*';color:#d8b66a}
+.c-N{color:#7ea3c8}.c-V{color:#d98c7a}.c-J{color:#d8b66a}.c-R{color:#b49bd6}.c-D{color:#8fbf9a}.c-P{color:#6cc3c3}.c-O{color:#9aa3ad}
+table.trellis{border-collapse:collapse;font:12px/1.3 ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+table.trellis th,table.trellis td{border:1px solid var(--divider);padding:5px 7px;text-align:right;white-space:nowrap}
+table.trellis thead th{font:600 13px var(--body);text-align:center;color:var(--text);position:sticky;top:0;background:var(--surface)}
+table.trellis th[scope=row]{text-align:left;color:var(--muted)}
+table.trellis td.na{color:color-mix(in srgb,var(--text) 18%,transparent);text-align:center}
+table.trellis td.best{background:color-mix(in srgb,var(--accent) 26%,transparent);color:var(--text);outline:1px solid var(--accent)}
+table.trellis td small{display:block;color:var(--faint);font-size:10px}
+.trellis-wrap{overflow:auto;max-height:520px;border:1px solid var(--divider)}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:6px 18px;font-size:14px}
+.legend div{display:flex;gap:10px}
+.legend code{min-width:44px;display:inline-block;font-weight:600}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.statgrid div{background:var(--bg);padding:14px 16px}
+.statgrid b{display:block;font:600 30px/1 var(--heading)}
+.statgrid span{font-size:13px;color:var(--faint)}
+</style>
+</head>
+<body data-slug="pos">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Tag a sentence</h2>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <label class="field-label" for="sent">Sentence</label>
+        <form class="row" id="form" autocomplete="off">
+          <input type="search" id="sent" value="Time flies like an arrow ; fruit flies like a banana ." style="flex:1 1 320px;min-height:48px" spellcheck="false">
+          <button class="btn btn-primary" id="go" type="submit" disabled>Tag with Viterbi</button>
+        </form>
+        <div class="chips" id="chips" aria-label="Ambiguous examples"></div>
+        <p class="note" id="status">Loading the model…</p>
+      </div>
+      <div class="panel pad stack" aria-live="polite">
+        <span class="field-label">Best tag sequence (HMM) · most-frequent-tag baseline below each word</span>
+        <div class="tagged" id="tagged"></div>
+        <p class="note" id="tagnote"></p>
+      </div>
+      <div class="panel pad stack">
+        <span class="field-label" id="trellis-h">Viterbi trellis</span>
+        <p class="note">Each cell is the best log-probability of any tag sequence ending in that tag at that word, <code>δₜ(j) = maxᵢ [δₜ₋₁(i) + log a(i→j)] + log b(j, wₜ)</code>, with the tag it came from underneath. Highlighted cells are the best path, recovered by following backpointers from the end. Tags that never emitted the word are impossible (—).</p>
+        <div class="trellis-wrap" tabindex="0" role="region" aria-labelledby="trellis-h"><table class="trellis" id="trellis"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="stats-h">
+    <div class="wrap stack">
+      <span class="kicker">02 · Evaluation</span>
+      <h2 id="stats-h">How good is it?</h2>
+      <p class="sub">Trained on 90% of the NLTK Penn Treebank sample (Wall Street Journal text) and scored on the held-out 10%.</p>
+      <div class="statgrid" id="stats"></div>
+      <div class="grid2">
+        <div class="panel pad stack"><span class="field-label">Most common errors (gold → predicted)</span><div class="scroll-x"><table class="data" id="conf"></table></div></div>
+        <div class="panel pad stack"><span class="field-label">Penn Treebank tags in this model</span><div class="legend" id="legend"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">03 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>The HMM</h3><p>Tags are hidden states, words are observations. The model assumes each tag depends only on the previous tag (transition <code>a(i→j) = P(tⱼ | tᵢ)</code>) and each word only on its own tag (emission <code>b(j, w) = P(w | tⱼ)</code>). It scores a sequence by <code>Πₜ P(tₜ | tₜ₋₁) · P(wₜ | tₜ)</code>.</p></div>
+        <div class="panel card"><h3>Training = counting</h3><p>Both tables are relative frequencies from tagged sentences, with add-k smoothing (k = 0.1 for transitions, 0.01 for emissions) so unseen events don't get probability zero. No gradient descent is involved.</p></div>
+        <div class="panel card"><h3>Viterbi decoding</h3><p>There are |T|ⁿ possible tag sequences, but dynamic programming finds the best one in O(n·|T|²): keep only the best way to reach each tag at each position, then follow backpointers. Working in log space turns products into sums and avoids underflow.</p></div>
+        <div class="panel card"><h3>Unknown words</h3><p>Training words seen once are replaced by a signature (UNK-ing, UNK-ed, UNK-cap, UNK-num, …), so the model learns, for example, that unseen <em>-ly</em> words are usually adverbs. Unknown words are marked * above.</p></div>
+        <div class="panel card"><h3>Why it fails on garden paths</h3><p>“The old man the boat” needs <em>man</em> as a verb, but a bigram model only sees one tag back and <em>man</em> is overwhelmingly a noun. Fixing it needs longer context: trigram HMMs, CRFs, or neural taggers (BiLSTM, transformers reach about 97–98% on full WSJ).</p></div>
+        <div class="panel card"><h3>Baseline</h3><p>Tagging every known word with its most frequent training tag (and unknown words as NN) already gets about 89% here. Most words are unambiguous; the hard part is the remaining ambiguous tokens, where context matters.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">04 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Jurafsky &amp; Martin, <em>Speech and Language Processing</em> (3rd ed. draft), chapter “Sequence Labeling for Parts of Speech and Named Entities” and appendix on HMMs.</li>
+        <li>Rabiner (1989). <em>A Tutorial on Hidden Markov Models and Selected Applications in Speech Recognition.</em> Proceedings of the IEEE.</li>
+        <li>Marcus, Santorini &amp; Marcinkiewicz (1993). <em>Building a Large Annotated Corpus of English: The Penn Treebank.</em> Computational Linguistics.</li>
+        <li>Brants (2000). <em>TnT: A Statistical Part-of-Speech Tagger.</em> ANLP.</li>
+        <li>Manning (2011). <em>Part-of-Speech Tagging from 97% to 100%: Is It Time for Some Linguistics?</em> CICLing.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

@@ -42,7 +42,7 @@ a.mod .foot{margin-top:auto;display:flex;justify-content:space-between;gap:8px;f
 <div id="tiers"></div>
 </main>
 <script type="module">
-import { MODULES, TIERS, hrefOf, el } from '/lab/shared/lab.js';
+import { MODULES, TIERS, hrefOf, el, LIVE } from '/lab/shared/lab.js';
 const counts = { classic: MODULES.filter(m => m.kind === 'classic').length, transformer: MODULES.filter(m => m.kind === 'transformer').length };
 const stats = [[MODULES.length, 'interactive modules'], [TIERS.length, 'difficulty tiers'], [counts.classic, 'classic methods, no download'], [counts.transformer, 'pretrained transformer demos'], ['0', 'servers or API keys']];
 document.getElementById('stats').append(...stats.map(([n, l]) => el('div', {}, [el('b', { text: String(n) }), el('span', { text: l })])));
@@ -67,16 +67,15 @@ var render = function () {
   }
 };
 render();
-// Modules still being built have no page yet: show them as "In development" instead of linking to a 404.
-const avail = new Map();
-await Promise.all(MODULES.map(async m => { try { const r = await fetch(hrefOf(m), { method: 'HEAD' }); avail.set(m.slug, r.ok); } catch { avail.set(m.slug, false); } }));
-for (const a of document.querySelectorAll('a.mod')) if (!avail.get(a.dataset.slug)) markDev(a);
+// Only modules marked LIVE (tested) are linked; the rest show as "In development".
 function markDev(a) {
-  const d = el('div', { class: 'panel mod', 'aria-disabled': 'true', style: { opacity: .55 } }, [...a.childNodes]);
+  const d = el('div', { class: 'panel mod', 'aria-disabled': 'true', 'data-slug': a.dataset.slug, style: { opacity: .55 } }, [...a.childNodes]);
   d.querySelector('.foot span:last-child').textContent = 'In development';
   a.replaceWith(d);
 }
-const _render = render; render = () => { _render(); for (const a of document.querySelectorAll('a.mod')) if (avail.has(a.dataset.slug) && !avail.get(a.dataset.slug)) markDev(a); };
+const markAll = () => { for (const a of document.querySelectorAll('a.mod')) if (!LIVE.has(a.dataset.slug)) markDev(a); };
+markAll();
+const _render = render; render = () => { _render(); markAll(); };
 window.__lab = { ready: true };
 </script>
 </body>

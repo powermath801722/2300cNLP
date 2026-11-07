@@ -39,6 +39,11 @@ export const MODULES = [
   { slug: 'surprisal', tier: 6, kind: 'transformer', title: 'Surprisal, Perplexity & Machine-Text Forensics', summary: 'Per-token surprisal from GPT-2, as used in psycholinguistics, and GLTR-style rank coloring for spotting generated text.' },
 ];
 
+// Modules that have passed tests and are linked from the hub and pagers. Others show as "In development"
+// even if their files are on main, so unfinished work never appears as a working page.
+export const LIVE = new Set(['word2vec']);
+export const isLive = (m) => LIVE.has(m.slug);
+
 export const tierOf = (n) => TIERS.find((t) => t.n === n);
 export const moduleBySlug = (slug) => MODULES.find((m) => m.slug === slug);
 export const hrefOf = (m) => m.href || `/lab/${m.slug}/`;

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sentiment Analysis — NLP Lab — Braidwater</title>
+<meta name="description" content="Compare lexicon rules, Naive Bayes, logistic regression and a fine-tuned transformer on the same sentence, with per-word explanations.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.res{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px}
+.res .card{display:flex;flex-direction:column;gap:10px}
+.res h3{font-size:22px}
+.verdict{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.lab{font:600 18px var(--heading);letter-spacing:.06em;text-transform:uppercase}
+.lab.pos{color:#8fbf9a}.lab.neg{color:#d98c7a}.lab.neu{color:var(--muted)}
+.meter{height:6px;background:color-mix(in srgb,#d98c7a 55%,transparent);position:relative}
+.meter i{position:absolute;inset:0 auto 0 0;background:#8fbf9a}
+.meter b{position:absolute;top:-3px;bottom:-3px;left:50%;width:1px;background:var(--text);opacity:.5}
+.words{line-height:2.1;font-size:15px}
+.words span{padding:2px 3px;border-radius:2px}
+.why{font-size:13px;color:var(--faint);margin:0}
+.samples{display:flex;flex-direction:column;gap:8px}
+.sample{all:unset;cursor:pointer;display:block;border:1px solid var(--divider);padding:10px 14px}
+.sample:hover,.sample:focus-visible{border-color:var(--accent-500)}
+.sample:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sample q{display:block;color:var(--text);font-size:15px}
+.sample small{color:var(--faint);font-size:13px}
+td.pos{color:#8fbf9a}td.neg{color:#d98c7a}td.neu{color:var(--muted)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--faint)}
+.legend i{display:inline-block;width:12px;height:12px;vertical-align:-2px;margin-right:6px}
+</style>
+</head>
+<body data-slug="sentiment">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Four analyzers, one sentence</h2>
+      <p class="sub">Type a sentence or pick an example. Each method gives its verdict and, for the first three, shows which words pushed it toward positive or negative.</p>
+      <div class="grid2">
+        <div class="panel pad stack">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <label class="field-label" for="txt">Text to analyze</label>
+          <textarea id="txt" spellcheck="true">The acting was not good at all, but the soundtrack is absolutely gorgeous!</textarea>
+          <div class="row">
+            <button class="btn btn-primary" id="go" type="button" disabled>Analyze</button>
+            <button class="btn btn-secondary" id="tfbtn" type="button" disabled>Load DistilBERT (≈67 MB)</button>
+          </div>
+          <div id="tfload" aria-live="polite"></div>
+          <p class="note" id="status">Loading models…</p>
+        </div>
+        <div class="panel pad stack">
+          <span class="field-label" id="samples-h">Examples that break things</span>
+          <div class="samples" id="samples" aria-labelledby="samples-h"></div>
+        </div>
+      </div>
+      <div class="legend" aria-hidden="true"><span><i style="background:rgba(143,191,154,.55)"></i>pushes positive</span><span><i style="background:rgba(217,140,122,.55)"></i>pushes negative</span><span>Hover or focus a word for its exact contribution.</span></div>
+      <div class="res" id="res" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="cmp-h">
+    <div class="wrap stack">
+      <span class="kicker">02 · Compare</span>
+      <h2 id="cmp-h">Agreement and accuracy</h2>
+      <p class="sub">The classic models were trained on 1,600 movie reviews from the Pang &amp; Lee polarity dataset (NLTK <code>movie_reviews</code>) and tested on 400 reviews they never saw.</p>
+      <div class="grid2">
+        <div class="panel pad stack">
+          <span class="field-label">Held-out accuracy (400 full reviews)</span>
+          <div class="scroll-x"><table class="data" id="acc"></table></div>
+          <p class="note">DistilBERT was fine-tuned by its authors on SST-2 (single movie-review sentences), a different split, so it isn't scored here. Full reviews are long and mixed, which is one reason the lexicon method does worst on them.</p>
+        </div>
+        <div class="panel pad stack">
+          <span class="field-label">How the methods label every example</span>
+          <div class="scroll-x"><table class="data" id="agree"></table></div>
+          <p class="note" id="agree-note"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">03 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Lexicon + rules (VADER)</h3><p>Every word has a hand-rated valence from −4 to +4 (7,500 entries). Rules adjust it: a negator within three words flips and damps it (×−0.74), boosters like <em>very</em> add ±0.293, ALL-CAPS adds emphasis, and after <em>but</em> the clause counts 1.5× while the part before counts 0.5×. The sum is squashed to a compound score <code>s / √(s² + 15)</code> in [−1, 1].</p></div>
+        <div class="panel card"><h3>Multinomial Naive Bayes</h3><p>Pick the class maximizing <code>log P(c) + Σ log P(wᵢ | c)</code>, assuming words are independent given the class. Probabilities are word counts per class with add-one (Laplace) smoothing. A word's contribution is <code>log P(w|pos) − log P(w|neg)</code>. It can't see word order, so <em>not good</em> looks like <em>good</em>.</p></div>
+        <div class="panel card"><h3>Logistic regression</h3><p>A linear model on word-presence features: <code>P(pos) = σ(b + Σ wⱼ xⱼ)</code>, trained by minimizing cross-entropy with L2 regularization (C chosen on a validation slice). Weights are learned discriminatively, so correlated words don't double-count the way they do in Naive Bayes.</p></div>
+        <div class="panel card"><h3>Fine-tuned transformer</h3><p>DistilBERT reads the whole sentence with self-attention, so each word's representation depends on its context, including negation and contrast. A classification head on the [CLS] token was fine-tuned on SST-2. It's far stronger on sentences, but its decisions are not a sum of word scores, so there's no simple per-word explanation.</p></div>
+        <div class="panel card"><h3>Domain shift</h3><p>Sentiment words are domain-dependent: an <em>unpredictable</em> plot is good, an <em>unpredictable</em> steering wheel is not. Models trained on movie reviews carry movie-review associations (e.g. names of actors, genres) into every domain they're applied to.</p></div>
+        <div class="panel card"><h3>What all of them miss</h3><p>Sarcasm, irony and implicit sentiment (“I want my two hours back”) need world knowledge and pragmatics. Even strong transformers are inconsistent on them; this is still an active research area.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">04 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Pang, Lee &amp; Vaithyanathan (2002). <em>Thumbs up? Sentiment Classification using Machine Learning Techniques.</em> EMNLP.</li>
+        <li>Pang &amp; Lee (2004). <em>A Sentimental Education: Sentiment Analysis Using Subjectivity Summarization Based on Minimum Cuts.</em> ACL. (The polarity dataset used here.)</li>
+        <li>Hutto &amp; Gilbert (2014). <em>VADER: A Parsimonious Rule-based Model for Sentiment Analysis of Social Media Text.</em> ICWSM.</li>
+        <li>Socher et al. (2013). <em>Recursive Deep Models for Semantic Compositionality Over a Sentiment Treebank.</em> EMNLP. (SST.)</li>
+        <li>Sanh et al. (2019). <em>DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter.</em></li>
+        <li>Jurafsky &amp; Martin, <em>Speech and Language Processing</em> (3rd ed. draft), chapters on Naive Bayes, Logistic Regression and Sentiment.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

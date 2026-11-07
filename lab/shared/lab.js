@@ -3,9 +3,9 @@
 //   <body data-slug="tokenize"> ... <main id="main">module content</main> ...
 //   <script type="module" src="/lab/shared/lab.js"></script>   (renders header, hero, footer)
 //   Module code: import { el, ready } from '/lab/shared/lab.js'; ... ready();  // marks window.__lab.ready
-import { MODULES, TIERS, moduleBySlug, tierOf, hrefOf } from '/lab/shared/modules.js';
+import { MODULES, TIERS, moduleBySlug, tierOf, hrefOf, isLive, LIVE } from '/lab/shared/modules.js';
 
-export { MODULES, TIERS, moduleBySlug, tierOf, hrefOf };
+export { MODULES, TIERS, moduleBySlug, tierOf, hrefOf, isLive, LIVE };
 
 /** Tiny element helper: el('div', {class:'x', text:'hi', onclick:fn}, [children]) */
 export function el(tag, attrs = {}, children = []) {
@@ -66,7 +66,8 @@ function hero(m) {
 }
 
 function pager(m) {
-  const i = MODULES.indexOf(m), prev = MODULES[i - 1], next = MODULES[i + 1];
+  const i = MODULES.indexOf(m);
+  const prev = MODULES.slice(0, i).reverse().find(isLive), next = MODULES.slice(i + 1).find(isLive);
   return el('nav', { class: 'wrap row', 'aria-label': 'Module navigation', style: { justifyContent: 'space-between', padding: '28px 0' } }, [
     prev ? el('a', { class: 'btn btn-secondary', href: hrefOf(prev), text: '← ' + prev.title }) : el('span'),
     next ? el('a', { class: 'btn btn-secondary', href: hrefOf(next), text: next.title + ' →' }) : el('a', { class: 'btn btn-secondary', href: '/lab/', text: 'All modules' }),

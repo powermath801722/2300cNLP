@@ -188,7 +188,7 @@ async function drawPlots(rx) {
   const axis = (t) => ({ type: 'log', title: { text: t, font: { size: 12, color: '#9aa3ad' } }, gridcolor: 'rgba(228,231,235,.08)', color: '#9aa3ad', exponentformat: 'power' });
   const narrow = $('#zipf').clientWidth < 500;
   const legend = { orientation: 'h', x: 0, y: 1.02, yanchor: 'bottom', font: { size: 12 } };
-  P.react('#zipf', traces, plotLayout({ xaxis: axis('rank'), yaxis: axis('relative frequency'), legend, margin: { l: narrow ? 50 : 60, r: 10, t: narrow ? 60 : 36, b: 44 } }), PLOT_CONFIG);
+  P.react($('#zipf'), traces, plotLayout({ xaxis: axis('rank'), yaxis: axis('relative frequency'), legend, margin: { l: narrow ? 50 : 60, r: 10, t: narrow ? 60 : 36, b: 44 } }), PLOT_CONFIG);
 
   // Heaps
   const hf = heapsBase.fit, uh = [], seen = new Set();
@@ -201,7 +201,7 @@ async function drawPlots(rx) {
   ];
   if (uh.length) ht.push({ x: uh.map((p) => p[0]), y: uh.map((p) => p[1]), mode: 'lines', type: 'scatter', name: 'your text', line: { color: COLORS[1], width: 2 }, hovertemplate: 'after %{x} tokens<br>%{y} types<extra>your text</extra>' });
   $('#heapsnote').textContent = `Fit on text8 (N ≥ 1,000): β = ${hf.slope.toFixed(2)}. After all ${fmt(corpus.tokens)} tokens there are still ${fmt(corpus.types)} distinct types, and new ones keep arriving.`;
-  P.react('#heaps', ht, plotLayout({ xaxis: axis('tokens read (N)'), yaxis: axis('distinct types (V)'), legend, margin: { l: narrow ? 50 : 60, r: 10, t: narrow ? 70 : 36, b: 44 } }), PLOT_CONFIG);
+  P.react($('#heaps'), ht, plotLayout({ xaxis: axis('tokens read (N)'), yaxis: axis('distinct types (V)'), legend, margin: { l: narrow ? 50 : 60, r: 10, t: narrow ? 70 : 36, b: 44 } }), PLOT_CONFIG);
 }
 
 // ---------------------------------------------------------------- init
