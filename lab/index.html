@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NLP Lab — Braidwater</title>
+<meta name="description" content="Twenty interactive natural language processing modules, from tokenization to transformer forensics, running in your browser.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.tierblock{padding:clamp(32px,5vw,56px) 0;border-bottom:1px solid var(--divider)}
+.tierhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px 20px;margin-bottom:18px}
+.tierhead h2{font-size:clamp(28px,3.6vw,42px)}
+.tierhead p{margin:0;color:var(--muted);max-width:60ch}
+.mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:16px}
+a.mod{display:flex;flex-direction:column;gap:8px;padding:18px 20px;text-decoration:none;color:var(--text);transition:border-color .15s}
+a.mod:hover,a.mod:focus-visible{border-color:var(--accent-500)}
+a.mod h3{font-size:22px;line-height:1.05}
+a.mod p{margin:0;color:var(--muted);font-size:15px}
+a.mod .foot{margin-top:auto;display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--faint);padding-top:6px}
+.num{font-variant-numeric:tabular-nums;color:var(--accent-300)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,160px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider);margin-top:12px}
+.stats div{background:var(--bg);padding:16px 18px}
+.stats b{display:block;font-family:var(--heading);font-weight:600;font-size:34px;line-height:1;color:var(--text)}
+.stats span{font-size:13px;color:var(--faint)}
+.filter{display:flex;flex-wrap:wrap;gap:8px}
+.filter button[aria-pressed=true]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+</style>
+</head>
+<body>
+<main id="hub">
+<section class="hero" aria-labelledby="h1">
+  <div class="wrap">
+    <span class="tag">Braidwater · NLP Lab</span>
+    <h1 id="h1">From first tokens <span>to frontier research.</span></h1>
+    <p class="lede">Hands-on modules for a natural language processing course, ordered from beginner to research. Classic methods run on data shipped with the site; transformer modules download a small pretrained model from Hugging Face the first time you open them, then run locally in your browser.</p>
+    <div class="stats" id="stats" aria-label="Lab at a glance"></div>
+    <div class="filter" role="group" aria-label="Filter modules" id="filter"></div>
+  </div>
+</section>
+<div id="tiers"></div>
+</main>
+<script type="module">
+import { MODULES, TIERS, hrefOf, el } from '/lab/shared/lab.js';
+const counts = { classic: MODULES.filter(m => m.kind === 'classic').length, transformer: MODULES.filter(m => m.kind === 'transformer').length };
+const stats = [[MODULES.length, 'interactive modules'], [TIERS.length, 'difficulty tiers'], [counts.classic, 'classic methods, no download'], [counts.transformer, 'pretrained transformer demos'], ['0', 'servers or API keys']];
+document.getElementById('stats').append(...stats.map(([n, l]) => el('div', {}, [el('b', { text: String(n) }), el('span', { text: l })])));
+let filter = 'all';
+const fbar = document.getElementById('filter');
+const btns = [['all', 'All modules'], ['classic', 'Classic (instant)'], ['transformer', 'Transformers']].map(([k, label]) =>
+  el('button', { class: 'chip', type: 'button', 'aria-pressed': String(k === filter), text: label, onclick: () => { filter = k; btns.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.k === k))); render(); } }));
+btns.forEach((b, i) => b.dataset.k = ['all', 'classic', 'transformer'][i]);
+fbar.append(...btns);
+var render = function () {
+  const host = document.getElementById('tiers'); host.innerHTML = '';
+  for (const t of TIERS) {
+    const mods = MODULES.filter(m => m.tier === t.n && (filter === 'all' || m.kind === filter));
+    if (!mods.length) continue;
+    host.append(el('section', { class: 'tierblock', 'aria-labelledby': 'tier' + t.n }, el('div', { class: 'wrap' }, [
+      el('div', { class: 'tierhead' }, [el('span', { class: 'tier', 'data-tier': t.n, text: 'Tier ' + t.n }), el('h2', { id: 'tier' + t.n, text: t.name }), el('p', { text: t.blurb })]),
+      el('div', { class: 'mods' }, mods.map(m => el('a', { class: 'panel mod', href: hrefOf(m), 'data-slug': m.slug }, [
+        el('h3', { text: m.title }), el('p', { text: m.summary }),
+        el('div', { class: 'foot' }, [el('span', { class: 'num', text: String(MODULES.indexOf(m) + 1).padStart(2, '0') }), el('span', { text: m.kind === 'transformer' ? 'Transformer · model download' : 'Instant · runs locally' })]),
+      ]))),
+    ])));
+  }
+};
+render();
+// Modules still being built have no page yet: show them as "In development" instead of linking to a 404.
+const avail = new Map();
+await Promise.all(MODULES.map(async m => { try { const r = await fetch(hrefOf(m), { method: 'HEAD' }); avail.set(m.slug, r.ok); } catch { avail.set(m.slug, false); } }));
+for (const a of document.querySelectorAll('a.mod')) if (!avail.get(a.dataset.slug)) markDev(a);
+function markDev(a) {
+  const d = el('div', { class: 'panel mod', 'aria-disabled': 'true', style: { opacity: .55 } }, [...a.childNodes]);
+  d.querySelector('.foot span:last-child').textContent = 'In development';
+  a.replaceWith(d);
+}
+const _render = render; render = () => { _render(); for (const a of document.querySelectorAll('a.mod')) if (avail.has(a.dataset.slug) && !avail.get(a.dataset.slug)) markDev(a); };
+window.__lab = { ready: true };
+</script>
+</body>
+</html>

@@ -44,9 +44,9 @@ try {
     watch(p, 'landing-desktop');
     await p.goto(BASE + '/', { waitUntil: 'networkidle' });
     check((await p.title()).includes('Braidwater'), 'landing title contains Braidwater');
-    const link = p.locator('header a[href="/word2vec/"]', { hasText: 'Word2Vec Lab' });
+    const link = p.locator('header a[href="/lab/"]', { hasText: 'NLP Lab' });
     await link.first().waitFor({ state: 'visible', timeout: 15000 });
-    pass('landing desktop nav shows Word2Vec Lab link');
+    pass('landing desktop nav shows NLP Lab link');
     await p.close();
   });
   await step('landing mobile', async () => {
@@ -54,8 +54,8 @@ try {
     watch(p, 'landing-mobile');
     await p.goto(BASE + '/', { waitUntil: 'networkidle' });
     await p.locator('button[aria-label="Open menu"]').click();
-    await p.locator('[role=dialog] a[href="/word2vec/"]', { hasText: 'Word2Vec Lab' }).waitFor({ state: 'visible', timeout: 5000 });
-    pass('landing mobile menu shows Word2Vec Lab link');
+    await p.locator('[role=dialog] a[href="/lab/"]', { hasText: 'NLP Lab' }).waitFor({ state: 'visible', timeout: 5000 });
+    pass('landing mobile menu shows NLP Lab link');
     await p.close();
   });
 
