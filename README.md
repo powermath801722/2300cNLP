@@ -44,7 +44,7 @@ An in-browser explorer for a Word2Vec model trained for this NLP class. Linked f
 | Dimensions | 100 |
 | Window | 5 |
 | Negative samples | 10 |
-| Epochs | 5 |
+| Epochs | 15 |
 | min_count | 5 |
 | Corpus | text8 (cleaned English Wikipedia, ~17M tokens) |
 | Shipped vocabulary | 30,000 most frequent words, int8-quantized unit vectors (≈3 MB) |

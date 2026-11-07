@@ -21,7 +21,7 @@ CORPUS, OUT = sys.argv[1], sys.argv[2]
 TOP_N = 30000  # most frequent words shipped to the browser
 
 PARAMS = dict(vector_size=100, window=5, min_count=5, sg=1, negative=10,
-              sample=1e-4, epochs=5, workers=os.cpu_count(), seed=42)
+              sample=1e-4, epochs=15, workers=os.cpu_count(), seed=42)
 
 
 def sentences(path, chunk=1000):
