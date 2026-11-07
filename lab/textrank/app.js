@@ -168,7 +168,7 @@ function draw() {
     const lineTraces = buckets.map((b, k) => ({ type: 'scatter', mode: 'lines', x: b, y: b.ys || [], line: { color: '#7ea3c8', width: 1 + k }, opacity: 0.15 + 0.2 * k, hoverinfo: 'skip', showlegend: false }));
     const sel = new Set(picked), narrow = $('#graph').clientWidth < 520;
     const nodes = { type: 'scatter', mode: n <= 45 ? 'markers+text' : 'markers', x: xy.map((p) => p[0]), y: xy.map((p) => p[1]),
-      text: cand.map((_, i) => String(i + 1)), textposition: 'middle center', textfont: { size: narrow ? 8 : 10, color: '#121820', family: 'Barlow, sans-serif' },
+      text: cand.map((_, i) => String(i + 1)), textposition: xy.map((p) => (p[1] >= 0 ? 'top center' : 'bottom center')), textfont: { size: narrow ? 9 : 11, color: '#9aa3ad', family: 'Barlow, sans-serif' },
       customdata: cand.map((s, i) => [scores[i].toFixed(3), s.text.length > 90 ? s.text.slice(0, 88) + '…' : s.text]),
       hovertemplate: 'S%{text} · score %{customdata[0]}<br>%{customdata[1]}<extra></extra>',
       marker: { size: scores.map((s) => (narrow ? 8 : 12) + ((s - mn) / (mx - mn || 1)) * (narrow ? 18 : 30)), color: cand.map((_, i) => (sel.has(i) ? '#d8b66a' : '#7ea3c8')), line: { color: cand.map((_, i) => (i === focus ? '#ffffff' : '#121820')), width: cand.map((_, i) => (i === focus ? 3 : 1)) } }, showlegend: false };

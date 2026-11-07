@@ -1,6 +1,19 @@
 // Per-token surprisal, perplexity and GLTR rank coloring from GPT-2 / distilgpt2.
 import { el, $, ready, fail, plotly, plotLayout, PLOT_CONFIG } from '/lab/shared/lab.js';
-import { loadModel, progressUI, transformers as T } from '/lab/shared/hf.js';
+import { progressUI, transformers as T } from '/lab/shared/hf.js';
+
+// Load the merged decoder (decoder_model_merged_quantized.onnx: ≈85 MB distilgpt2 / ≈128 MB gpt2).
+// The shared loadModel() would fetch model_quantized.onnx, which for these Xenova repos is ≈237 MB.
+const _gpt = {};
+function loadGPT(id, ui, readyText) {
+  const cb = ui ? (p) => ui.onProgress(p) : undefined;
+  return (_gpt[id] ||= Promise.all([
+    T.AutoTokenizer.from_pretrained(id, { progress_callback: cb }),
+    T.AutoModelForCausalLM.from_pretrained(id, { dtype: 'q8', device: 'wasm', model_file_name: 'decoder_model_merged', progress_callback: cb }),
+  ]).then(([tokenizer, model]) => { ui && ui.done(readyText); return { tokenizer, model }; })
+    .catch((e) => { delete _gpt[id]; ui && ui.error(e); throw e; }));
+}
+
 
 const EOS = 50256, V = 50257, MAX_TOKENS = 300;
 const LN2 = Math.LN2;
@@ -29,8 +42,7 @@ const models = {};
 async function getModel(id) {
   const label = id.endsWith('distilgpt2') ? 'distilgpt2 (≈85 MB)' : 'gpt2 (≈128 MB)';
   ui.set(`Preparing ${label}…`, 0);
-  if (!models[id]) models[id] = loadModel(id, 'causal', { ui }).catch((e) => { delete models[id]; throw e; });
-  const m = await models[id];
+  const m = await loadGPT(id, ui);
   ui.done(`Ready · ${id.replace('Xenova/', '')} (8-bit), cached in your browser`);
   return m;
 }

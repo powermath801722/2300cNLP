@@ -1,6 +1,19 @@
 // Decoding strategies on distilgpt2, implemented by hand on top of raw logits with a KV cache.
 import { el, $, ready, fail, plotly, plotLayout, PLOT_CONFIG, REDUCED } from '/lab/shared/lab.js';
-import { loadModel, progressUI, transformers as T } from '/lab/shared/hf.js';
+import { progressUI, transformers as T } from '/lab/shared/hf.js';
+
+// Load the merged decoder (decoder_model_merged_quantized.onnx: ≈85 MB distilgpt2 / ≈128 MB gpt2).
+// The shared loadModel() would fetch model_quantized.onnx, which for these Xenova repos is ≈237 MB.
+const _gpt = {};
+function loadGPT(id, ui, readyText) {
+  const cb = ui ? (p) => ui.onProgress(p) : undefined;
+  return (_gpt[id] ||= Promise.all([
+    T.AutoTokenizer.from_pretrained(id, { progress_callback: cb }),
+    T.AutoModelForCausalLM.from_pretrained(id, { dtype: 'q8', device: 'wasm', model_file_name: 'decoder_model_merged', progress_callback: cb }),
+  ]).then(([tokenizer, model]) => { ui && ui.done(readyText); return { tokenizer, model }; })
+    .catch((e) => { delete _gpt[id]; ui && ui.error(e); throw e; }));
+}
+
 
 const MODEL = 'Xenova/distilgpt2';
 const EOS = 50256;
@@ -40,7 +53,7 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
 let M = null; // { tokenizer, model }
 const ui = progressUI($('#load'), 'distilgpt2 (≈85 MB)');
 async function getModel() {
-  if (!M) M = await loadModel(MODEL, 'causal', { ui, readyText: 'Ready · distilgpt2 (8-bit), cached in your browser' });
+  if (!M) M = await loadGPT(MODEL, ui, 'Ready · distilgpt2 (8-bit), cached in your browser');
   return M;
 }
 const ids2t = (rows) => new T.Tensor('int64', BigInt64Array.from(rows.flat().map(BigInt)), [rows.length, rows[0].length]);
