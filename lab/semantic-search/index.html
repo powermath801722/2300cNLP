@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Semantic Search — NLP Lab — Braidwater</title>
+<meta name="description" content="Dense retrieval with sentence embeddings vs BM25 keyword search vs hybrid rank fusion, with an embedding map and recall@k evaluation.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;margin-top:16px}
+.col{padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.col h3{font-size:22px}
+.col ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.col li{border-top:1px solid var(--divider);padding-top:10px;font-size:15px;display:flex;flex-direction:column;gap:4px}
+.col li .meta{display:flex;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--faint);align-items:center}
+.col li .meta b{color:var(--accent-200);font-variant-numeric:tabular-nums;font-weight:600}
+.col li.rel{box-shadow:inset 3px 0 0 #8fbf9a;padding-left:10px}
+.col li mark{background:color-mix(in srgb,#d8b66a 35%,transparent);color:var(--text);padding:0 2px}
+.relmark{color:#8fbf9a;font-weight:600}
+.plot{width:100%;height:clamp(380px,55vh,560px)}
+.qform{display:flex;gap:10px;flex-wrap:nowrap}
+.qform input{flex:1 1 0;min-width:0}
+#evaltab td.hit{color:#8fbf9a}#evaltab td.miss{color:var(--faint)}
+</style>
+</head>
+<body data-slug="semantic-search">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Keywords vs meaning</h2>
+      <p class="sub">The same 160 short passages (16 topics, written for this lab) searched three ways: <strong>BM25</strong> matches words, <strong>dense retrieval</strong> compares sentence embeddings from <code>all-MiniLM-L6-v2</code>, and <strong>hybrid</strong> fuses both rankings. Passage embeddings are precomputed; your query is embedded in the browser (a 23 MB model, downloaded once).</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <label class="field-label" for="q">Search query</label>
+        <form class="qform" id="qform" role="search"><input type="search" id="q" value="my pulse is racing even when I'm sitting still" spellcheck="false"><button class="btn btn-primary" id="go" type="submit" disabled>Search</button></form>
+        <div class="row" id="chips" aria-label="Example queries"></div>
+        <div id="load" class="load" aria-live="polite"></div>
+      </div>
+      <div class="cols" id="results" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="map-h">
+    <div class="wrap">
+      <span class="kicker">02 · Explore</span>
+      <h2 id="map-h">The embedding space</h2>
+      <p class="sub">Each dot is a passage, placed by the first two principal components of its 384-dimensional embedding and colored by topic. After a search, the diamond marks your query projected into the same plane, with lines to its five nearest passages. Topics form clusters without the model ever being told the topics.</p>
+      <div class="panel" style="padding:0"><div id="map" class="plot" role="img" aria-label="2D PCA map of passage embeddings colored by topic"></div></div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="eval-h">
+    <div class="wrap">
+      <span class="kicker">03 · Measure</span>
+      <h2 id="eval-h">Recall@k on labelled queries</h2>
+      <p class="sub">Ten queries with known relevant passages: six paraphrases that share few words with their answer, and four exact rare terms (a part number, “oxbow”, “roux”, place names). Recall@k is the share of relevant passages found in the top k; MRR averages 1/rank of the first relevant hit.</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="row"><button class="btn btn-secondary" id="evalgo" type="button" disabled>Run evaluation</button><span class="note" id="evalstatus" aria-live="polite"></span></div>
+        <div class="scroll-x"><table class="data" id="evalsum"></table></div>
+        <div class="scroll-x"><table class="data" id="evaltab"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">04 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>BM25</h3><p>A probabilistic refinement of TF-IDF: <code>score = Σ IDF(t) · tf·(k₁+1) / (tf + k₁·(1 − b + b·|d|/avgdl))</code> with k₁ = 1.5, b = 0.75. Term frequency saturates, long documents are normalized, and rare terms dominate. It only sees words the query and passage share.</p></div>
+        <div class="panel card"><h3>Sentence embeddings</h3><p>MiniLM is a small transformer distilled from a larger one and fine-tuned with a contrastive objective on a billion sentence pairs, so paraphrases land close together. Token vectors are mean-pooled and L2-normalized; similarity is the dot product (cosine).</p></div>
+        <div class="panel card"><h3>Dense retrieval</h3><p>Passages are embedded once, offline. At query time only the query is encoded, then compared with every passage. Real systems swap the linear scan for an approximate nearest-neighbor index (HNSW, IVF) to search millions of vectors.</p></div>
+        <div class="panel card"><h3>Where each fails</h3><p>Dense models can blur rare identifiers (part numbers, names) into generic meaning; BM25 can’t connect “pulse racing” with “tachycardia”. That complementary failure is why production search is usually hybrid.</p></div>
+        <div class="panel card"><h3>Reciprocal rank fusion</h3><p>Hybrid ranking here uses RRF: <code>score(d) = Σ<sub>systems</sub> 1 / (60 + rank(d))</code>. It needs no score calibration between systems and is a strong, simple baseline (Cormack et al., 2009).</p></div>
+        <div class="panel card"><h3>The map is lossy</h3><p>Two principal components keep only part of the variance of 384 dimensions, so the 2D distance between dots is a rough guide. Rankings are computed in the full space.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">05 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Robertson, S., &amp; Zaragoza, H. (2009). The Probabilistic Relevance Framework: BM25 and Beyond. <em>Foundations and Trends in Information Retrieval</em>, 3(4).</li>
+        <li>Reimers, N., &amp; Gurevych, I. (2019). Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks. <em>EMNLP</em>.</li>
+        <li>Wang, W., Wei, F., Dong, L., Bao, H., Yang, N., &amp; Zhou, M. (2020). MiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of Pre-Trained Transformers. <em>NeurIPS</em>.</li>
+        <li>Karpukhin, V., et al. (2020). Dense Passage Retrieval for Open-Domain Question Answering. <em>EMNLP</em>.</li>
+        <li>Cormack, G. V., Clarke, C. L. A., &amp; Büttcher, S. (2009). Reciprocal Rank Fusion Outperforms Condorcet and Individual Rank Learning Methods. <em>SIGIR</em>.</li>
+        <li>Thakur, N., Reimers, N., Rücklé, A., Srivastava, A., &amp; Gurevych, I. (2021). BEIR: A Heterogeneous Benchmark for Zero-shot Evaluation of Information Retrieval Models. <em>NeurIPS Datasets and Benchmarks</em>.</li>
+        <li>Malkov, Y. A., &amp; Yashunin, D. A. (2018). Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs. <em>IEEE TPAMI</em>.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

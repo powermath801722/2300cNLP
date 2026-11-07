@@ -104,7 +104,7 @@ function card(key, r, body) {
     el('h3', { text: NAMES[key] }),
     el('div', { class: 'verdict' }, [el('span', { class: 'lab ' + r.label, 'data-label': r.label, text: LABEL[r.label] }), el('span', { class: 'note', text: r.detail })]),
     el('div', { class: 'meter', role: 'img', 'aria-label': `Positive probability ${Math.round(r.prob * 100)}%` }, [el('i', { style: { width: (r.prob * 100).toFixed(1) + '%' } }), el('b')]),
-    body,
+    ...[].concat(body),
   ]);
 }
 

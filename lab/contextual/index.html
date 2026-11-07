@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contextual Embeddings &amp; Masked LM — NLP Lab — Braidwater</title>
+<meta name="description" content="BERT-style masked language modeling and contextual token embeddings compared with static Word2Vec vectors, in your browser.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.preds{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px}
+.pred{padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.pred h3{font-size:20px}
+.pred ol{list-style:none;margin:0;padding:0}
+.pred li{display:grid;grid-template-columns:minmax(0,1fr) 64px;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--divider);font-size:15px}
+.pred li .w{display:flex;flex-direction:column;gap:4px;min-width:0}
+.pred li .w span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pred li .track{height:3px;background:var(--divider)}.pred li .track i{display:block;height:100%;background:var(--accent)}
+.pred li .p{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;font-size:14px}
+.plot{width:100%;height:clamp(360px,50vh,480px)}
+.ctx{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--muted)}
+.ctx b{color:var(--text)}
+.nn{display:flex;flex-wrap:wrap;gap:6px}
+.qform{display:flex;gap:10px;flex-wrap:nowrap}
+.qform input{flex:1 1 0;min-width:0}
+</style>
+</head>
+<body data-slug="contextual">
+<main id="main">
+  <section class="s" aria-labelledby="mlm-h">
+    <div class="wrap">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="mlm-h">Fill in the [MASK]</h2>
+      <p class="sub">BERT-style models are pretrained by hiding about 15% of tokens and predicting them from context on both sides. Write a sentence with one or more <code>[MASK]</code> tokens and see DistilBERT’s probability distribution over its 30,522-token vocabulary (model: <code>distilbert-base-uncased</code>, 68 MB, downloaded once).</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <label class="field-label" for="mlmin">Sentence with [MASK]</label>
+        <form class="qform" id="mlmform"><input type="text" id="mlmin" spellcheck="false" value="She walked to the [MASK] to deposit her paycheck."><button class="btn btn-primary" id="mlmgo" type="submit">Predict</button></form>
+        <div class="row" id="mlmchips" aria-label="Examples"></div>
+        <div id="mlmload" class="load" aria-live="polite"></div>
+        <p class="msg" id="mlmmsg" role="alert" hidden></p>
+      </div>
+      <div class="preds" id="preds" aria-live="polite" style="margin-top:16px"></div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="ctx-h">
+    <div class="wrap">
+      <span class="kicker">02 · Try it</span>
+      <h2 id="ctx-h">One word, many vectors</h2>
+      <p class="sub">Word2Vec gives every word a single vector, so “bank” the riverside and “bank” the institution share one point in space. A transformer encoder computes a fresh vector for each occurrence from its sentence. Enter a target word and sentences that use it (one per line). Token vectors come from <code>all-MiniLM-L6-v2</code>, a 6-layer BERT-style encoder (23 MB); WordPiece pieces of the target are averaged.</p>
+      <div class="grid2">
+        <div class="panel pad stack">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <label class="field-label" for="target">Target word</label>
+          <input type="search" id="target" value="bank" spellcheck="false" autocapitalize="none">
+          <label class="field-label" for="sents">Sentences (one per line)</label>
+          <textarea id="sents" spellcheck="false" style="min-height:170px"></textarea>
+          <div class="row" id="ctxchips" aria-label="Examples"></div>
+          <div class="row"><button class="btn btn-primary" id="ctxgo" type="button">Compare contexts</button></div>
+          <div id="ctxload" class="load" aria-live="polite"></div>
+          <p class="msg" id="ctxmsg" role="alert" hidden></p>
+        </div>
+        <div class="panel pad stack">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <span class="field-label">Static: Word2Vec’s single vector</span>
+          <div class="ctx" id="static"><span>Run a comparison to see the Word2Vec neighbors of the target word. They mix every sense into one list.</span></div>
+          <span class="field-label">Contextual: summary</span>
+          <div class="ctx" id="ctxsum"></div>
+        </div>
+      </div>
+      <div class="panel" style="padding:0;margin-top:20px"><div id="heat" class="plot" role="img" aria-label="Cosine similarity between the target word's contextual vectors in each pair of sentences"></div></div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">03 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Masked language modeling</h3><p>BERT replaces 15% of input tokens (80% with <code>[MASK]</code>, 10% random, 10% unchanged) and trains to recover them with a softmax over the vocabulary. Because the model sees both left and right context, it learns bidirectional representations rather than left-to-right ones.</p></div>
+        <div class="panel card"><h3>Distillation</h3><p>DistilBERT keeps 6 of BERT-base’s 12 layers and is trained to match the larger model’s output distribution, keeping most of its accuracy at about 60% of the size and much faster speed.</p></div>
+        <div class="panel card"><h3>Static vs contextual</h3><p>Word2Vec learns one vector per word type, a frequency-weighted blend of all its senses. Contextual encoders compute a vector per word token using self-attention over the sentence, so senses separate.</p></div>
+        <div class="panel card"><h3>Reading the heatmap</h3><p>Each cell is the cosine similarity of the target’s vectors in two sentences. Blocks of high similarity along the diagonal are senses. With Word2Vec, every cell would be exactly 1.00.</p></div>
+        <div class="panel card"><h3>Anisotropy</h3><p>Contextual vectors occupy a narrow cone, so even unrelated tokens have fairly high cosine similarity (Ethayarajh, 2019). Compare cells relative to each other rather than to zero.</p></div>
+        <div class="panel card"><h3>Biases in predictions</h3><p>Masked LMs reproduce associations from their training text: try “The nurse said that [MASK] would be late.” versus “The engineer said…”. Benchmarks such as CrowS-Pairs measure this systematically.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">04 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Devlin, J., Chang, M.-W., Lee, K., &amp; Toutanova, K. (2019). BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. <em>NAACL</em>.</li>
+        <li>Peters, M. E., et al. (2018). Deep Contextualized Word Representations (ELMo). <em>NAACL</em>.</li>
+        <li>Sanh, V., Debut, L., Chaumond, J., &amp; Wolf, T. (2019). DistilBERT, a distilled version of BERT: smaller, faster, cheaper and lighter. <em>NeurIPS EMC² Workshop</em>.</li>
+        <li>Ethayarajh, K. (2019). How Contextual are Contextualized Word Representations? Comparing the Geometry of BERT, ELMo, and GPT-2 Embeddings. <em>EMNLP</em>.</li>
+        <li>Rogers, A., Kovaleva, O., &amp; Rumshisky, A. (2020). A Primer in BERTology: What We Know About How BERT Works. <em>TACL</em>.</li>
+        <li>Nangia, N., Vania, C., Bhalerao, R., &amp; Bowman, S. R. (2020). CrowS-Pairs: A Challenge Dataset for Measuring Social Biases in Masked Language Models. <em>EMNLP</em>.</li>
+        <li>Vaswani, A., et al. (2017). Attention Is All You Need. <em>NeurIPS</em>.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

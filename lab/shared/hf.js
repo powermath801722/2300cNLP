@@ -55,7 +55,7 @@ export function pipe(task, model, opts = {}) {
   return cache.get(key);
 }
 
-/** Cached tokenizer + model. kind: 'causal' | 'masked' | 'base' */
+/** Cached tokenizer + model. kind: 'causal' | 'masked' | 'base'. opts: { ui, dtype='q8', model_file_name, readyText } */
 export function loadModel(model, kind = 'base', opts = {}) {
   const key = `model|${model}|${kind}|${opts.dtype || 'q8'}`;
   if (!cache.has(key)) {
@@ -64,7 +64,10 @@ export function loadModel(model, kind = 'base', opts = {}) {
     const M = kind === 'causal' ? AutoModelForCausalLM : kind === 'masked' ? AutoModelForMaskedLM : AutoModel;
     const p = Promise.all([
       AutoTokenizer.from_pretrained(model, { progress_callback: cb }),
-      M.from_pretrained(model, { dtype: opts.dtype || 'q8', device: 'wasm', progress_callback: cb }),
+      // Decoder-only Xenova repos ship a merged decoder (with KV cache) that is much smaller than onnx/model_*.onnx
+      // (distilgpt2: 85 MB vs 237 MB; gpt2 has no model_quantized.onnx at all), so default to it for causal LMs.
+      M.from_pretrained(model, { dtype: opts.dtype || 'q8', device: 'wasm', progress_callback: cb,
+        ...(opts.model_file_name || kind === 'causal' ? { model_file_name: opts.model_file_name || 'decoder_model_merged' } : {}) }),
     ]).then(([tokenizer, m]) => { ui && ui.done(opts.readyText || `Ready · ${model}`); return { tokenizer, model: m }; })
       .catch((e) => { cache.delete(key); ui && ui.error(e); throw e; });
     cache.set(key, p);

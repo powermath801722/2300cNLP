@@ -48,6 +48,8 @@ function topIdx(arr, k) { // indices of the k largest values (partial selection)
   return idx.sort((a, b) => arr[b] - arr[a]);
 }
 const tick = () => new Promise((r) => setTimeout(r, 0));
+/** Percent with 2 decimals, or 2 significant digits for tiny values (never a misleading 0.00%). */
+const pc = (p, d = 2) => (p >= 10 ** -(d + 2) ? (p * 100).toFixed(d) : (p * 100).toPrecision(2)) + '%';
 
 // ---------- model ----------
 let M = null; // { tokenizer, model }
@@ -230,7 +232,7 @@ function renderOut(res, live = false) {
   const out = $('#out'); out.innerHTML = '';
   out.append(el('span', { class: 'prompt', text: M.tokenizer.decode(res.prompt) }));
   res.steps.forEach((s, i) => {
-    const b = el('button', { class: 'tk', type: 'button', 'aria-pressed': String(i === selected), 'aria-label': `Step ${i + 1}: “${decodeTok(s.tok)}”, probability ${(s.pRaw * 100).toFixed(1)}%`, text: showTok(decodeTok(s.tok)), onclick: () => { selected = i; renderOut(current); renderStep(); } });
+    const b = el('button', { class: 'tk', type: 'button', 'aria-pressed': String(i === selected), 'aria-label': `Step ${i + 1}: “${decodeTok(s.tok)}”, probability ${pc(s.pRaw, 1)}`, text: showTok(decodeTok(s.tok)), onclick: () => { selected = i; renderOut(current); renderStep(); } });
     b.style.setProperty('--c', shade(s.pRaw)); b.style.setProperty('--a', '22%');
     out.append(b);
   });
@@ -243,7 +245,7 @@ function renderStep() {
   const s = current.steps[selected];
   const pool = s.beamPruned ? 'Beam search: struck-out candidates were pruned from this hypothesis’s expansions.' : s.poolSize != null ? `Sampling pool after truncation: ${s.poolSize.toLocaleString()} of 50,257 tokens.` : current.cfg.strategy === 'greedy' ? 'Greedy: the highest-scoring token is always taken.' : 'Pure sampling: every token in the vocabulary can be drawn.';
   host.append(
-    el('p', { style: { margin: '0' } }, [el('strong', { text: `Step ${selected + 1}` }), ` · chose “${showTok(decodeTok(s.tok))}” · model probability ${(s.pRaw * 100).toFixed(2)}%`, current.cfg.strategy !== 'greedy' && current.cfg.strategy !== 'beam' ? ` · sampled with ${(s.pAdj * 100).toFixed(2)}%` : '']),
+    el('p', { style: { margin: '0' } }, [el('strong', { text: `Step ${selected + 1}` }), ` · chose “${showTok(decodeTok(s.tok))}” · model probability ${pc(s.pRaw)}`, current.cfg.strategy !== 'greedy' && current.cfg.strategy !== 'beam' ? ` · sampled with ${pc(s.pAdj)}` : '']),
     el('p', { class: 'note', text: pool }),
   );
   const max = Math.max(...s.cands.map((c) => Math.max(c.pRaw, c.pAdj)));
@@ -255,10 +257,10 @@ function renderStep() {
     li.append(
       el('span', { class: 'w', title: `rank ${c.rank}`, text: (c.rank > 10 ? `#${c.rank} ` : '') + JSON.stringify(decodeTok(c.id)).slice(1, -1) + (c.chosen ? ' ◂' : '') }),
       el('span', { class: 'bars', 'aria-hidden': 'true' }, [el('i', { class: 'raw', style: { width: (100 * c.pRaw / max) + '%' } }), el('i', { class: 'adj', style: { width: (100 * c.pAdj / max) + '%' } })]),
-      el('span', { class: 'num', text: (c.pRaw * 100).toFixed(1) + '%' }),
-      el('span', { class: 'num', text: c.cut ? 'cut' : (c.pAdj * 100).toFixed(1) + '%' }),
+      el('span', { class: 'num', text: pc(c.pRaw, 1) }),
+      el('span', { class: 'num', text: c.cut ? 'cut' : pc(c.pAdj, 1) }),
     );
-    li.setAttribute('aria-label', `rank ${c.rank}, ${decodeTok(c.id)}: model ${(c.pRaw * 100).toFixed(1)}%, ${c.cut ? 'cut by truncation' : 'used ' + (c.pAdj * 100).toFixed(1) + '%'}${c.chosen ? ', chosen' : ''}`);
+    li.setAttribute('aria-label', `rank ${c.rank}, ${decodeTok(c.id)}: model ${pc(c.pRaw, 1)}, ${c.cut ? 'cut by truncation' : 'used ' + pc(c.pAdj, 1)}${c.chosen ? ', chosen' : ''}`);
     ul.append(li);
   }
   host.append(ul);

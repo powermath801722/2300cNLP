@@ -1,6 +1,8 @@
 export default async ({ page, check, warn }) => {
   const label = (m) => page.locator(`#res [data-method="${m}"] .lab`).getAttribute('data-label');
   check(await page.locator('#res .card').count() === 4, 'renders four analyzer cards');
+  check(!/\[object /.test(await page.locator('#res').innerText()), 'no unrendered objects in result cards');
+  check(await page.locator('#res [data-method="nb"] .words span[title]').count() > 0, 'Naive Bayes shows per-word log-ratios');
   check((await page.locator('#acc tbody tr').count()) === 4, 'held-out accuracy table filled');
   check((await page.locator('#agree tbody tr').count()) === 8, 'agreement table has all 8 examples');
 

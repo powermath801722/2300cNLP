@@ -160,3 +160,5 @@ table.data th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color
 
 /* Flex/grid children holding scroll containers or wide controls must be allowed to shrink (prevents 390px overflow). */
 .stack>*,.row>*,.grid2>*,.grid3>*{min-width:0}
+/* The hidden attribute must win over .stack/.panel display rules. */
+[hidden]{display:none !important}

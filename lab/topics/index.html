@@ -54,7 +54,7 @@
         <div class="panel"><div id="map" role="img" aria-label="Two-dimensional map of topics"></div></div>
         <div class="panel pad stack">
           <span class="field-label">Reading the map</span>
-          <p class="note">Distances are Jensen–Shannon divergences between topic-word distributions, laid out in 2D with classical multidimensional scaling (the same idea as LDAvis). Bubble area is how much of the corpus sample each topic accounts for. Nearby topics share vocabulary; for example, the two corporate-results topics sit together.</p>
+          <p class="note">Distances are Jensen–Shannon divergences between topic-word distributions, laid out in 2D with classical multidimensional scaling (the same idea as LDAvis). Bubble area is how much of the corpus sample each topic accounts for. Nearby topics share vocabulary. Click a bubble to select its topic.</p>
           <span class="field-label" id="seltitle">Documents using the selected topic most</span>
           <div class="stack" id="topdocs"></div>
         </div>
@@ -121,7 +121,7 @@
       <h2 id="how-h">How it works</h2>
       <div class="concepts">
         <div class="panel card"><h3>Generative story</h3><p>For each topic k draw word distribution φₖ ~ Dir(η). For each document draw topic proportions θ ~ Dir(α); for each word position draw a topic z ~ Cat(θ) and then the word w ~ Cat(φ_z). Training inverts this story: given only the words, infer φ and θ.</p></div>
-        <div class="panel card"><h3>Training here</h3><p>gensim's online variational Bayes on 10,000 Reuters-21578 articles, 4,000-word vocabulary (stopwords and words in &gt;30% or &lt;10 documents removed), 10 passes, α and η learned from the data.</p></div>
+        <div class="panel card"><h3>Training here</h3><p>gensim's online variational Bayes on 7,787 Reuters-21578 articles (those with at least 20 content words), 4,000-word vocabulary (stopwords and words in &gt;30% or &lt;10 documents removed), 10 passes, α and η learned from the data.</p></div>
         <div class="panel card"><h3>Inference in your browser</h3><p>With φ fixed, collapsed Gibbs sampling resamples each token's topic with probability ∝ (n<sub>d,k</sub> + αₖ) · φ<sub>k,w</sub>, where n<sub>d,k</sub> counts the document's other tokens assigned to k. θ is averaged over the second half of the sweeps.</p></div>
         <div class="panel card"><h3>Bag of words</h3><p>Order is ignored: “oil prices fell as OPEC cut output” and a shuffled version get the same topics. LDA finds what documents are about, not what they say.</p></div>
         <div class="panel card"><h3>Successors</h3><p>Correlated and dynamic topic models relax LDA's assumptions; neural approaches such as BERTopic cluster contextual sentence embeddings and then describe each cluster with class-based TF-IDF.</p></div>
