@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Braidwater — clearer minds for the planetary transition.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<script>window.__resources = {"https://unpkg.com/react@18.3.1/umd/react.production.min.js": "/assets/vendor/react-18.3.1.production.min.js", "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js": "/assets/vendor/react-dom-18.3.1.production.min.js"};</script>
+<script src="/assets/js/dc-runtime.js"></script>
+
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>/* Industry — design-system tokens and component classes. This file is the source of truth for the system's look; retune it here and see readme.md. */
+/* vietnamese */
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/assets/fonts/barlow-400-normal-vietnamese.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/assets/fonts/barlow-400-normal-latin-ext.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/assets/fonts/barlow-400-normal-latin.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/assets/fonts/barlow-500-normal-vietnamese.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/assets/fonts/barlow-500-normal-latin-ext.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/assets/fonts/barlow-500-normal-latin.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/assets/fonts/barlow-700-normal-vietnamese.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/assets/fonts/barlow-700-normal-latin-ext.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/assets/fonts/barlow-700-normal-latin.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/assets/fonts/barlow-condensed-400-normal-vietnamese.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/assets/fonts/barlow-condensed-400-normal-latin-ext.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/assets/fonts/barlow-condensed-400-normal-latin.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/assets/fonts/barlow-condensed-600-normal-vietnamese.woff2") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/assets/fonts/barlow-condensed-600-normal-latin-ext.woff2") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/assets/fonts/barlow-condensed-600-normal-latin.woff2") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+
+:root {
+  --color-bg: #f2f2f3;
+  --color-surface: #e9e9ea;
+  --color-text: #1d1f20;
+  --color-accent: #5980a6;
+  --color-accent-2: #728fab;
+  --color-divider: color-mix(in srgb, #1d1f20 16%, transparent);
+
+  /* Tonal ramps — generated in OKLCH on one shared lightness scale, so the
+     same step of any role matches the others in visual value. */
+  --color-neutral-100: #f5f5f8;
+  --color-neutral-200: #e7e7ea;
+  --color-neutral-300: #d4d4d7;
+  --color-neutral-400: #b7b7ba;
+  --color-neutral-500: #98989b;
+  --color-neutral-600: #7a7a7d;
+  --color-neutral-700: #5d5d60;
+  --color-neutral-800: #424244;
+  --color-neutral-900: #2b2b2d;
+
+  --color-accent-100: #eef6ff;
+  --color-accent-200: #d6ebff;
+  --color-accent-300: #b5d9fd;
+  --color-accent-400: #94bce3;
+  --color-accent-500: #749dc4;
+  --color-accent-600: #597ea3;
+  --color-accent-700: #416180;
+  --color-accent-800: #2c455d;
+  --color-accent-900: #1d2d3d;
+
+  --color-accent-2-100: #eef6ff;
+  --color-accent-2-200: #d6ebff;
+  --color-accent-2-300: #bdd8f2;
+  --color-accent-2-400: #9ebbd8;
+  --color-accent-2-500: #7e9cb8;
+  --color-accent-2-600: #627d98;
+  --color-accent-2-700: #486077;
+  --color-accent-2-800: #314457;
+  --color-accent-2-900: #1f2d3a;
+
+  --font-heading: "Barlow Condensed", system-ui, sans-serif;
+  --font-heading-weight: 600;
+  --font-body: "Barlow", system-ui, sans-serif;
+
+  --space-1: 3.4px;
+  --space-2: 6.8px;
+  --space-3: 10.2px;
+  --space-4: 13.6px;
+  --space-6: 20.4px;
+  --space-8: 27.2px;
+
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 7px;
+
+  /* Elevation — derived from the ground: soft ink-tinted shadows on a
+     light theme, a hairline edge + ambient darkness on a dark one. */
+  --shadow-sm: 0 1px 2px color-mix(in srgb, #2b2b2d 14%, transparent);
+  --shadow-md: 0 3px 10px color-mix(in srgb, #2b2b2d 16%, transparent);
+  --shadow-lg: 0 12px 32px color-mix(in srgb, #2b2b2d 22%, transparent);
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+}
+h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: var(--font-heading-weight); }
+
+.blueprint {
+  position: relative;
+  border: 1px solid var(--color-divider);
+  border-radius: 0;
+}
+/* The overlay image treatments (halftone, duotone) clip their overlay
+   (overflow:hidden); a blueprint wrapper draws its registration marks
+   outside the box, so when both classes share a wrapper the frame must
+   win. */
+.blueprint.halftone, .blueprint.plate, .blueprint.duotone { overflow: visible; }
+.blueprint > .corner {
+  position: absolute; width: 11px; height: 11px;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+.blueprint > .corner::before, .blueprint > .corner::after {
+  content: ""; position: absolute; background: currentColor;
+}
+.blueprint > .corner::before { left: 5px; top: 0; width: 1px; height: 100%; }
+.blueprint > .corner::after  { top: 5px; left: 0; width: 100%; height: 1px; }
+.blueprint > .corner.tl { top: -6px; left: -6px; }
+.blueprint > .corner.tr { top: -6px; right: -6px; }
+.blueprint > .corner.bl { bottom: -6px; left: -6px; }
+.blueprint > .corner.br { bottom: -6px; right: -6px; }
+
+.duotone{position:relative;overflow:hidden}
+.duotone::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:var(--color-accent);mix-blend-mode:color}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Components — built with the tokens above. Plain CSS
+   on plain HTML: no JavaScript, no build step. Each class is documented in
+   readme.md and demonstrated in foundations/ and components/.
+   ══════════════════════════════════════════════════════════════════════ */
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-size: 15px; line-height: 1.55; font-weight: 400; }
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  line-height: 1.12; letter-spacing: -0.015em; margin: 0 0 var(--space-2);
+}
+h1 { font-size: 42px; }
+h2 { font-size: 32px; }
+h3 { font-size: 25px; }
+h4 { font-size: 20px; }
+h5 { font-size: 16px; }
+h6 { font-size: 13px; }
+h6 { letter-spacing: 0.08em; text-transform: uppercase; }
+p { margin: 0 0 var(--space-3); }
+a { color: var(--color-accent); text-underline-offset: 3px; }
+img { display: block; max-width: 100%; }
+figure { margin: 0; }
+figcaption {
+  font-size: 11px; margin-top: var(--space-1);
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+.text-muted { color: color-mix(in srgb, var(--color-text) 55%, transparent); }
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+::selection { background: color-mix(in srgb, var(--color-accent) 30%, transparent); }
+
+/* — rules — */
+.hr {
+  height: 1px; border: 0; margin: var(--space-4) 0;
+  background: var(--color-divider);
+}
+
+/* — buttons — */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  cursor: pointer; text-decoration: none;
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 14px; line-height: 1.2; color: var(--color-text); /* matches the .input's 14px —
+     the pair sits side by side in sign-up rows */
+  background: transparent; border: 1px solid transparent;
+  padding: var(--space-2) calc(var(--space-3) * 1.2);
+  border-radius: var(--radius-md);
+}
+.btn svg { display: block; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: var(--color-accent); color: var(--color-bg); }
+.btn-primary:hover { background: var(--color-accent-600); }
+.btn-primary:active { background: var(--color-accent-700); }
+.btn-secondary { border-color: var(--color-divider); }
+.btn-secondary:hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.btn-secondary:active { background: color-mix(in srgb, var(--color-text) 14%, transparent); }
+.btn-ghost { color: var(--color-accent); padding-inline: var(--space-1); }
+.btn-ghost:hover { background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
+.btn-ghost:active { background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
+.btn-icon { width: 36px; height: 36px; padding: 0; }
+.btn-block { width: 100%; margin-top: var(--space-2); }
+
+/* — forms — */
+.field > label {
+  display: block; font-size: 12px; margin-bottom: 5px;
+  color: color-mix(in srgb, var(--color-text) 70%, transparent);
+}
+.input {
+  width: 100%; min-height: 36px; padding: 6px 10px; font: inherit;
+  font-size: 14px; color: var(--color-text); caret-color: var(--color-accent);
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+}
+.input:hover { border-color: color-mix(in srgb, var(--color-text) 45%, transparent); }
+.input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
+textarea.input { min-height: 90px; resize: vertical; }
+.radio { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; }
+.radio input, .seg-opt input {
+  position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none;
+}
+.radio .dot {
+  width: 16px; height: 16px; flex: none; border-radius: 50%;
+  border: 1.5px solid var(--color-divider);
+}
+.radio:hover .dot { border-color: var(--color-accent); }
+.radio input:checked + .dot {
+  border-color: var(--color-accent); background: var(--color-accent);
+  box-shadow: inset 0 0 0 4px var(--color-bg);
+}
+.radio input:focus-visible + .dot { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+.seg {
+  display: inline-flex; overflow: hidden;
+  border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+}
+.seg-opt {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px; font-size: 13px; cursor: pointer;
+}
+.seg-opt + .seg-opt { border-left: 1px solid var(--color-divider); }
+.seg-opt:has(input:checked) { background: var(--color-accent); color: var(--color-bg); }
+.seg-opt:not(:has(input:checked)):hover { background: color-mix(in srgb, var(--color-text) 7%, transparent); }
+.seg-opt:has(input:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+
+/* — cards — */
+.card {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  padding: var(--space-3); border-radius: var(--radius-md); background: var(--color-surface);
+}
+.card-kicker { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-accent); }
+.card-title {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 17px; line-height: 1.2;
+}
+.card-body { margin: 0; font-size: 13px; opacity: 0.8; flex: 1; }
+.card-meta {
+  display: flex; align-items: center; gap: 6px; font-size: 11px;
+  color: color-mix(in srgb, var(--color-text) 50%, transparent);
+}
+.elev-sm { box-shadow: var(--shadow-sm); }
+.elev-md { box-shadow: var(--shadow-md); }
+.elev-lg { box-shadow: var(--shadow-lg); }
+
+/* — tags — */
+.tag {
+  display: inline-flex; align-items: center; font-size: 11px;
+  letter-spacing: 0.02em; padding: 3px 10px;
+  border-radius: calc(var(--radius-md) * 0.75);
+}
+.tag-accent { background: var(--color-accent-100); color: var(--color-accent-800); }
+.tag-accent-2 { background: var(--color-accent-2-100); color: var(--color-accent-2-800); }
+.tag-neutral { background: var(--color-neutral-100); color: var(--color-neutral-800); }
+.tag-outline { border: 1px solid var(--color-accent); color: var(--color-accent); }
+
+/* — navigation — */
+.nav {
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: none;
+}
+.nav-brand {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 18px; margin-right: auto;
+}
+.nav a { color: inherit; text-decoration: none; font-size: 14px; }
+.nav a:hover, .nav a[aria-current='page'] { color: var(--color-accent); }
+
+/* — tables — */
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th {
+  text-align: left; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+  padding: var(--space-2); border-bottom: 1px solid var(--color-divider);
+}
+.table td {
+  padding: var(--space-2);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+}
+.table tbody tr:hover { background: color-mix(in srgb, var(--color-text) 4%, transparent); }
+
+/* — dialog — */
+.dialog-backdrop {
+  position: fixed; inset: 0; display: grid; place-items: center;
+  padding: var(--space-4);
+  background: color-mix(in srgb, var(--color-neutral-900) 50%, transparent);
+}
+.dialog {
+  width: min(440px, 100%); display: flex; flex-direction: column; gap: var(--space-3);
+  padding: var(--space-4); border-radius: var(--radius-lg);
+  background: var(--color-surface); box-shadow: var(--shadow-lg);
+}
+.dialog-title {
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
+  font-size: 20px;
+}
+.dialog-body { font-size: 14px; opacity: 0.85; }
+.dialog-actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-2); }
+
+/* — blueprint frame: components are wireframe objects (see .blueprint
+     and .corner above) — square, transparent, hairline-bordered — */
+.card, .btn, .input, .tag, .seg, .dialog { border-radius: 0; }
+.card, .dialog { background: transparent; border: 1px solid var(--color-divider); }
+.btn { border: 1px solid var(--color-divider); }
+.btn-primary { border-color: var(--color-accent); }
+.btn-ghost { border-color: transparent; }
+
+</style>
+<script src="/assets/js/ds-industry.js"></script>
+<script src="/assets/js/image-slot.js"></script>
+<title>Braidwater — Clearer Minds for the Planetary Transition</title>
+<style>
+:root{--color-bg:#121820;--color-surface:#18202a;--color-text:#e4e7eb;--color-accent:#7ea3c8;--color-divider:color-mix(in srgb,#e4e7eb 17%,transparent);--shadow-sm:0 0 0 1px color-mix(in srgb,#e4e7eb 8%,transparent);--shadow-md:0 0 0 1px color-mix(in srgb,#e4e7eb 10%,transparent),0 8px 24px rgba(0,0,0,.45);--shadow-lg:0 0 0 1px color-mix(in srgb,#e4e7eb 12%,transparent),0 20px 48px rgba(0,0,0,.6)}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--color-bg);color:var(--color-text);font-size:16px;line-height:1.55;text-wrap:pretty;color-scheme:dark}
+a{color:var(--color-accent-300)}a:hover{color:var(--color-accent-200)}
+.btn-primary:hover{background:var(--color-accent-400)}.btn-primary:active{background:var(--color-accent-300)}
+@keyframes bwFlow{to{stroke-dashoffset:-16}}
+@keyframes bwLoad{to{stroke-dashoffset:-24}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</helmet>
+<div style="min-height:100vh;background:{{ outerBg }}">
+<div ref="{{ pageRef }}" style="max-width:{{ pageMax }};margin:0 auto;container-type:inline-size;background:var(--color-bg);border-left:{{ frameBorder }};border-right:{{ frameBorder }}">
+
+<a href="#problem" style="position:absolute;left:-9999px;top:8px;padding:8px 12px;background:var(--color-accent);color:var(--color-bg);z-index:1100" style-focus="left:8px">Skip to content</a>
+
+<header style="position:sticky;top:0;z-index:1000;background:{{ navBg }};backdrop-filter:{{ navBlur }};border-bottom:1px solid {{ navBorder }};transition:background .26s cubic-bezier(.22,1,.36,1)">
+  <nav class="nav" aria-label="Primary" style="max-width:1440px;margin:0 auto;min-height:{{ navH }};padding:0 clamp(16px,4cqi,48px);gap:clamp(12px,2.4cqi,28px)">
+    <a href="#" sc-camel-on-click="{{ goTop }}" class="nav-brand" style="display:flex;align-items:center;gap:10px;font-size:22px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-text)">
+      <svg width="30" height="20" sc-camel-view-box="0 0 30 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M1 3c8 0 9 7 16 7h12"></path><path d="M1 10c5 0 6-3 9-3s4 3 7 3"></path><path d="M1 17c8 0 9-7 16-7"></path></svg>
+      Braidwater
+    </a>
+    <sc-if value="{{ wide }}" hint-placeholder-val="{{ true }}">
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="5">
+        <a href="{{ n.href }}" sc-camel-on-click="{{ n.onClick }}" style="font-size:14px;font-weight:500;padding:6px 0;border-bottom:1px solid {{ n.ul }};color:var(--color-text);white-space:nowrap;flex-shrink:0">{{ n.label }}</a>
+      </sc-for>
+      <button type="button" class="btn btn-icon btn-secondary" sc-camel-on-click="{{ toggleStill }}" aria-pressed="{{ still }}" title="{{ stillLabel }}" aria-label="{{ stillLabel }}" style="width:36px;height:36px;color:{{ stillColor }}">
+        <svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"></path><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"></path><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"></path></svg>
+      </button>
+      <button type="button" class="btn btn-ghost" sc-camel-on-click="{{ openSignin }}" style="font-size:14px;white-space:nowrap;flex-shrink:0">Sign in</button>
+      <button type="button" class="btn btn-primary" sc-camel-on-click="{{ openIntake }}" style="min-height:44px;padding:0 20px;font-size:15px;letter-spacing:.02em;white-space:nowrap;flex-shrink:0">Take the seam intake</button>
+    </sc-if>
+    <sc-if value="{{ narrow }}" hint-placeholder-val="{{ false }}">
+      <button type="button" class="btn btn-primary" sc-camel-on-click="{{ openIntake }}" style="min-height:40px;padding:0 14px;font-size:14px">Intake</button>
+      <button type="button" class="btn btn-icon btn-secondary" sc-camel-on-click="{{ openMenu }}" aria-label="Open menu" aria-expanded="{{ menu }}" style="width:44px;height:44px">
+        <svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><line x1="4" x2="20" y1="6" y2="6"></line><line x1="4" x2="20" y1="12" y2="12"></line><line x1="4" x2="20" y1="18" y2="18"></line></svg>
+      </button>
+    </sc-if>
+  </nav>
+</header>
+
+<main>
+<!-- 02 HERO -->
+<section aria-labelledby="hero-h" style="position:relative;min-height:88vh;display:flex;align-items:center;background-image:linear-gradient(color-mix(in srgb,var(--color-text) 5%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--color-text) 5%,transparent) 1px,transparent 1px);background-size:48px 48px;background-position:-1px -1px">
+  <div style="max-width:1280px;width:100%;margin:0 auto;padding:clamp(48px,8cqi,104px) clamp(20px,5cqi,64px);display:flex;flex-wrap:wrap;gap:clamp(40px,5cqi,72px);align-items:center">
+    <div style="flex:1 1 520px;min-width:0;display:flex;flex-direction:column;gap:28px">
+      <span class="tag tag-outline" style="align-self:flex-start;border-color:var(--color-accent-500);color:var(--color-accent-200);font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:6px 12px">Practiced by 1,200+ stewards on Earth and Haven Ring{{ ast }}</span>
+      <h1 id="hero-h" style="margin:0;font-size:clamp(42px,6.6cqi,88px);line-height:.98;letter-spacing:.005em;text-transform:uppercase;text-wrap:balance">
+        <sc-if value="{{ hA }}" hint-placeholder-val="{{ true }}"><span style="display:block">You don't need a faster mind.</span><span style="display:block">You need to become <span style="color:var(--color-accent)">one river again.</span></span></sc-if>
+        <sc-if value="{{ hB }}" hint-placeholder-val="{{ false }}"><span style="display:block">Forty-seven decisions today.</span><span style="display:block">How many were <span style="color:var(--color-accent)">yours?</span></span></sc-if>
+        <sc-if value="{{ hC }}" hint-placeholder-val="{{ false }}"><span style="display:block">It's not tab-brain. It's the seam.</span><span style="display:block">And the seam <span style="color:var(--color-accent)">can be learned.</span></span></sc-if>
+      </h1>
+      <p style="margin:0;font-size:18px;line-height:1.65;max-width:56ch;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Braidwater teaches your mind to work the seam: your body's read and the planetary model, side by side. Clearer calls within days. Steadier attention within months. Nothing changed you didn't choose.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:12px">
+        <button type="button" class="btn btn-primary blueprint" sc-camel-on-click="{{ openIntake }}" style="min-height:56px;padding:0 28px;font-size:18px;letter-spacing:.02em"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Take the seam intake</button>
+        <button type="button" class="btn btn-secondary" sc-camel-on-click="{{ goVideo }}" style="min-height:56px;padding:0 24px;font-size:18px;display:inline-flex;gap:10px">
+          <svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg>Watch a first session</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;font-weight:500;letter-spacing:.02em;color:color-mix(in srgb,var(--color-text) 72%,transparent)">
+        <span>Paid from your dividend</span><span aria-hidden="true">·</span><span>Stop anytime</span><span aria-hidden="true">·</span><span>15% flows back to your commons</span>
+      </div>
+      <div style="border-top:1px solid var(--color-divider);padding-top:18px;display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 62%,transparent)">Chosen by crews at{{ ast }}</span>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 22px;font-size:14px;font-weight:500;color:color-mix(in srgb,var(--color-text) 70%,transparent)">
+          <span style-hover="color:var(--color-text)">Tagus-Atlantic Commons</span><span style-hover="color:var(--color-text)">Haven Ring Habitat Council</span><span style-hover="color:var(--color-text)">Rhine Delta Stewards</span><span style-hover="color:var(--color-text)">Mekong Braided Waters</span><span style-hover="color:var(--color-text)">Tharsis Settlement Guild</span><span style-hover="color:var(--color-text)">Pacific Kelp Commons</span>
+        </div>
+      </div>
+    </div>
+
+    <figure style="flex:1 1 400px;min-width:0;margin:0;display:flex;flex-direction:column;gap:10px">
+      <div class="blueprint" style="position:relative;background:color-mix(in srgb,var(--color-bg) 85%,transparent)">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 12px;padding:12px 16px;border-bottom:1px solid var(--color-divider);font-size:12px;letter-spacing:.08em;text-transform:uppercase">
+          <span style="font-weight:600">Seam Console · Session 01</span>
+          <span style="color:color-mix(in srgb,var(--color-text) 66%,transparent)">Alcochete gates · release schedule</span>
+        </div>
+        <div style="position:relative;height:160px;border-bottom:1px solid var(--color-divider);padding:0 12px">
+          {{ braidHero }}
+          <span style="position:absolute;left:14px;top:8px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 62%,transparent)">12 scenarios</span>
+          <span style="position:absolute;right:14px;top:calc(34% - 22px);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-accent-200)">East · hold</span>
+          <span style="position:absolute;right:14px;top:calc(66% + 6px);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-accent-200)">West · release</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))">
+          <div style="padding:16px;display:flex;flex-direction:column;gap:10px;border-right:1px solid var(--color-divider)">
+            <span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Body read</span>
+            <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:13px">
+              <span style="color:color-mix(in srgb,var(--color-text) 62%,transparent)">Lives</span><span>Under the sternum</span>
+              <span style="color:color-mix(in srgb,var(--color-text) 62%,transparent)">Intensity</span>
+              <span style="display:flex;gap:3px;align-items:center" aria-label="4 of 5"><i style="width:14px;height:6px;background:var(--color-accent)"></i><i style="width:14px;height:6px;background:var(--color-accent)"></i><i style="width:14px;height:6px;background:var(--color-accent)"></i><i style="width:14px;height:6px;background:var(--color-accent)"></i><i style="width:14px;height:6px;border:1px solid var(--color-divider)"></i></span>
+              <span style="color:color-mix(in srgb,var(--color-text) 62%,transparent)">History</span><span>Levee, Year 6</span>
+            </div>
+            <span class="tag tag-outline" style="align-self:flex-start;color:var(--color-accent-200);border-color:var(--color-accent-500)">present-signal</span>
+          </div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Model read · 2 of 12</span>
+            <div style="display:flex;flex-direction:column;font-size:13px">
+              <div style="display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--color-divider)"><span>S-03 East channel · hold 36 h</span><span style="font-feature-settings:'tnum' 1">0.71</span></div>
+              <div style="display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--color-divider)"><span>S-08 West channel · release</span><span style="font-feature-settings:'tnum' 1">0.64</span></div>
+              <div style="padding:6px 0;color:color-mix(in srgb,var(--color-text) 60%,transparent)">10 set aside · reasons logged</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 16px;border-top:1px solid var(--color-divider)">
+          <span style="border:1px solid var(--color-divider);padding:4px 10px;font-size:12px">Scenarios 12 → 2</span>
+          <span style="border:1px solid var(--color-divider);padding:4px 10px;font-size:12px">Longest clear stream today: 47 min</span>
+          <span style="flex:1"></span>
+          <button type="button" class="btn btn-secondary" sc-camel-on-click="{{ onPause }}" style="min-height:36px;font-size:13px">{{ pauseLabel }}</button>
+          <button type="button" class="btn btn-secondary" sc-camel-on-click="{{ onStop }}" style="min-height:36px;font-size:13px;border-color:var(--color-accent);color:var(--color-accent-200);display:inline-flex;gap:6px">
+            <svg width="12" height="12" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect width="16" height="16" x="4" y="4"></rect></svg>Stop session</button>
+        </div>
+        <sc-if value="{{ consoleStopped }}" hint-placeholder-val="{{ false }}">
+          <div role="status" style="position:absolute;inset:0;background:color-mix(in srgb,var(--color-bg) 94%,transparent);display:grid;place-items:center;padding:24px;text-align:center">
+            <div style="display:flex;flex-direction:column;gap:14px;align-items:center;max-width:340px">
+              <span style="font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent-300)">{{ stopKicker }}</span>
+              <span style="font-family:var(--font-heading);font-weight:600;font-size:28px;line-height:1.1;text-transform:uppercase">{{ stopTitle }}</span>
+              <span style="font-size:14px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">{{ stopBody }}</span>
+              <sc-if value="{{ stopAsk }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+                  <button type="button" class="btn btn-primary" sc-camel-on-click="{{ onKeep }}" style="min-height:44px;padding:0 18px">Keep what I learned</button>
+                  <button type="button" class="btn btn-secondary" sc-camel-on-click="{{ onRelease }}" style="min-height:44px;padding:0 18px">Release everything</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ stopDone }}" hint-placeholder-val="{{ false }}">
+                <button type="button" class="btn btn-ghost" sc-camel-on-click="{{ onRestart }}">Start the preview again</button>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+      <figcaption style="font-size:12px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">Fig. 01 — Seam Console preview. Pause it, or stop the session and choose what to keep.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 03 PROBLEM -->
+<section id="problem" aria-labelledby="problem-h" style="padding:clamp(72px,10cqi,120px) 0;border-top:1px solid var(--color-divider);scroll-margin-top:72px">
+  <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,5cqi,64px)">
+    <span style="display:block;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">01 · The problem</span>
+    <div style="height:1px;background:var(--color-divider);margin:12px 0 32px"></div>
+    <h2 id="problem-h" style="margin:0;font-size:clamp(32px,4.8cqi,56px);line-height:1;text-transform:uppercase;max-width:18ch">Still signing decisions you can't remember making?</h2>
+    <p style="margin:20px 0 0;font-size:20px;line-height:1.5;max-width:52ch;color:color-mix(in srgb,var(--color-text) 80%,transparent)">We ended the scarcity of things. Nobody planned for the famine of attention.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:clamp(24px,3cqi,40px);margin-top:56px">
+      <div class="blueprint" style="padding:28px;display:flex;flex-direction:column;gap:16px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <span style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">P-01 · Tab-brain</span>
+        <p style="margin:0;font-size:18px;line-height:1.55">Your thoughts skitter like water on a hot pan. You open one reading and surface 70 minutes later with nothing finished.</p>
+        <div style="margin-top:auto;border-top:1px solid var(--color-divider);padding-top:18px;display:flex;flex-direction:column;gap:6px">
+          <span style="font-family:var(--font-heading);font-weight:400;font-size:56px;line-height:1;font-feature-settings:'tnum' 1">47 sec</span>
+          <span style="font-size:13px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Average time people held attention on one screen before switching. <a href="https://www.universityofcalifornia.edu/news/cant-pay-attention-youre-not-alone" target="_blank" rel="noopener">Gloria Mark, Attention Span, 2023</a></span>
+        </div>
+      </div>
+      <div class="blueprint" style="padding:28px;display:flex;flex-direction:column;gap:16px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <span style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">P-02 · Model-drift</span>
+        <p style="margin:0;font-size:18px;line-height:1.55">Twelve beautiful scenarios, a calm green confidence score, and a thumb halfway to the glass. Your gut says no. You sign anyway.</p>
+        <div style="margin-top:auto;border-top:1px solid var(--color-divider);padding-top:18px;display:flex;flex-direction:column;gap:6px">
+          <span style="font-family:var(--font-heading);font-weight:400;font-size:56px;line-height:1">6 in 10</span>
+          <span style="font-size:13px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">stewards approved a model's call against their own read in the last month.{{ ast }}</span>
+        </div>
+      </div>
+      <div class="blueprint" style="padding:28px;display:flex;flex-direction:column;gap:16px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <span style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">P-03 · Shock lag</span>
+        <p style="margin:0;font-size:18px;line-height:1.55">Future-shock that never resolves. Colleagues on "cognitive recovery leave." A teenager who swims in the water you're drowning in.</p>
+        <div style="margin-top:auto;border-top:1px solid var(--color-divider);padding-top:18px;display:flex;flex-direction:column;gap:6px">
+          <span style="font-family:var(--font-heading);font-weight:400;font-size:56px;line-height:1">1 in 4</span>
+          <span style="font-size:13px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">coordination roles saw recovery leave this year.{{ ast }}</span>
+        </div>
+      </div>
+    </div>
+    <p style="margin:72px auto 0;max-width:30ch;text-align:center;font-family:var(--font-heading);font-weight:600;font-size:clamp(26px,3.2cqi,36px);line-height:1.2">It's not you. It's the seam between you and the machine. And nobody taught us how to work it.</p>
+  </div>
+</section>
+
+<!-- 04 SOLUTION -->
+<section id="seam" aria-labelledby="seam-h" style="padding:clamp(72px,10cqi,120px) 0;border-top:1px solid var(--color-divider);scroll-margin-top:72px">
+  <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,5cqi,64px)">
+    <span style="display:block;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">02 · The seam</span>
+    <div style="height:1px;background:var(--color-divider);margin:12px 0 32px"></div>
+    <h2 id="seam-h" style="margin:0;font-size:clamp(32px,4.8cqi,56px);line-height:1;text-transform:uppercase;max-width:20ch">The machine finally asks what you know.</h2>
+    <div style="display:flex;flex-wrap:wrap;gap:clamp(32px,5cqi,64px);margin-top:48px;align-items:flex-start">
+      <ol style="flex:1 1 380px;min-width:0;list-style:none;margin:0;padding:0;display:flex;flex-direction:column">
+        <li style="display:grid;grid-template-columns:72px 1fr;gap:16px;padding:20px 0;border-top:1px solid var(--color-divider)">
+          <span style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Bridge</span>
+          <p style="margin:0;font-size:16px;line-height:1.65;color:color-mix(in srgb,var(--color-text) 84%,transparent)">You've tried unplugging. You can't unplug from a watershed, a habitat, or a family. And every calm app became one more feed. The problem was never that you're connected. It's that no one showed you how to hold your own knowing and the model's knowing at the same time.</p>
+        </li>
+        <li style="display:grid;grid-template-columns:72px 1fr;gap:16px;padding:20px 0;border-top:1px solid var(--color-divider)">
+          <span style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Method</span>
+          <p style="margin:0;font-size:16px;line-height:1.65;color:color-mix(in srgb,var(--color-text) 84%,transparent)">Braidwater starts where no interface does: with your body. Before the model speaks, you name where the decision lives in you. That read becomes a signal with its own column, beside the model's scenarios, delivered one at a time at a human pace. The Seam shows where they agree, where they conflict, and whether your fear is a present signal or an old echo.</p>
+        </li>
+        <li style="display:grid;grid-template-columns:72px 1fr;gap:16px;padding:20px 0;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)">
+          <span style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Outcome</span>
+          <p style="margin:0;font-family:var(--font-heading);font-weight:600;font-size:22px;line-height:1.3">Twelve scenarios become two. The call feels clear. And the person making it is still unmistakably you.</p>
+        </li>
+      </ol>
+      <figure style="flex:1.4 1 440px;min-width:0;margin:0;display:flex;flex-direction:column;gap:14px">
+        <div class="blueprint" style="position:relative;height:300px">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="position:absolute;inset:0;overflow:hidden">
+            <span style="position:absolute;left:14px;top:12px;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Before</span>
+            <div style="position:absolute;left:6%;top:18%;width:30%;height:26%;border:1px solid var(--color-divider);transform:rotate(-3deg);font-size:10px;letter-spacing:.08em;padding:6px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">CHIME · S-07</div>
+            <div style="position:absolute;left:28%;top:30%;width:26%;height:30%;border:1px solid var(--color-divider);transform:rotate(4deg);font-size:10px;letter-spacing:.08em;padding:6px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">CONFIDENCE 94%</div>
+            <div style="position:absolute;left:52%;top:14%;width:28%;height:22%;border:1px solid var(--color-divider);transform:rotate(-6deg);font-size:10px;letter-spacing:.08em;padding:6px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">SECTOR 9 ALERT</div>
+            <div style="position:absolute;left:66%;top:42%;width:26%;height:28%;border:1px solid var(--color-divider);transform:rotate(2deg);font-size:10px;letter-spacing:.08em;padding:6px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">SIGN OFF?</div>
+            <div style="position:absolute;left:10%;top:56%;width:24%;height:28%;border:1px solid var(--color-divider);transform:rotate(5deg);font-size:10px;letter-spacing:.08em;padding:6px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">COMMONS VOTE</div>
+            <div style="position:absolute;left:38%;top:64%;width:30%;height:24%;border:1px solid var(--color-divider);transform:rotate(-4deg);font-size:10px;letter-spacing:.08em;padding:6px;color:color-mix(in srgb,var(--color-text) 55%,transparent)">SCHOOL PORTAL</div>
+            <div style="position:absolute;inset:0;background:var(--color-bg);clip-path:{{ baClip }}">
+              <span style="position:absolute;right:14px;top:12px;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--color-accent-200)">After</span>
+              <svg sc-camel-view-box="0 0 400 300" sc-camel-preserve-aspect-ratio="none" width="100%" height="100%" fill="none" aria-hidden="true" style="display:block">
+                <path d="M0 120 C 80 100, 120 170, 200 150 S 320 110, 400 128" stroke="var(--color-accent)" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+                <path d="M0 170 C 80 190, 120 120, 200 150 S 320 190, 400 172" stroke="var(--color-accent-300)" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+              </svg>
+              <span style="position:absolute;right:14px;bottom:12px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 75%,transparent)">One stream, paced to you</span>
+            </div>
+            <div aria-hidden="true" style="position:absolute;top:0;bottom:0;left:{{ baLeft }};width:1px;background:var(--color-accent)"></div>
+          </div>
+        </div>
+        <label style="display:flex;align-items:center;gap:12px;font-size:13px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">
+          <span style="white-space:nowrap">Drag to compare</span>
+          <input type="range" min="0" max="100" value="{{ ba }}" sc-camel-on-change="{{ onBA }}" aria-label="Compare before and after" style="flex:1;accent-color:var(--color-accent);height:28px">
+        </label>
+        <sc-raw-table class="table" style="font-size:15px">
+          <sc-raw-thead><sc-raw-tr><sc-raw-th scope="col">Before</sc-raw-th><sc-raw-th scope="col">After</sc-raw-th></sc-raw-tr></sc-raw-thead>
+          <sc-raw-tbody>
+            <sc-raw-tr><sc-raw-td>Nine panes, all chiming</sc-raw-td><sc-raw-td>One stream, paced to you</sc-raw-td></sc-raw-tr>
+            <sc-raw-tr><sc-raw-td>A green confidence score and a thumb on the glass</sc-raw-td><sc-raw-td>Body read and model read, side by side</sc-raw-td></sc-raw-tr>
+            <sc-raw-tr><sc-raw-td>Twelve scenarios skimmed in minutes</sc-raw-td><sc-raw-td>Two channels you understand</sc-raw-td></sc-raw-tr>
+            <sc-raw-tr><sc-raw-td>You sign</sc-raw-td><sc-raw-td>You decide, or you stop</sc-raw-td></sc-raw-tr>
+          </sc-raw-tbody>
+        </sc-raw-table>
+      </figure>
+    </div>
+    <div class="blueprint" style="margin-top:56px;padding:clamp(24px,4cqi,40px);border-color:var(--color-accent)">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <p style="margin:0;font-family:var(--font-heading);font-weight:600;font-size:clamp(22px,2.6cqi,30px);line-height:1.25;max-width:60ch">Focus apps add another feed. Brain interfaces make you faster and flatter. Braidwater gives your body's read its own column next to the model, and lets you stop at any moment.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 05 FEATURES -->
+<section id="features" aria-labelledby="features-h" style="padding:clamp(72px,10cqi,120px) 0;border-top:1px solid var(--color-divider);scroll-margin-top:72px">
+  <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,5cqi,64px)">
+    <span style="display:block;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">03 · The practice</span>
+    <div style="height:1px;background:var(--color-divider);margin:12px 0 32px"></div>
+    <h2 id="features-h" style="margin:0 0 clamp(48px,7cqi,88px);font-size:clamp(32px,4.8cqi,56px);line-height:1;text-transform:uppercase;max-width:20ch">You sign. Then you decide. Here's how.</h2>
+    <div style="display:flex;flex-direction:column;gap:clamp(64px,8cqi,100px)">
+
+      <article style="display:flex;flex-wrap:wrap;flex-direction:row-reverse;gap:clamp(28px,5cqi,64px);align-items:center">
+        <figure class="blueprint" style="flex:1 1 380px;min-width:0;margin:0;aspect-ratio:4/3;display:grid;grid-template-columns:1fr 0.7fr 1fr;gap:0">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="padding:16px;border-right:1px solid var(--color-divider);display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Body read</span>
+            <i style="height:6px;width:80%;background:color-mix(in srgb,var(--color-text) 18%,transparent)"></i><i style="height:6px;width:60%;background:color-mix(in srgb,var(--color-text) 18%,transparent)"></i><i style="height:6px;width:70%;background:color-mix(in srgb,var(--color-text) 18%,transparent)"></i>
+            <span class="tag tag-outline" style="align-self:flex-start;margin-top:auto;font-size:10px;color:var(--color-accent-200);border-color:var(--color-accent-500)">signal</span>
+          </div>
+          <div style="padding:16px 10px;border-right:1px solid var(--color-divider);display:flex;flex-direction:column;gap:10px;align-items:center;background:color-mix(in srgb,var(--color-accent) 7%,transparent)">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-200)">Seam</span>
+            <span style="font-size:11px;text-align:center;color:color-mix(in srgb,var(--color-text) 75%,transparent)">2 agree</span>
+            <span style="font-size:11px;text-align:center;color:color-mix(in srgb,var(--color-text) 75%,transparent)">1 conflict</span>
+          </div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+            <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Model read</span>
+            <i style="height:6px;width:90%;background:color-mix(in srgb,var(--color-text) 18%,transparent)"></i><i style="height:6px;width:75%;background:color-mix(in srgb,var(--color-text) 18%,transparent)"></i><i style="height:6px;width:85%;background:color-mix(in srgb,var(--color-text) 18%,transparent)"></i>
+          </div>
+        </figure>
+        <div style="flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:16px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">F-01</span>
+          <h3 style="margin:0;font-size:clamp(26px,3cqi,34px);text-transform:uppercase">The Seam Console</h3>
+          <p style="margin:0;font-size:16px;line-height:1.65;max-width:52ch;color:color-mix(in srgb,var(--color-text) 82%,transparent)">Before the model speaks, you name where the decision lives in your body. That read gets its own column beside the planetary model, so your intuition is treated as data instead of noise. The Seam shows where they agree and where they don't. You stop signing and start deciding.</p>
+          <span style="font-family:var(--font-heading);font-weight:400;font-size:32px;line-height:1.1;color:var(--color-accent)">Your read, in its own column</span>
+        </div>
+      </article>
+
+      <article style="display:flex;flex-wrap:wrap;gap:clamp(28px,5cqi,64px);align-items:center">
+        <figure class="blueprint" style="flex:1 1 380px;min-width:0;margin:0;aspect-ratio:4/3;position:relative;padding:20px">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          {{ braidFeature }}
+          <span style="position:absolute;left:16px;bottom:12px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 62%,transparent)">12 → 5 → 2</span>
+        </figure>
+        <div style="flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:16px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">F-02</span>
+          <h3 style="margin:0;font-size:clamp(26px,3cqi,34px);text-transform:uppercase">The Braid Visualizer</h3>
+          <p style="margin:0;font-size:16px;line-height:1.65;max-width:52ch;color:color-mix(in srgb,var(--color-text) 82%,transparent)">Watch twelve scenarios braid down to five, then two, as your read and the model's are reconciled. Every narrowing is explained in plain language from both sides. Export the "decision story" to your commons ledger so governance sees how the call was made.</p>
+          <span style="font-family:var(--font-heading);font-weight:400;font-size:32px;line-height:1.1;color:var(--color-accent)">12 scenarios → 2 you understand<span style="font-family:var(--font-body);font-size:12px;color:color-mix(in srgb,var(--color-text) 60%,transparent)"> illustrative</span></span>
+        </div>
+      </article>
+
+      <article style="display:flex;flex-wrap:wrap;flex-direction:row-reverse;gap:clamp(28px,5cqi,64px);align-items:center">
+        <figure class="blueprint" style="flex:1 1 380px;min-width:0;margin:0;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;gap:clamp(32px,8cqi,72px)">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+            <svg width="72" height="190" sc-camel-view-box="0 0 72 190" fill="none" aria-hidden="true"><rect x="22" y="4" width="28" height="12" stroke="var(--color-divider)"></rect><path d="M14 16h44v150a22 22 0 0 1-44 0z" stroke="var(--color-accent)" stroke-width="1.5"></path><path d="M14 70h44" stroke="var(--color-accent-300)" stroke-dasharray="3 3"></path></svg>
+            <span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase">Present-signal</span>
+            <span style="font-size:12px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">River fear · clear</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+            <svg width="72" height="190" sc-camel-view-box="0 0 72 190" fill="none" aria-hidden="true"><defs><pattern id="bw-hatch" width="6" height="6" sc-camel-pattern-units="userSpaceOnUse" sc-camel-pattern-transform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--color-neutral-500)" stroke-width="1"></line></pattern></defs><rect x="22" y="4" width="28" height="12" stroke="var(--color-divider)"></rect><path d="M14 70h44v96a22 22 0 0 1-44 0z" fill="url(#bw-hatch)" opacity=".7"></path><path d="M14 16h44v150a22 22 0 0 1-44 0z" stroke="var(--color-neutral-500)" stroke-width="1.5"></path></svg>
+            <span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase">Past-echo</span>
+            <span style="font-size:12px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">Year 11 fear · cloudy</span>
+          </div>
+        </figure>
+        <div style="flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:16px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">F-03</span>
+          <h3 style="margin:0;font-size:clamp(26px,3cqi,34px);text-transform:uppercase">Present-Signal or Past-Echo</h3>
+          <p style="margin:0;font-size:16px;line-height:1.65;max-width:52ch;color:color-mix(in srgb,var(--color-text) 82%,transparent)">Not every gut feeling is current. Braidwater helps you tell river fear from Year 11 fear: a signal about now versus an echo of an old wound. You keep the intuition that saved the levee and release the fear that has been steering you since.</p>
+          <span style="font-family:var(--font-heading);font-weight:400;font-size:32px;line-height:1.1;color:var(--color-accent)">Trust your gut again, with reasons</span>
+        </div>
+      </article>
+
+      <article style="display:flex;flex-wrap:wrap;gap:clamp(28px,5cqi,64px);align-items:center">
+        <figure class="blueprint" style="flex:1 1 380px;min-width:0;margin:0;aspect-ratio:4/3;display:flex;flex-direction:column;justify-content:center;gap:12px;padding:20px">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Clear stream · today</span>
+          <svg sc-camel-view-box="0 0 400 150" width="100%" fill="none" aria-label="Attention river: widest during the dawn block, four eddies logged" role="img">
+            <path d="{{ riverD }}" fill="color-mix(in srgb, var(--color-accent) 22%, transparent)" stroke="var(--color-accent)" stroke-width="1"></path>
+            <sc-for list="{{ eddies }}" as="e" hint-placeholder-count="4"><circle cx="{{ e.cx }}" cy="{{ e.cy }}" r="5" stroke="var(--color-accent-300)" stroke-dasharray="2 2"></circle></sc-for>
+          </svg>
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:color-mix(in srgb,var(--color-text) 60%,transparent);font-feature-settings:'tnum' 1"><span>06:00</span><span>10:00</span><span>14:00</span><span>18:00</span><span>22:00</span></div>
+          <p style="margin:0;font-size:14px;border-top:1px solid var(--color-divider);padding-top:12px">Your longest clear stream today: 47 minutes, during the dawn block.</p>
+        </figure>
+        <div style="flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:16px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">F-04</span>
+          <h3 style="margin:0;font-size:clamp(26px,3cqi,34px);text-transform:uppercase">The Clear Stream Tracker</h3>
+          <p style="margin:0;font-size:16px;line-height:1.65;max-width:52ch;color:color-mix(in srgb,var(--color-text) 82%,transparent)">Your unbroken attention drawn as a river whose width is your focus. The pull toward another input is logged as an eddy, not a failure. No streaks, no badges, no guilt; just a plain sentence each evening about where your clearest hours were.</p>
+          <span style="font-family:var(--font-heading);font-weight:400;font-size:32px;line-height:1.1;color:var(--color-accent)">Longest clear stream: 23 → 147 min{{ ast }}</span>
+        </div>
+      </article>
+
+      <article style="display:flex;flex-wrap:wrap;flex-direction:row-reverse;gap:clamp(28px,5cqi,64px);align-items:center">
+        <figure class="blueprint" style="flex:1 1 380px;min-width:0;margin:0;aspect-ratio:4/3;position:relative;overflow:visible">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <svg sc-camel-view-box="0 0 400 300" width="100%" height="100%" fill="none" aria-hidden="true" style="display:block">
+            <path d="M0 150 C 60 150, 90 148, 130 150 S 220 156, 400 150" stroke="var(--color-divider)" stroke-dasharray="4 6"></path>
+            <circle cx="200" cy="150" r="14" stroke="var(--color-accent)" stroke-width="1.5"></circle>
+            <circle cx="200" cy="150" r="40" stroke="var(--color-accent)" opacity=".7"></circle>
+            <circle cx="200" cy="150" r="72" stroke="var(--color-accent)" opacity=".45"></circle>
+            <circle cx="200" cy="150" r="108" stroke="var(--color-accent)" opacity=".25"></circle>
+            <circle cx="200" cy="150" r="146" stroke="var(--color-accent)" opacity=".12"></circle>
+          </svg>
+          <span style="position:absolute;left:16px;right:16px;bottom:14px;font-size:14px;text-align:center">There's the pull. Let it pass like a boat wake.</span>
+        </figure>
+        <div style="flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:16px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">F-05</span>
+          <h3 style="margin:0;font-size:clamp(26px,3cqi,34px);text-transform:uppercase">The 90-Second Lean</h3>
+          <p style="margin:0;font-size:16px;line-height:1.65;max-width:52ch;color:color-mix(in srgb,var(--color-text) 82%,transparent)">Learn to notice the pull before your hand moves. The practice lets each urge pass like a boat wake, without blocking or scolding you. Over weeks, the lean softens and your attention widens back into its old channels.</p>
+          <span style="font-family:var(--font-heading);font-weight:400;font-size:32px;line-height:1.1;color:var(--color-accent)">Fewer reaches, deeper hours</span>
+        </div>
+      </article>
+
+      
+<article style="display:flex;flex-wrap:wrap;gap:clamp(28px,5cqi,64px);align-items:center">
+        <figure class="blueprint" style="flex:1 1 380px;min-width:0;margin:0;aspect-ratio:4/3;display:flex;flex-direction:column;justify-content:center;gap:14px;padding:clamp(20px,3cqi,32px)">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <span style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Session ended · choose what stays</span>
+          <sc-for list="{{ keepList }}" as="k" hint-placeholder-count="3">
+            <button type="button" sc-camel-on-click="{{ k.onClick }}" aria-pressed="{{ k.on }}" style="display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:48px;padding:0 14px;background:transparent;border:1px solid var(--color-divider);color:var(--color-text);font:inherit;font-size:14px;cursor:pointer;text-align:left" style-hover="border-color:var(--color-accent)">
+              <span>{{ k.label }}</span>
+              <span style="display:flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:{{ k.color }}"><i style="width:28px;height:14px;border:1px solid currentColor;position:relative;display:inline-block"><i style="position:absolute;top:2px;left:{{ k.knob }};width:8px;height:8px;background:currentColor"></i></i>{{ k.state }}</span>
+            </button>
+          </sc-for>
+          <span style="font-size:12px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">Try it: tap a row. Nothing stays changed that you didn't choose.</span>
+        </figure>
+        <div style="flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:16px">
+          <span style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">F-06</span>
+          <h3 style="margin:0;font-size:clamp(26px,3cqi,34px);text-transform:uppercase">Sovereign Stop</h3>
+          <p style="margin:0;font-size:16px;line-height:1.65;max-width:52ch;color:color-mix(in srgb,var(--color-text) 82%,transparent)">One tap ends any session, always visible, never buried. After each session you choose what to keep and what to release; nothing remains changed that you didn't choose. Your sessions are never used to train anyone's model.</p>
+          <span style="font-family:var(--font-heading);font-weight:400;font-size:32px;line-height:1.1;color:var(--color-accent)">Stop anytime. Keep only what you choose.</span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 06 CALCULATOR -->
+<section id="calculator" aria-labelledby="calc-h" style="padding:clamp(72px,10cqi,120px) 0;border-top:1px solid var(--color-divider);scroll-margin-top:72px">
+  <div style="max-width:1000px;margin:0 auto;padding:0 clamp(20px,5cqi,64px)">
+    <span style="display:block;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">04 · Clarity return</span>
+    <div style="height:1px;background:var(--color-divider);margin:12px 0 32px"></div>
+    <h2 id="calc-h" style="margin:0;font-size:clamp(32px,4.8cqi,56px);line-height:1;text-transform:uppercase">What is tab-brain costing you?</h2>
+    <p style="margin:16px 0 40px;font-size:18px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Move the sliders. No sign-up needed to see your result.</p>
+    <div class="blueprint" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr))">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <div style="padding:clamp(20px,3.4cqi,36px);display:flex;flex-direction:column;gap:22px;border-right:1px solid var(--color-divider)">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px"><label for="c-hours">Hours a day in consoles and interfaces</label><span style="font-family:var(--font-heading);font-weight:600;font-size:22px;font-feature-settings:'tnum' 1;white-space:nowrap">{{ c.hours }} h</span></div>
+          <input id="c-hours" type="range" min="1" max="14" step="1" data-key="hours" value="{{ c.hours }}" sc-camel-on-change="{{ onCalc }}" aria-valuetext="{{ hoursText }}" style="width:100%;height:32px;accent-color:var(--color-accent)">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px"><label for="c-lost">Minutes a day lost to tab-brain</label><span style="font-family:var(--font-heading);font-weight:600;font-size:22px;font-feature-settings:'tnum' 1;white-space:nowrap">{{ c.lost }} min</span></div>
+          <input id="c-lost" type="range" min="0" max="240" step="5" data-key="lost" value="{{ c.lost }}" sc-camel-on-change="{{ onCalc }}" aria-valuetext="{{ lostText }}" style="width:100%;height:32px;accent-color:var(--color-accent)">
+          <span style="font-size:12px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">Surfacing an hour later with nothing finished.</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px">
+          <div class="field"><label for="c-dec">High-stakes decisions a week</label><input id="c-dec" class="input" type="number" min="0" max="200" data-key="decisions" value="{{ c.decisions }}" sc-camel-on-change="{{ onCalc }}" style="min-height:48px;font-size:16px"></div>
+          <div class="field"><label for="c-div">Monthly dividend (tokens)</label><input id="c-div" class="input" type="number" min="100" max="20000" step="100" data-key="dividend" value="{{ c.dividend }}" sc-camel-on-change="{{ onCalc }}" style="min-height:48px;font-size:16px"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px"><label for="c-share">Share you'd put toward Braidwater</label><span style="font-family:var(--font-heading);font-weight:600;font-size:22px;font-feature-settings:'tnum' 1">{{ c.share }}%</span></div>
+          <input id="c-share" type="range" min="4" max="8" step="1" data-key="share" value="{{ c.share }}" sc-camel-on-change="{{ onCalc }}" aria-valuetext="{{ shareText }}" style="width:100%;height:32px;accent-color:var(--color-accent)">
+        </div>
+      </div>
+      <div aria-live="polite" style="padding:clamp(20px,3.4cqi,36px);display:flex;flex-direction:column;gap:20px">
+        <div>
+          <div style="font-family:var(--font-heading);font-weight:400;font-size:clamp(52px,7cqi,72px);line-height:1;font-feature-settings:'tnum' 1;color:var(--color-accent-200)">{{ out.reclaimed }} hours</div>
+          <div style="font-size:16px;margin-top:6px">of clear attention back each year</div>
+          <div style="font-size:14px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">≈ {{ out.days }} working days</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--color-divider);border-left:1px solid var(--color-divider)">
+          <div style="padding:12px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)"><div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Hours lost a year, today</div><div style="font-family:var(--font-heading);font-weight:600;font-size:24px;font-feature-settings:'tnum' 1">{{ out.lost }} h</div></div>
+          <div style="padding:12px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)"><div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Decisions with both reads</div><div style="font-family:var(--font-heading);font-weight:600;font-size:24px;font-feature-settings:'tnum' 1">{{ out.decisions }} / yr</div></div>
+          <div style="padding:12px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)"><div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Monthly contribution</div><div style="font-family:var(--font-heading);font-weight:600;font-size:24px;font-feature-settings:'tnum' 1">{{ out.monthly }} tokens</div></div>
+          <div style="padding:12px;border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)"><div style="font-size:12px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Flow-back to your commons</div><div style="font-family:var(--font-heading);font-weight:600;font-size:24px;font-feature-settings:'tnum' 1">{{ out.flow }} / yr</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
+          <div style="display:flex;justify-content:space-between"><span>Lost to tab-brain today</span><span style="font-feature-settings:'tnum' 1">{{ out.lost }} h</span></div>
+          <div style="height:10px;border:1px solid var(--color-divider)"><div style="height:100%;width:100%;background:color-mix(in srgb,var(--color-text) 30%,transparent)"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:4px"><span>With the practice</span><span style="font-feature-settings:'tnum' 1">{{ out.remaining }} h</span></div>
+          <div style="height:10px;border:1px solid var(--color-divider)"><div style="height:100%;width:{{ barWith }};background:var(--color-accent);transition:width .4s cubic-bezier(.22,1,.36,1)"></div></div>
+        </div>
+        <p style="margin:0;font-size:12px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Illustrative estimate. The 40% reclaim rate is a planning assumption, not a measured result.</p>
+        <sc-if value="{{ calcIdle }}" hint-placeholder-val="{{ true }}">
+          <button type="button" class="btn btn-secondary" sc-camel-on-click="{{ openCalcForm }}" style="min-height:48px;align-self:flex-start;padding:0 20px;font-size:15px">Send me my Clarity Return</button>
+        </sc-if>
+        <sc-if value="{{ calcFormOpen }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--color-divider);padding-top:16px">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+              <div class="field"><label for="cf-name">Name</label><input id="cf-name" class="input" data-form="cf" data-key="name" value="{{ cf.name }}" sc-camel-on-change="{{ onField }}" style="min-height:44px"></div>
+              <div class="field"><label for="cf-email">Email</label><input id="cf-email" class="input" type="email" data-form="cf" data-key="email" value="{{ cf.email }}" sc-camel-on-change="{{ onField }}" style="min-height:44px"></div>
+            </div>
+            <label class="radio" style="font-size:13px;align-items:flex-start"><input type="checkbox" data-form="cf" data-key="consent" checked="{{ cf.consent }}" sc-camel-on-change="{{ onField }}" style="position:static;opacity:1;width:16px;height:16px;pointer-events:auto;accent-color:var(--color-accent);margin:2px 0 0"><span>Send one email with my result. No drip sequence.</span></label>
+            <sc-if value="{{ hasCalcErr }}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size:13px;color:#e57a70">{{ calcErr }}</span></sc-if>
+            <button type="button" class="btn btn-primary" sc-camel-on-click="{{ sendCalc }}" style="min-height:44px;align-self:flex-start;padding:0 20px">{{ calcBtn }}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ calcDone }}" hint-placeholder-val="{{ false }}">
+          <p role="status" style="margin:0;font-size:15px;border:1px solid var(--color-accent);padding:12px 14px">Received. Your Clarity Return is on its way. One email, nothing after.</p>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 STORIES -->
+<section id="stories" aria-labelledby="stories-h" style="padding:clamp(72px,10cqi,120px) 0;border-top:1px solid var(--color-divider);background:color-mix(in srgb,var(--color-accent-900) 55%,var(--color-bg));scroll-margin-top:72px">
+  <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,5cqi,64px)">
+    <span style="display:block;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">05 · Stories</span>
+    <div style="height:1px;background:var(--color-divider);margin:12px 0 32px"></div>
+    <h2 id="stories-h" style="margin:0 0 48px;font-size:clamp(32px,4.8cqi,56px);line-height:1;text-transform:uppercase;max-width:20ch">Stewards who learned to work the seam</h2>
+    <div style="display:flex;flex-wrap:wrap;gap:clamp(28px,5cqi,64px);align-items:stretch">
+      <figure class="blueprint duotone" style="flex:1 1 320px;min-width:0;margin:0;min-height:420px;position:relative">
+        <image-slot id="bw-story-mara" shape="rect" placeholder="Film-grain photograph: a steward at the estuary at dawn (commissioned)" style="position:absolute;inset:0;width:100%;height:100%"></image-slot>
+        <i class="corner tl" style="pointer-events:none"></i><i class="corner tr" style="pointer-events:none"></i><i class="corner bl" style="pointer-events:none"></i><i class="corner br" style="pointer-events:none"></i>
+      </figure>
+      <div style="flex:1.5 1 420px;min-width:0;display:flex;flex-direction:column;gap:24px">
+        <div>
+          <span style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Featured · Tagus-Atlantic Commons{{ ast }}</span>
+          <p style="margin:8px 0 0;font-size:14px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">Bioregional watershed collective, Iberian coast · 3 field crews · 40,000 river sensors · one climate intelligence</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)">
+          <div style="padding:16px 16px 16px 0"><div style="font-family:var(--font-heading);font-size:36px;line-height:1;font-feature-settings:'tnum' 1">23 → 147</div><div style="font-size:13px;margin-top:6px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">minutes, longest clear stream</div></div>
+          <div style="padding:16px 16px 16px 0"><div style="font-family:var(--font-heading);font-size:36px;line-height:1">0</div><div style="font-size:13px;margin-top:6px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">calls signed against her own read in storm season</div></div>
+          <div style="padding:16px 16px 16px 0"><div style="font-family:var(--font-heading);font-size:36px;line-height:1">4</div><div style="font-size:13px;margin-top:6px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">crew members now working the seam</div></div>
+        </div>
+        <blockquote style="margin:0;font-family:var(--font-heading);font-weight:600;font-size:clamp(24px,3cqi,34px);line-height:1.2">“For the first time in three years, the machine asked me what I knew. And then it used it.”</blockquote>
+        <span style="font-size:15px;color:color-mix(in srgb,var(--color-text) 75%,transparent)">— Mara Lindqvist-Oduya, Watershed Steward</span>
+        <button type="button" class="btn btn-secondary" sc-camel-on-click="{{ openJournal }}" style="align-self:flex-start;min-height:48px;padding:0 20px;font-size:15px;display:inline-flex;gap:8px">Read Mara's journal<svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:clamp(24px,3cqi,40px);margin-top:72px">
+      <div class="card blueprint" style="padding:24px;gap:16px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <p style="margin:0;font-size:17px;line-height:1.55;flex:1">“It's not you. It's the seam. Nobody taught us how to work it, until this.”</p>
+        <div style="border-top:1px solid var(--color-divider);padding-top:12px;font-size:13px"><div style="font-weight:600">Ana Ferreira{{ ast }}</div><div style="color:color-mix(in srgb,var(--color-text) 70%,transparent)">Upriver Crew Lead, Tagus-Atlantic Commons</div><div style="color:var(--color-accent-300);margin-top:6px">Leads her crew's dawn practice</div></div>
+      </div>
+      <div class="card blueprint" style="padding:24px;gap:16px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <p style="margin:0;font-size:17px;line-height:1.55;flex:1">“Day 3 I nearly quit. Day 40 I read a whole essay without reaching for anything. I'm keeping the bad days in this story too.”</p>
+        <div style="border-top:1px solid var(--color-divider);padding-top:12px;font-size:13px"><div style="font-weight:600">Bea Santos{{ ast }}</div><div style="color:color-mix(in srgb,var(--color-text) 70%,transparent)">Field Crew, Tagus-Atlantic Commons</div><div style="color:var(--color-accent-300);margin-top:6px">Honest about the hard weeks</div></div>
+      </div>
+      <div class="card blueprint" style="padding:24px;gap:16px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <p style="margin:0;font-size:17px;line-height:1.55;flex:1">“On a habitat, a wrong call echoes for months. Braidwater gave me back the pause before I sign.”</p>
+        <div style="border-top:1px solid var(--color-divider);padding-top:12px;font-size:13px"><div style="font-weight:600">Sefa Adjei-Moreno{{ ast }}</div><div style="color:color-mix(in srgb,var(--color-text) 70%,transparent)">Orbital Agroecologist, Haven Ring</div><div style="color:var(--color-accent-300);margin-top:6px">Practicing on habitat time</div></div>
+      </div>
+    </div>
+    <div class="blueprint" style="margin-top:72px">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <div style="display:flex;flex-wrap:wrap;border-bottom:1px solid var(--color-divider);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase">
+        <span style="flex:1 1 220px;padding:12px 20px">Braidwater — practice record</span>
+        <span style="padding:12px 20px;border-left:1px solid var(--color-divider);color:color-mix(in srgb,var(--color-text) 70%,transparent)">BW-07</span>
+        <span style="padding:12px 20px;border-left:1px solid var(--color-divider);color:color-mix(in srgb,var(--color-text) 70%,transparent)">Sheet 01 of 01</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr))">
+        <div style="padding:20px;border-right:1px solid var(--color-divider)"><div style="font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--color-accent-300)">01</div><div style="font-family:var(--font-heading);font-size:48px;line-height:1.05;font-feature-settings:'tnum' 1">1,200+</div><div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">stewards</div></div>
+        <div style="padding:20px;border-right:1px solid var(--color-divider)"><div style="font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--color-accent-300)">02</div><div style="font-family:var(--font-heading);font-size:48px;line-height:1.05;font-feature-settings:'tnum' 1">38</div><div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">commons and habitats</div></div>
+        <div style="padding:20px;border-right:1px solid var(--color-divider)"><div style="font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--color-accent-300)">03</div><div style="font-family:var(--font-heading);font-size:48px;line-height:1.05;font-feature-settings:'tnum' 1">91%</div><div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">still practicing at 6 months</div></div>
+        <div style="padding:20px"><div style="font-size:12px;font-weight:600;letter-spacing:.08em;color:var(--color-accent-300)">04</div><div style="font-family:var(--font-heading);font-size:48px;line-height:1.05;font-feature-settings:'tnum' 1">410,000</div><div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">tokens returned to commons</div></div>
+      </div>
+      <p style="margin:0;padding:12px 20px;border-top:1px solid var(--color-divider);font-size:13px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">All figures on this sheet are in-world placeholders until verified.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 08 ACCESS -->
+<section id="access" aria-labelledby="access-h" style="padding:clamp(72px,10cqi,120px) 0;border-top:1px solid var(--color-divider);scroll-margin-top:72px">
+  <div style="max-width:1320px;margin:0 auto;padding:0 clamp(20px,5cqi,64px)">
+    <span style="display:block;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">06 · Access</span>
+    <div style="height:1px;background:var(--color-divider);margin:12px 0 32px"></div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:24px">
+      <div style="flex:1 1 420px;min-width:0">
+        <h2 id="access-h" style="margin:0;font-size:clamp(32px,4.8cqi,56px);line-height:1;text-transform:uppercase">Access that flows both ways</h2>
+        <p style="margin:16px 0 0;font-size:17px;max-width:60ch;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Pay from your Universal Baseline Dividend, self-sovereignty tokens or contribution hours. Fifteen percent of every contribution returns to your own commons.</p>
+      </div>
+      <div class="seg" role="radiogroup" aria-label="Billing period">
+        <label class="seg-opt" style="padding:10px 16px;font-size:14px;min-height:44px"><input type="radio" name="bw-period" checked="{{ seasonOff }}" sc-camel-on-change="{{ setMonthly }}">Monthly</label>
+        <label class="seg-opt" style="padding:10px 16px;font-size:14px;min-height:44px"><input type="radio" name="bw-period" checked="{{ seasonOn }}" sc-camel-on-change="{{ setSeason }}">By the season · +5% to commons</label>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:clamp(24px,3cqi,36px);margin-top:48px;align-items:stretch">
+      <div class="blueprint" style="padding:28px;display:flex;flex-direction:column;gap:18px;min-height:520px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div><h3 style="margin:0;font-size:30px;text-transform:uppercase">Stream</h3><p style="margin:4px 0 0;font-size:14px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">One person beginning the practice</p></div>
+        <div><div style="font-family:var(--font-heading);font-size:56px;line-height:1">4%</div><div style="font-size:14px">{{ period }}</div><div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">or ~40 contribution hours, or token equivalent</div></div>
+        <div style="font-size:13px;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);padding:10px 0;display:flex;flex-direction:column;gap:4px"><span><b style="font-weight:600">{{ flowBack }}</b> flows back to your commons</span><span style="color:color-mix(in srgb,var(--color-text) 70%,transparent)">Sliding scale down to 0% with a sponsored seat</span></div>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:14px;flex:1">
+          <li>Seam intake and first session</li><li>Personal Seam Console</li><li>Clear Stream Tracker</li><li>90-Second Lean practice</li><li>Field Notes journal</li><li>Sovereign Stop with Keep/Release</li><li>Monthly peer circle</li>
+        </ul>
+        <button type="button" class="btn btn-secondary btn-block" sc-camel-on-click="{{ openIntakeStream }}" style="min-height:48px;font-size:15px">Take the seam intake</button>
+      </div>
+      <div class="blueprint" style="order:{{ braidOrder }};padding:28px;display:flex;flex-direction:column;gap:18px;min-height:520px;border-color:var(--color-accent);background:color-mix(in srgb,var(--color-accent) 7%,transparent);box-shadow:var(--shadow-md)">
+        <i class="corner tl" style="color:var(--color-accent)"></i><i class="corner tr" style="color:var(--color-accent)"></i><i class="corner bl" style="color:var(--color-accent)"></i><i class="corner br" style="color:var(--color-accent)"></i>
+        <div><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="margin:0;font-size:30px;text-transform:uppercase">Braid</h3><span class="tag tag-outline" style="color:var(--color-accent-200);border-color:var(--color-accent)">Most chosen</span></div><p style="margin:4px 0 0;font-size:14px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">Stewards ready for the full 3–6 month arc</p></div>
+        <div><div style="font-family:var(--font-heading);font-size:56px;line-height:1;color:var(--color-accent-200)">6%</div><div style="font-size:14px">{{ period }}</div><div style="font-size:13px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">or ~60 contribution hours, or token equivalent</div></div>
+        <div style="font-size:13px;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);padding:10px 0;display:flex;flex-direction:column;gap:4px"><span><b style="font-weight:600">{{ flowBack }}</b> flows back to your commons</span><span style="color:color-mix(in srgb,var(--color-text) 70%,transparent)">Sliding scale down to 2% with partial sponsorship</span></div>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:14px;flex:1">
+          <li style="color:color-mix(in srgb,var(--color-text) 66%,transparent)">Everything in Stream, plus:</li><li>Braid Visualizer with decision-story export</li><li>Present-Signal / Past-Echo training</li><li>Weekly peer circle with a steward guide</li><li>Guided 3–6 month arc</li><li>Console integrations</li><li>Habitat-time support for off-world rotations</li><li>One family seat for an elder or teen</li><li>Priority steward calls</li>
+        </ul>
+        <button type="button" class="btn btn-primary btn-block" sc-camel-on-click="{{ openIntake }}" style="min-height:48px;font-size:15px">Take the seam intake</button>
+      </div>
+      <div class="blueprint" style="padding:28px;display:flex;flex-direction:column;gap:18px;min-height:520px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div><h3 style="margin:0;font-size:30px;text-transform:uppercase">Commons</h3><p style="margin:4px 0 0;font-size:14px;color:color-mix(in srgb,var(--color-text) 72%,transparent)">Crews, habitats and bioregional collectives</p></div>
+        <div><div style="font-family:var(--font-heading);font-size:40px;line-height:1.1;padding-top:8px">Shaped with your commons</div></div>
+        <div style="font-size:13px;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);padding:10px 0;display:flex;flex-direction:column;gap:4px"><span>Custom flow-back routing</span><span style="color:color-mix(in srgb,var(--color-text) 70%,transparent)">Sponsored seats included</span></div>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:14px;flex:1">
+          <li style="color:color-mix(in srgb,var(--color-text) 66%,transparent)">Everything in Braid, plus:</li><li>Sponsored crew and elder seats</li><li>Governance decision-story ledger</li><li>On-site or in-habitat facilitation</li><li>Opt-in, anonymized commons view</li><li>Dedicated steward</li><li>Service commitments</li>
+        </ul>
+        <button type="button" class="btn btn-secondary btn-block" sc-camel-on-click="{{ openSteward }}" style="min-height:48px;font-size:15px">Talk with a steward</button>
+      </div>
+    </div>
+
+    <div style="margin-top:40px;border-top:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider)">
+      <button type="button" sc-camel-on-click="{{ toggleCompare }}" aria-expanded="{{ compareOpen }}" style="width:100%;display:flex;justify-content:space-between;align-items:center;min-height:56px;padding:0;background:transparent;border:0;color:var(--color-text);font-family:var(--font-heading);font-weight:600;font-size:20px;text-transform:uppercase;letter-spacing:.02em;cursor:pointer">
+        Compare everything
+        <svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform:rotate({{ compareRot }});transition:transform .26s cubic-bezier(.22,1,.36,1)"><path d="m6 9 6 6 6-6"></path></svg>
+      </button>
+      <sc-if value="{{ compareOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="overflow-x:auto;padding-bottom:16px">
+          <sc-raw-table class="table" style="min-width:560px;font-size:14px">
+            <sc-raw-thead><sc-raw-tr><sc-raw-th scope="col" style="width:46%">Feature</sc-raw-th><sc-raw-th scope="col">Stream</sc-raw-th><sc-raw-th scope="col">Braid</sc-raw-th><sc-raw-th scope="col">Commons</sc-raw-th></sc-raw-tr></sc-raw-thead>
+            <sc-for list="{{ compareGroups }}" as="g" hint-placeholder-count="4">
+              <sc-raw-tbody>
+                <sc-raw-tr><sc-raw-th scope="rowgroup" colspan="4" style="padding-top:18px;color:var(--color-accent-300)">{{ g.name }}</sc-raw-th></sc-raw-tr>
+                <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+                  <sc-raw-tr><sc-raw-td>{{ r.label }}</sc-raw-td><sc-raw-td aria-label="{{ r.aL }}">{{ r.a }}</sc-raw-td><sc-raw-td aria-label="{{ r.bL }}">{{ r.b }}</sc-raw-td><sc-raw-td aria-label="{{ r.cL }}">{{ r.c }}</sc-raw-td></sc-raw-tr>
+                </sc-for>
+              </sc-raw-tbody>
+            </sc-for>
+          </sc-raw-table>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:0 48px;margin-top:40px">
+      <div style="border-top:1px solid var(--color-divider)">
+        <button type="button" sc-camel-on-click="{{ onFaq0 }}" aria-expanded="{{ faq0 }}" style="width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:56px;padding:12px 0;background:transparent;border:0;color:var(--color-text);font:inherit;font-size:16px;font-weight:500;text-align:left;cursor:pointer">Can I stop or change my access?<span aria-hidden="true" style="font-size:20px;color:var(--color-accent)">{{ faqSign0 }}</span></button>
+        <sc-if value="{{ faq0 }}" hint-placeholder-val="{{ false }}"><p style="margin:0 0 16px;font-size:15px;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Anytime, in one tap. Nothing stays changed that you didn't choose to keep.</p></sc-if>
+      </div>
+      <div style="border-top:1px solid var(--color-divider)">
+        <button type="button" sc-camel-on-click="{{ onFaq1 }}" aria-expanded="{{ faq1 }}" style="width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:56px;padding:12px 0;background:transparent;border:0;color:var(--color-text);font:inherit;font-size:16px;font-weight:500;text-align:left;cursor:pointer">What happens in the first session?<span aria-hidden="true" style="font-size:20px;color:var(--color-accent)">{{ faqSign1 }}</span></button>
+        <sc-if value="{{ faq1 }}" hint-placeholder-val="{{ false }}"><p style="margin:0 0 16px;font-size:15px;color:color-mix(in srgb,var(--color-text) 80%,transparent)">About 90 minutes. You bring one real decision. Your body's read comes first, then the model, then both side by side.</p></sc-if>
+      </div>
+      <div style="border-top:1px solid var(--color-divider)">
+        <button type="button" sc-camel-on-click="{{ onFaq2 }}" aria-expanded="{{ faq2 }}" style="width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:56px;padding:12px 0;background:transparent;border:0;color:var(--color-text);font:inherit;font-size:16px;font-weight:500;text-align:left;cursor:pointer">Is there really a sliding scale?<span aria-hidden="true" style="font-size:20px;color:var(--color-accent)">{{ faqSign2 }}</span></button>
+        <sc-if value="{{ faq2 }}" hint-placeholder-val="{{ false }}"><p style="margin:0 0 16px;font-size:15px;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Yes. No one is turned away for lack of tokens; sponsored seats are funded by flow-back.</p></sc-if>
+      </div>
+      <div style="border-top:1px solid var(--color-divider)">
+        <button type="button" sc-camel-on-click="{{ onFaq3 }}" aria-expanded="{{ faq3 }}" style="width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:56px;padding:12px 0;background:transparent;border:0;color:var(--color-text);font:inherit;font-size:16px;font-weight:500;text-align:left;cursor:pointer">Do off-world habitats access it differently?<span aria-hidden="true" style="font-size:20px;color:var(--color-accent)">{{ faqSign3 }}</span></button>
+        <sc-if value="{{ faq3 }}" hint-placeholder-val="{{ false }}"><p style="margin:0 0 16px;font-size:15px;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Same practice, same contribution, with sessions timed to your habitat's day.</p></sc-if>
+      </div>
+    </div>
+    <p style="margin:40px 0 0;display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;font-size:13px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 75%,transparent)"><span>Stop anytime</span><span aria-hidden="true">·</span><span>Nothing changed without consent</span><span aria-hidden="true">·</span><span>15% to your commons</span><span aria-hidden="true">·</span><span>Your sessions never train anyone's model</span></p>
+  </div>
+</section>
+
+<!-- 09 SOVEREIGNTY -->
+<section id="sovereignty" aria-labelledby="sov-h" style="padding:clamp(72px,9cqi,100px) 0;border-top:1px solid var(--color-divider);background:var(--color-surface);scroll-margin-top:72px">
+  <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,5cqi,64px)">
+    <span style="display:block;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">07 · Integrations &amp; sovereignty</span>
+    <div style="height:1px;background:var(--color-divider);margin:12px 0 32px"></div>
+    <h2 id="sov-h" style="margin:0 0 48px;font-size:clamp(32px,4.8cqi,56px);line-height:1;text-transform:uppercase;max-width:22ch">Will it fit my work? Will my mind stay mine?</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:clamp(28px,4cqi,48px)">
+      <div class="blueprint" style="padding:clamp(20px,3cqi,32px);display:flex;flex-direction:column;gap:20px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <h3 style="margin:0;font-size:26px;text-transform:uppercase">Works beside the systems you already steward</h3>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div><div style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent);margin-bottom:8px">Planetary consoles{{ ast }}</div><div style="display:flex;flex-wrap:wrap;gap:8px"><span style="border:1px solid var(--color-divider);padding:6px 12px;font-size:13px">HydroMind Console</span><span style="border:1px solid var(--color-divider);padding:6px 12px;font-size:13px">OceanSense</span><span style="border:1px solid var(--color-divider);padding:6px 12px;font-size:13px">AtmosGrid</span></div></div>
+          <div><div style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent);margin-bottom:8px">Commons &amp; governance{{ ast }}</div><div style="display:flex;flex-wrap:wrap;gap:8px"><span style="border:1px solid var(--color-divider);padding:6px 12px;font-size:13px">Commons Ledger</span><span style="border:1px solid var(--color-divider);padding:6px 12px;font-size:13px">Haven Ring Commons Board</span><span style="border:1px solid var(--color-divider);padding:6px 12px;font-size:13px">Bioregional DAO kits</span></div></div>
+          <div><div style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent);margin-bottom:8px">Calendars &amp; messaging</div><div style="display:flex;flex-wrap:wrap;gap:8px"><span style="border:1px solid var(--color-divider);padding:6px 12px;font-size:13px">Commons calendars</span><span style="border:1px solid var(--color-divider);padding:6px 12px;font-size:13px">Crew chat</span></div></div>
+          <div><div style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent);margin-bottom:8px">Habitat systems</div><div style="display:flex;flex-wrap:wrap;gap:8px"><span style="border:1px solid var(--color-divider);padding:6px 12px;font-size:13px">Closed-loop water</span><span style="border:1px solid var(--color-divider);padding:6px 12px;font-size:13px">Habitat-time clocks</span></div></div>
+          <div><div style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 66%,transparent);margin-bottom:8px">Interfaces</div><div style="display:flex;flex-wrap:wrap;gap:8px"><span style="border:1px solid var(--color-divider);padding:6px 12px;font-size:13px">Open neural-interface standards</span><span style="border:1px solid var(--color-divider);padding:6px 12px;font-size:13px">Voice</span><span style="border:1px solid var(--color-divider);padding:6px 12px;font-size:13px">Text</span></div></div>
+        </div>
+        <p style="margin:0;font-size:15px;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Integrations batch alerts into windows you choose, so Braidwater reduces chimes rather than adding them.</p>
+        <a href="#sovereignty" style="font-size:15px;font-weight:500;margin-top:auto">See every integration →</a>
+      </div>
+      <div class="blueprint" style="padding:clamp(20px,3cqi,32px);display:flex;flex-direction:column;gap:20px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <h3 style="margin:0;font-size:26px;text-transform:uppercase">Your mind stays yours</h3>
+        <div style="border:1px solid var(--color-accent);padding:14px 16px;display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-200)">Published · plain language</span><span style="font-family:var(--font-heading);font-weight:600;font-size:22px">Mind Sovereignty Charter</span></div>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;font-size:14px">
+          <li style="padding:9px 0;border-bottom:1px solid var(--color-divider)">Consent ledger records every change and who approved it</li>
+          <li style="padding:9px 0;border-bottom:1px solid var(--color-divider)">Keep / Release choice after every session</li>
+          <li style="padding:9px 0;border-bottom:1px solid var(--color-divider)">Local-first session data, end-to-end encrypted (256-bit)</li>
+          <li style="padding:9px 0;border-bottom:1px solid var(--color-divider)">Sessions never used to train any model</li>
+          <li style="padding:9px 0;border-bottom:1px solid var(--color-divider)">Export or delete everything in one step</li>
+          <li style="padding:9px 0;border-bottom:1px solid var(--color-divider)">SSO/SAML and role-based access for commons accounts</li>
+          <li style="padding:9px 0">Independent annual audits, reports published</li>
+        </ul>
+        <div style="display:flex;flex-wrap:wrap;gap:8px"><span class="tag tag-outline" style="color:var(--color-text);border-color:var(--color-divider)">SOC 2 Type II · audit in progress</span><span class="tag tag-outline" style="color:var(--color-text);border-color:var(--color-divider)">ISO 27001 · audit in progress</span><span class="tag tag-outline" style="color:var(--color-text);border-color:var(--color-divider)">GDPR · audit in progress</span><span class="tag tag-outline" style="color:var(--color-text);border-color:var(--color-divider)">CCPA · audit in progress</span></div>
+        <a href="#sovereignty" style="font-size:15px;font-weight:500;margin-top:auto">Read the Sovereignty documentation →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 VIDEO -->
+<section id="video" aria-labelledby="video-h" style="padding:clamp(72px,10cqi,120px) 0;border-top:1px solid var(--color-divider);scroll-margin-top:72px">
+  <div style="max-width:960px;margin:0 auto;padding:0 clamp(20px,5cqi,64px)">
+    <span style="display:block;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">08 · First session</span>
+    <div style="height:1px;background:var(--color-divider);margin:12px 0 32px"></div>
+    <h2 id="video-h" style="margin:0;font-size:clamp(32px,4.8cqi,56px);line-height:1;text-transform:uppercase">Watch a first session, unedited</h2>
+    <p style="margin:16px 0 40px;font-size:17px;max-width:60ch;color:color-mix(in srgb,var(--color-text) 78%,transparent)">Three minutes from a real first session: one steward, one decision, no music, no edits that hide the hard part.</p>
+    <div class="blueprint" style="position:relative;aspect-ratio:16/9">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <sc-if value="{{ videoFacade }}" hint-placeholder-val="{{ true }}">
+        <button type="button" sc-camel-on-click="{{ playVideo }}" aria-label="Play first-session video, 3 minutes 12 seconds, captions on" style="position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;background:transparent;color:var(--color-text);cursor:pointer;display:block">
+          <div style="position:absolute;inset:8% 6%;opacity:.55">{{ braidPoster }}</div>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+            <span style="width:76px;height:76px;border:1px solid var(--color-accent);display:grid;place-items:center;background:color-mix(in srgb,var(--color-bg) 70%,transparent);box-shadow:0 0 0 14px color-mix(in srgb,var(--color-accent) 10%,transparent),0 0 0 30px color-mix(in srgb,var(--color-accent) 5%,transparent)"><svg width="26" height="26" sc-camel-view-box="0 0 24 24" fill="none" stroke="var(--color-accent-200)" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><polygon points="7 4 19 12 7 20 7 4"></polygon></svg></span>
+            <span style="font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase">Play · 3:12 · Captions on</span>
+          </div>
+        </button>
+      </sc-if>
+      <sc-if value="{{ videoPlaying }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#0b1015">
+          <div style="flex:1;display:grid;place-items:center;padding:24px;text-align:center;position:relative">
+            <span style="position:absolute;left:16px;top:12px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 60%,transparent)">Video placeholder · {{ chapterTitle }}</span>
+            <p style="margin:0;max-width:34ch;font-size:clamp(16px,2.4cqi,22px);line-height:1.4;background:rgba(0,0,0,.6);padding:8px 14px">{{ captionText }}</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid var(--color-divider)">
+            <button type="button" class="btn btn-icon btn-ghost" sc-camel-on-click="{{ pauseVideo }}" aria-label="Back to poster" style="width:36px;height:36px"><svg width="16" height="16" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg></button>
+            <div style="flex:1;height:4px;background:var(--color-divider);position:relative"><div style="position:absolute;left:0;top:0;bottom:0;width:{{ progressPct }};background:var(--color-accent)"></div></div>
+            <span style="font-size:12px;font-feature-settings:'tnum' 1">{{ chapterTime }} / 3:12</span>
+            <span style="font-size:11px;border:1px solid var(--color-divider);padding:2px 6px">CC</span>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+    <ol style="list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border-left:1px solid var(--color-divider)">
+      <sc-for list="{{ chapters }}" as="ch" hint-placeholder-count="5">
+        <li style="border-right:1px solid var(--color-divider);border-bottom:1px solid var(--color-divider);border-top:1px solid var(--color-divider)">
+          <button type="button" sc-camel-on-click="{{ ch.onClick }}" aria-current="{{ ch.current }}" style="width:100%;min-height:64px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;align-items:flex-start;text-align:left;background:{{ ch.bg }};border:0;color:var(--color-text);font:inherit;cursor:pointer" style-hover="background:color-mix(in srgb,var(--color-accent) 10%,transparent)">
+            <span style="font-size:12px;font-feature-settings:'tnum' 1;color:var(--color-accent-300)">{{ ch.t }}</span><span style="font-size:14px">{{ ch.label }}</span>
+          </button>
+        </li>
+      </sc-for>
+    </ol>
+    <div style="margin-top:16px">
+      <button type="button" class="btn btn-ghost" sc-camel-on-click="{{ toggleTranscript }}" aria-expanded="{{ transcriptOpen }}">{{ transcriptLabel }}</button>
+      <sc-if value="{{ transcriptOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:12px;border-left:1px solid var(--color-accent);padding:4px 0 4px 18px;display:flex;flex-direction:column;gap:10px;font-size:15px;max-width:68ch;color:color-mix(in srgb,var(--color-text) 82%,transparent)">
+          <p style="margin:0"><b style="font-weight:600">0:00</b> — Intake: "When did you last trust your own judgment over a model's, and were you right?" "Yesterday. Yes. And Year 11, when I didn't, and I wasn't."</p>
+          <p style="margin:0"><b style="font-weight:600">0:40</b> — "Name the decision you are carrying." The Alcochete gates. "Before the model speaks, where does this decision live in your body?" Under the sternum. Named back as a signal.</p>
+          <p style="margin:0"><b style="font-weight:600">1:25</b> — The pull toward another input, every ninety seconds. "There's the pull. Let it pass like a boat wake."</p>
+          <p style="margin:0"><b style="font-weight:600">2:10</b> — Scenarios arrive one at a time. Twelve become five. Five become two. One gut fear is shown to be an old echo.</p>
+          <p style="margin:0"><b style="font-weight:600">2:55</b> — Stop. Keep the body map. Release the rest.</p>
+        </div>
+      </sc-if>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;margin-top:40px">
+      <button type="button" class="btn btn-primary" sc-camel-on-click="{{ openIntake }}" style="min-height:52px;padding:0 24px;font-size:16px">Ready for your own? Take the seam intake</button>
+      <a href="#" sc-camel-on-click="{{ openStewardLink }}" style="font-size:15px">Skip ahead to talk with a steward</a>
+    </div>
+  </div>
+</section>
+
+<!-- 11 FINAL CTA -->
+<section id="final" aria-labelledby="final-h" style="padding:clamp(96px,12cqi,150px) 0;background-color:var(--color-accent-900);background-image:linear-gradient(color-mix(in srgb,var(--color-accent) 12%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--color-accent) 12%,transparent) 1px,transparent 1px);background-size:48px 48px">
+  <div style="max-width:800px;margin:0 auto;padding:0 clamp(20px,5cqi,64px);text-align:center;display:flex;flex-direction:column;align-items:center;gap:24px">
+    <h2 id="final-h" style="margin:0;font-size:clamp(40px,6cqi,64px);line-height:1;text-transform:uppercase;text-wrap:balance">The river does not hurry, and yet it arrives.</h2>
+    <p style="margin:0;font-size:18px;max-width:46ch;color:color-mix(in srgb,var(--color-text) 85%,transparent)">Your first session takes about 90 minutes. Bring one real decision. Leave with your own read back.</p>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:8px">
+      <button type="button" class="btn btn-primary blueprint" sc-camel-on-click="{{ openIntake }}" style="min-height:60px;padding:0 32px;font-size:18px"><i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>Take the seam intake</button>
+      <button type="button" class="btn btn-secondary" sc-camel-on-click="{{ openSteward }}" style="min-height:60px;padding:0 28px;font-size:18px;border-color:color-mix(in srgb,var(--color-text) 50%,transparent)">Talk with a steward</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;font-size:13px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:color-mix(in srgb,var(--color-text) 80%,transparent)"><span>Stop anytime</span><span aria-hidden="true">·</span><span>Sliding scale</span><span aria-hidden="true">·</span><span>15% to your commons</span><span aria-hidden="true">·</span><span>First session within 7 days</span></div>
+  </div>
+</section>
+</main>
+
+<div style="padding:28px clamp(20px,5cqi,64px);text-align:center;font-size:15px;border-bottom:1px solid var(--color-divider);color:color-mix(in srgb,var(--color-text) 78%,transparent)">Not ready? Save this page and <a href="#" sc-camel-on-click="{{ openJournalLink }}">read Mara's journal</a>.</div>
+
+<!-- 12 FOOTER -->
+<footer style="background:#0d1218;padding:80px 0 40px;font-size:14px;line-height:1.6">
+  <div style="max-width:1200px;margin:0 auto;padding:0 clamp(20px,5cqi,64px)">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:40px 32px">
+      <div style="display:flex;flex-direction:column;gap:14px;grid-column:span 2;min-width:0">
+        <span style="display:flex;align-items:center;gap:10px;font-family:var(--font-heading);font-weight:600;font-size:22px;letter-spacing:.06em;text-transform:uppercase"><svg width="30" height="20" sc-camel-view-box="0 0 30 20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M1 3c8 0 9 7 16 7h12"></path><path d="M1 10c5 0 6-3 9-3s4 3 7 3"></path><path d="M1 17c8 0 9-7 16-7"></path></svg>Braidwater</span>
+        <span style="color:color-mix(in srgb,var(--color-text) 75%,transparent)">Become one river again.</span>
+        <label for="bw-news" style="font-weight:500;margin-top:8px">Field Notes, once a month. No streaks, no nudges.</label>
+        <sc-if value="{{ newsIdle }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;gap:8px;max-width:400px">
+            <input id="bw-news" class="input" type="email" placeholder="you@commons.earth" value="{{ news }}" sc-camel-on-change="{{ onNews }}" style="flex:1;min-height:44px">
+            <button type="button" class="btn btn-primary" sc-camel-on-click="{{ subscribe }}" style="min-height:44px;padding:0 16px">Subscribe</button>
+          </div>
+          <sc-if value="{{ hasNewsErr }}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size:13px;color:#e57a70">That email looks incomplete. Mind checking it?</span></sc-if>
+        </sc-if>
+        <sc-if value="{{ newsDone }}" hint-placeholder-val="{{ false }}"><span role="status" style="color:var(--color-accent-200)">Subscribed. The first Field Notes arrives next month.</span></sc-if>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px"><a href="#" style="color:var(--color-text)" style-hover="color:var(--color-accent-300)">Video channel</a><a href="#" style="color:var(--color-text)" style-hover="color:var(--color-accent-300)">Professional network</a><a href="#" style="color:var(--color-text)" style-hover="color:var(--color-accent-300)">Commons Board</a><a href="#" style="color:var(--color-text)" style-hover="color:var(--color-accent-300)">Field Notes RSS</a></div>
+      </div>
+      <nav aria-label="The Practice" style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">The Practice</span><a href="#features" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Seam Console</a><a href="#features" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Braid Visualizer</a><a href="#features" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Clear Stream Tracker</a><a href="#access" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Access</a><a href="#" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Changelog</a></nav>
+      <nav aria-label="Field Notes" style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Field Notes</span><a href="#" sc-camel-on-click="{{ openJournalLink }}" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Member journals</a><a href="#" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Research library</a><a href="#" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Steward guides</a><a href="#" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Peer circles</a><a href="#" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Help center</a></nav>
+      <nav aria-label="Commons" style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Commons</span><a href="#" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">About</a><a href="#" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Become a steward guide</a><a href="#" sc-camel-on-click="{{ openStewardLink }}" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Contact</a><a href="#" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Press kit</a><a href="#" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Partner commons</a></nav>
+      <nav aria-label="Sovereignty" style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Sovereignty</span><a href="#sovereignty" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Mind Sovereignty Charter</a><a href="#" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Privacy</a><a href="#" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Terms</a><a href="#" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Cookie choices</a><a href="#" style="color:var(--color-text);text-decoration:none" style-hover="color:var(--color-accent-300)">Export or delete my data</a></nav>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:16px;margin-top:56px;padding-top:24px;border-top:1px solid var(--color-divider);font-size:13px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">
+      <span>© Braidwater Commons · Quiet by design: this page never plays a sound.</span>
+      <button type="button" class="btn btn-secondary" sc-camel-on-click="{{ toggleStill }}" aria-pressed="{{ still }}" style="min-height:40px;font-size:13px;display:inline-flex;gap:8px">{{ stillLabel }}</button>
+    </div>
+    <sc-if value="{{ markPlaceholders }}" hint-placeholder-val="{{ true }}">
+      <p style="margin:16px 0 0;font-size:12px;color:color-mix(in srgb,var(--color-text) 62%,transparent);max-width:90ch">* In-world placeholder. Names, organizations, quotes and figures marked with an asterisk must be replaced with verified data and written consent before launch. The only sourced statistic is Gloria Mark's 47-second attention finding.</p>
+    </sc-if>
+  </div>
+</footer>
+</div>
+
+<!-- Mobile menu sheet -->
+<sc-if value="{{ menu }}" hint-placeholder-val="{{ false }}">
+  <div sc-camel-on-click="{{ closeMenu }}" style="position:fixed;inset:0;z-index:1900;background:color-mix(in srgb,#05080b 40%,transparent)">
+    <div role="dialog" aria-modal="true" aria-label="Menu" sc-camel-on-click="{{ stop }}" style="position:absolute;top:0;right:0;bottom:0;width:min(360px,88vw);background:var(--color-bg);border-left:1px solid var(--color-divider);padding:16px 20px;display:flex;flex-direction:column;gap:4px;overflow:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;min-height:52px;margin-bottom:8px">
+        <span style="font-family:var(--font-heading);font-weight:600;font-size:20px;letter-spacing:.06em;text-transform:uppercase">Braidwater</span>
+        <button type="button" class="btn btn-icon btn-secondary" sc-camel-on-click="{{ closeMenu }}" aria-label="Close menu" style="width:44px;height:44px"><svg width="20" height="20" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+      </div>
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="5">
+        <a href="{{ n.href }}" sc-camel-on-click="{{ n.onClick }}" style="display:flex;align-items:center;min-height:52px;border-bottom:1px solid var(--color-divider);font-family:var(--font-heading);font-weight:600;font-size:24px;text-transform:uppercase;color:var(--color-text);text-decoration:none">{{ n.label }}</a>
+      </sc-for>
+      <button type="button" class="btn btn-primary btn-block" sc-camel-on-click="{{ openIntake }}" style="min-height:52px;font-size:16px;margin-top:20px">Take the seam intake</button>
+      <button type="button" class="btn btn-secondary btn-block" sc-camel-on-click="{{ openSteward }}" style="min-height:52px;font-size:16px">Talk with a steward</button>
+      <button type="button" class="btn btn-ghost" sc-camel-on-click="{{ openSignin }}" style="min-height:48px;margin-top:8px">Sign in</button>
+      <button type="button" class="btn btn-ghost" sc-camel-on-click="{{ toggleStill }}" aria-pressed="{{ still }}" style="min-height:48px">{{ stillLabel }}</button>
+    </div>
+  </div>
+</sc-if>
+
+<!-- Intake modal -->
+<sc-if value="{{ mIntake }}" hint-placeholder-val="{{ false }}">
+  <div class="dialog-backdrop" sc-camel-on-click="{{ closeModal }}" style="z-index:2000;background:color-mix(in srgb,#05080b 75%,transparent);backdrop-filter:blur(4px)">
+    <div class="dialog blueprint" role="dialog" aria-modal="true" aria-labelledby="intake-title" sc-camel-on-click="{{ stop }}" style="width:min(600px,100%);background:var(--color-bg);padding:0;gap:0;box-shadow:var(--shadow-lg)">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <div style="max-height:calc(100vh - 48px);overflow:auto;padding:clamp(20px,4vw,32px);display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">{{ stepLabel }}</span>
+            <span id="intake-title" class="dialog-title" style="font-size:28px;text-transform:uppercase;line-height:1.05">{{ intakeTitle }}</span>
+          </div>
+          <button type="button" class="btn btn-icon btn-secondary" sc-camel-on-click="{{ closeModal }}" aria-label="Close intake" style="width:44px;height:44px;flex:none"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+        </div>
+        <div style="height:2px;background:var(--color-divider)"><div style="height:100%;width:{{ stepPct }};background:var(--color-accent);transition:width .26s cubic-bezier(.22,1,.36,1)"></div></div>
+
+        <sc-if value="{{ iStep1 }}" hint-placeholder-val="{{ true }}">
+          <p style="margin:0;font-size:15px;color:color-mix(in srgb,var(--color-text) 78%,transparent)">About four minutes. Minimal questions; one of them matters more than the rest.</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+            <div class="field"><label for="in-name">Name</label><input id="in-name" class="input" data-form="intake" data-key="name" value="{{ intake.name }}" sc-camel-on-change="{{ onField }}" autocomplete="name" style="min-height:48px;font-size:16px"></div>
+            <div class="field"><label for="in-email">Email</label><input id="in-email" class="input" type="email" data-form="intake" data-key="email" value="{{ intake.email }}" sc-camel-on-change="{{ onField }}" autocomplete="email" style="min-height:48px;font-size:16px"></div>
+          </div>
+          <div class="field"><label>Where you live</label>
+            <div class="seg" role="radiogroup" aria-label="Where you live" style="display:flex">
+              <label class="seg-opt" style="flex:1;justify-content:center;min-height:44px"><input type="radio" name="in-where" value="Earth" data-form="intake" data-key="where" checked="{{ whereEarth }}" sc-camel-on-change="{{ onField }}">Earth</label>
+              <label class="seg-opt" style="flex:1;justify-content:center;min-height:44px"><input type="radio" name="in-where" value="Orbital" data-form="intake" data-key="where" checked="{{ whereOrbit }}" sc-camel-on-change="{{ onField }}">Orbital</label>
+              <label class="seg-opt" style="flex:1;justify-content:center;min-height:44px"><input type="radio" name="in-where" value="Settlement" data-form="intake" data-key="where" checked="{{ whereSettle }}" sc-camel-on-change="{{ onField }}">Settlement</label>
+            </div>
+          </div>
+          <div class="field"><label for="in-role">Role</label><input id="in-role" class="input" placeholder="e.g. Watershed steward, habitat crew, caregiver" data-form="intake" data-key="role" value="{{ intake.role }}" sc-camel-on-change="{{ onField }}" style="min-height:48px;font-size:16px"></div>
+        </sc-if>
+
+        <sc-if value="{{ iStep2 }}" hint-placeholder-val="{{ false }}">
+          <label for="in-q" style="font-family:var(--font-heading);font-weight:600;font-size:clamp(22px,3.4vw,28px);line-height:1.2">When did you last trust your own judgment over a model's, and were you right?</label>
+          <textarea id="in-q" class="input" rows="5" data-form="intake" data-key="question" value="{{ intake.question }}" sc-camel-on-change="{{ onField }}" placeholder="A sentence is enough." style="font-size:16px;min-height:140px"></textarea>
+          <span style="font-size:13px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Only a steward reads this. It never trains any model.</span>
+        </sc-if>
+
+        <sc-if value="{{ iStep3 }}" hint-placeholder-val="{{ false }}">
+          <div class="field"><label>Pay from</label>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+              <label class="radio" style="min-height:36px"><input type="radio" name="in-src" value="Dividend" data-form="intake" data-key="source" checked="{{ srcDiv }}" sc-camel-on-change="{{ onField }}"><span class="dot"></span>Universal Baseline Dividend (a % each month)</label>
+              <label class="radio" style="min-height:36px"><input type="radio" name="in-src" value="Tokens" data-form="intake" data-key="source" checked="{{ srcTok }}" sc-camel-on-change="{{ onField }}"><span class="dot"></span>Self-sovereignty tokens</label>
+              <label class="radio" style="min-height:36px"><input type="radio" name="in-src" value="Hours" data-form="intake" data-key="source" checked="{{ srcHrs }}" sc-camel-on-change="{{ onField }}"><span class="dot"></span>Contribution hours</label>
+            </div>
+          </div>
+          <div class="field"><label>Access</label>
+            <div class="seg" role="radiogroup" aria-label="Access level" style="display:flex">
+              <label class="seg-opt" style="flex:1;justify-content:center;min-height:44px"><input type="radio" name="in-plan" value="Stream" data-form="intake" data-key="plan" checked="{{ planStream }}" sc-camel-on-change="{{ onField }}">Stream · 4%</label>
+              <label class="seg-opt" style="flex:1;justify-content:center;min-height:44px"><input type="radio" name="in-plan" value="Braid" data-form="intake" data-key="plan" checked="{{ planBraid }}" sc-camel-on-change="{{ onField }}">Braid · 6%</label>
+              <label class="seg-opt" style="flex:1;justify-content:center;min-height:44px"><input type="radio" name="in-plan" value="Unsure" data-form="intake" data-key="plan" checked="{{ planUnsure }}" sc-camel-on-change="{{ onField }}">Not sure yet</label>
+            </div>
+          </div>
+          <div style="border:1px solid var(--color-divider);padding:14px 16px;font-size:14px;display:flex;flex-direction:column;gap:4px">
+            <span>15% of your contribution flows back to your commons. Sliding scale available; sponsored seats if you need one.</span>
+            <span style="color:color-mix(in srgb,var(--color-text) 70%,transparent)">No data extraction. No lock-in.</span>
+          </div>
+          <label class="radio" style="font-size:14px;align-items:flex-start"><input type="checkbox" data-form="intake" data-key="consent" checked="{{ intake.consent }}" sc-camel-on-change="{{ onField }}" style="position:static;opacity:1;width:18px;height:18px;pointer-events:auto;accent-color:var(--color-accent);margin:2px 0 0;flex:none"><span>I understand I can stop any session at any moment, and nothing stays changed that I don't choose to keep. <a href="#sovereignty" sc-camel-on-click="{{ closeModal }}">Privacy</a></span></label>
+        </sc-if>
+
+        <sc-if value="{{ iSending }}" hint-placeholder-val="{{ false }}">
+          <div role="status" style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:32px 0">
+            {{ loader }}
+            <span style="font-size:15px">Braiding…</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ iDone }}" hint-placeholder-val="{{ false }}">
+          <div role="status" style="display:flex;flex-direction:column;gap:14px;padding:8px 0">
+            <svg width="48" height="48" sc-camel-view-box="0 0 48 48" fill="none" aria-hidden="true"><circle cx="24" cy="24" r="22" stroke="var(--color-accent)" opacity=".4"></circle><circle cx="24" cy="24" r="14" stroke="var(--color-accent)"></circle><path d="M17 24.5l5 5 9-10" stroke="var(--color-accent-200)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            <p style="margin:0;font-family:var(--font-heading);font-weight:600;font-size:26px;line-height:1.15">Received. A steward will write within a day.</p>
+            <p style="margin:0;font-size:15px;color:color-mix(in srgb,var(--color-text) 80%,transparent)">Your first session will be within 7 days. Bring one real decision. Until then, nothing has changed, and nothing will without your say.</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ hasIErr }}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size:14px;color:#e57a70">{{ iErr }}</span></sc-if>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--color-divider);padding-top:16px">
+          <sc-if value="{{ showBack }}" hint-placeholder-val="{{ false }}"><button type="button" class="btn btn-ghost" sc-camel-on-click="{{ iBack }}" style="min-height:44px">Back</button></sc-if>
+          <sc-if value="{{ noBack }}" hint-placeholder-val="{{ true }}"><span style="font-size:13px;color:color-mix(in srgb,var(--color-text) 62%,transparent)">Stop anytime</span></sc-if>
+          <sc-if value="{{ showNext }}" hint-placeholder-val="{{ true }}"><button type="button" class="btn btn-primary" sc-camel-on-click="{{ iNext }}" style="min-height:48px;padding:0 24px;font-size:15px">{{ nextLabel }}</button></sc-if>
+          <sc-if value="{{ iDone }}" hint-placeholder-val="{{ false }}"><button type="button" class="btn btn-secondary" sc-camel-on-click="{{ closeModal }}" style="min-height:48px;padding:0 24px">Back to the page</button></sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- Steward modal -->
+<sc-if value="{{ mSteward }}" hint-placeholder-val="{{ false }}">
+  <div class="dialog-backdrop" sc-camel-on-click="{{ closeModal }}" style="z-index:2000;background:color-mix(in srgb,#05080b 75%,transparent);backdrop-filter:blur(4px)">
+    <div class="dialog blueprint" role="dialog" aria-modal="true" aria-labelledby="st-title" sc-camel-on-click="{{ stop }}" style="width:min(560px,100%);background:var(--color-bg);padding:0;gap:0;box-shadow:var(--shadow-lg)">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <div style="max-height:calc(100vh - 48px);overflow:auto;padding:clamp(20px,4vw,32px);display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+          <div><span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">A practitioner, not a sales rep</span><div id="st-title" class="dialog-title" style="font-size:28px;text-transform:uppercase;line-height:1.05">Talk with a steward</div></div>
+          <button type="button" class="btn btn-icon btn-secondary" sc-camel-on-click="{{ closeModal }}" aria-label="Close" style="width:44px;height:44px;flex:none"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+        </div>
+        <sc-if value="{{ sForm }}" hint-placeholder-val="{{ true }}">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+            <div class="field"><label for="st-name">Name</label><input id="st-name" class="input" data-form="steward" data-key="name" value="{{ steward.name }}" sc-camel-on-change="{{ onField }}" style="min-height:48px;font-size:16px"></div>
+            <div class="field"><label for="st-email">Email</label><input id="st-email" class="input" type="email" data-form="steward" data-key="email" value="{{ steward.email }}" sc-camel-on-change="{{ onField }}" style="min-height:48px;font-size:16px"></div>
+            <div class="field"><label for="st-commons">Commons or habitat</label><input id="st-commons" class="input" data-form="steward" data-key="commons" value="{{ steward.commons }}" sc-camel-on-change="{{ onField }}" style="min-height:48px;font-size:16px"></div>
+            <div class="field"><label for="st-crew">Crew size</label><sc-raw-select id="st-crew" class="input" data-form="steward" data-key="crew" value="{{ steward.crew }}" sc-camel-on-change="{{ onField }}" style="min-height:48px;font-size:16px"><option>Just me</option><option>2–5</option><option>6–20</option><option>21–100</option><option>100+</option></sc-raw-select></div>
+          </div>
+          <div class="field"><label for="st-mind">What's on your mind (optional)</label><textarea id="st-mind" class="input" rows="3" data-form="steward" data-key="mind" value="{{ steward.mind }}" sc-camel-on-change="{{ onField }}" style="font-size:16px"></textarea></div>
+          <label class="radio" style="font-size:14px;align-items:flex-start"><input type="checkbox" data-form="steward" data-key="consent" checked="{{ steward.consent }}" sc-camel-on-change="{{ onField }}" style="position:static;opacity:1;width:18px;height:18px;pointer-events:auto;accent-color:var(--color-accent);margin:2px 0 0;flex:none"><span>A steward may write to me about this request. Nothing else.</span></label>
+          <sc-if value="{{ hasSErr }}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size:14px;color:#e57a70">{{ sErr }}</span></sc-if>
+          <button type="button" class="btn btn-primary" sc-camel-on-click="{{ sSubmit }}" style="min-height:48px;align-self:flex-end;padding:0 24px;font-size:15px">Request a call</button>
+        </sc-if>
+        <sc-if value="{{ sSending }}" hint-placeholder-val="{{ false }}"><div role="status" style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:32px 0">{{ loader }}<span>Braiding…</span></div></sc-if>
+        <sc-if value="{{ sDone }}" hint-placeholder-val="{{ false }}">
+          <p role="status" style="margin:0;font-family:var(--font-heading);font-weight:600;font-size:26px;line-height:1.15">Received. A steward will write within a day.</p>
+          <button type="button" class="btn btn-secondary" sc-camel-on-click="{{ closeModal }}" style="min-height:48px;align-self:flex-start;padding:0 24px">Back to the page</button>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- Sign in modal -->
+<sc-if value="{{ mSignin }}" hint-placeholder-val="{{ false }}">
+  <div class="dialog-backdrop" sc-camel-on-click="{{ closeModal }}" style="z-index:2000;background:color-mix(in srgb,#05080b 75%,transparent);backdrop-filter:blur(4px)">
+    <div class="dialog blueprint" role="dialog" aria-modal="true" aria-labelledby="si-title" sc-camel-on-click="{{ stop }}" style="width:min(420px,100%);background:var(--color-bg);padding:28px;gap:16px;box-shadow:var(--shadow-lg)">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <div style="display:flex;justify-content:space-between;align-items:center"><span id="si-title" class="dialog-title" style="font-size:26px;text-transform:uppercase">Sign in</span><button type="button" class="btn btn-icon btn-secondary" sc-camel-on-click="{{ closeModal }}" aria-label="Close" style="width:44px;height:44px"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div>
+      <sc-if value="{{ siForm }}" hint-placeholder-val="{{ true }}">
+        <div class="field"><label for="si-email">Email</label><input id="si-email" class="input" type="email" data-form="signin" data-key="email" value="{{ signin.email }}" sc-camel-on-change="{{ onField }}" style="min-height:48px;font-size:16px"></div>
+        <sc-if value="{{ hasSiErr }}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size:14px;color:#e57a70">That email looks incomplete. Mind checking it?</span></sc-if>
+        <button type="button" class="btn btn-primary btn-block" sc-camel-on-click="{{ siSubmit }}" style="min-height:48px">Send me a sign-in link</button>
+        <span style="font-size:13px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">No passwords. One link, valid for 15 minutes.</span>
+      </sc-if>
+      <sc-if value="{{ siDone }}" hint-placeholder-val="{{ false }}"><p role="status" style="margin:0;font-size:16px">Check your inbox. The link opens your Seam Console.</p></sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<!-- Journal modal -->
+<sc-if value="{{ mJournal }}" hint-placeholder-val="{{ false }}">
+  <div class="dialog-backdrop" sc-camel-on-click="{{ closeModal }}" style="z-index:2000;background:color-mix(in srgb,#05080b 75%,transparent);backdrop-filter:blur(4px)">
+    <div class="dialog blueprint" role="dialog" aria-modal="true" aria-labelledby="j-title" sc-camel-on-click="{{ stop }}" style="width:min(760px,100%);background:var(--color-bg);padding:0;gap:0;box-shadow:var(--shadow-lg)">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <div ref="{{ jScrollRef }}" style="max-height:calc(100vh - 48px);overflow:auto;padding:clamp(20px,4vw,40px);display:flex;flex-direction:column;gap:20px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+          <div><span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Field Notes · member journal{{ ast }}</span><div id="j-title" class="dialog-title" style="font-size:30px;text-transform:uppercase;line-height:1.05">Mara's journal</div><span style="display:block;font-size:14px;color:color-mix(in srgb,var(--color-text) 70%,transparent)">Mara Lindqvist-Oduya, Watershed Steward, Tagus-Atlantic Commons. She writes on paper because the console cannot read her handwriting.</span></div>
+          <button type="button" class="btn btn-icon btn-secondary" sc-camel-on-click="{{ closeModal }}" aria-label="Close journal" style="width:44px;height:44px;flex:none"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+        </div>
+        <div class="seg" role="tablist" aria-label="Journal entries" style="display:flex;flex-shrink:0">
+          <label class="seg-opt" style="flex:1;justify-content:center;min-height:44px"><input type="radio" name="j-tab" checked="{{ jt0 }}" sc-camel-on-change="{{ setJ0 }}">Before</label>
+          <label class="seg-opt" style="flex:1;justify-content:center;min-height:44px"><input type="radio" name="j-tab" checked="{{ jt1 }}" sc-camel-on-change="{{ setJ1 }}">During</label>
+          <label class="seg-opt" style="flex:1;justify-content:center;min-height:44px"><input type="radio" name="j-tab" checked="{{ jt2 }}" sc-camel-on-change="{{ setJ2 }}">After</label>
+        </div>
+        <div style="max-width:64ch;display:flex;flex-direction:column;gap:14px;font-size:16px;line-height:1.7;color:color-mix(in srgb,var(--color-text) 88%,transparent)">
+          <sc-if value="{{ jt0 }}" hint-placeholder-val="{{ true }}">
+            <span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Entry One — Before</span>
+            <p style="margin:0 0 6px;font-size:14px;line-height:1.55;font-style:italic;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Transition Year 14, Day 211 · 3:14 a.m. · Kitchen table, Lisbon. The fridge hums. Everyone else is asleep.</p>
+            <p style="margin:0">I am writing this by hand because the console cannot read my handwriting, and tonight I need one room it cannot enter.</p>
+            <p style="margin:0">3:14. The ceiling again. I have memorized it the way I used to memorize river maps. A hairline crack runs from the light fixture to the window like a dry tributary. An old leak stain has bloomed brown in the corner, and I swear it is shaped like the Tagus delta. I lay there for an hour counting decisions. Forty-seven today. I can name maybe nine that I actually <i>made</i>. The rest I signed.</p>
+            <p style="margin:0">Signed. A thumbprint on a glowing pane. A soft chime. The model's confidence score sitting there in its calm, pastel green, 94%, 97%, 91%, like a nurse patting the back of my hand.</p>
+            <p style="margin:0">Something is wrong with my mind and I do not know what it is called.</p>
+            <p style="margin:0">Let me try to describe it, because that is what this notebook is for. My thoughts are water poured onto a hot pan. They don't flow. They skitter. They bead and hiss and scatter into a hundred bright droplets, each one racing for an edge. I begin a thought about sediment load in the lower reach, and before it is finished I am checking a sensor in Sector 9, then Isa's school portal, then a message from Teo timestamped from orbit, then the commons vote, then... what was I thinking about?</p>
+            <p style="margin:0"><i>Tab-brain.</i> That is what I call it with the crew, and they laugh, because they have it too. Nobody laughs for very long.</p>
+            <p style="margin:0">I once read that a researcher before the Transition, Gloria Mark, clocked people's attention on a screen at about forty-seven seconds before it jumped. Forty-seven. The same number as my decisions today. I laughed out loud, alone in this kitchen, and it sounded like someone else's laugh coming through a wall.</p>
+            <span aria-hidden="true" style="display:block;text-align:center;letter-spacing:.6em;color:color-mix(in srgb,var(--color-text) 40%,transparent)">···</span>
+            <p style="margin:0">It happened again today. The near-miss.</p>
+            <p style="margin:0">2:40 p.m., the Alcochete gates. The model wanted to hold water upstream for another 36 hours. It offered twelve scenarios, each one beautiful, each a braided ribbon of probability glowing blue and gold on the screen. And under my sternum something went cold and tight, a fist made of river stones. The same feeling as the levee in Year 6. The same feeling I <i>ignored</i> in Year 11.</p>
+            <p style="margin:0">I felt the river. I swear I felt it. Too much pressure behind the gates. The clay on the east bank already soft as wet bread. But my eyes were burning, nine panes were open, the console was chiming, and Rui was saying, <i>"The model has it handled, you just need to sign off,"</i> and my thumb was halfway to the glass before I stopped.</p>
+            <p style="margin:0">I didn't sign. I sent Bea's crew to look at the bank. It was slumping. Forty centimeters.</p>
+            <p style="margin:0">So I was right. And I feel <i>worse</i>. Because I was one chime away from being wrong in exactly the way I was wrong in Year 11, and I stopped only by luck. A flicker. An accident of timing. Not judgment. I don't think I have judgment anymore. I have flickers.</p>
+            <span aria-hidden="true" style="display:block;text-align:center;letter-spacing:.6em;color:color-mix(in srgb,var(--color-text) 40%,transparent)">···</span>
+            <p style="margin:0">Year 11. I promised myself I wouldn't write about it again, and here I am.</p>
+            <p style="margin:0">The Quinta cooperative. Brown water spread across the barley like spilled tea across a tablecloth. Old Joaquim standing at the edge of his field with his hands open at his sides. Not angry. Empty. The model was "statistically correct." I have read the post-review so many times the words have worn smooth. I deferred because I was so tired the screen felt like a raft. I can still smell that field: wet straw, diesel, and something sweetish rotting underneath.</p>
+            <p style="margin:0">Guilt is sediment. It settles. You think the water has gone clear, and then something stirs the bottom and it all comes up brown again.</p>
+            <span aria-hidden="true" style="display:block;text-align:center;letter-spacing:.6em;color:color-mix(in srgb,var(--color-text) 40%,transparent)">···</span>
+            <p style="margin:0">Isa, tonight: <i>"Mom, you're on your screen again."</i></p>
+            <p style="margin:0">Not even angry. Worse. Patient. Fifteen years old and already patient with me, the way you are patient with someone old. She talks to three intelligences at once while doing her homework, the questions branching around her like a delta, and she looks like she is <i>swimming</i>. I am in the same water and I am drowning. The same water. That is the part I cannot stand.</p>
+            <p style="margin:0">And Mamã at dinner, writing her letter with the fountain pen, the scratch of the nib so loud in the quiet that it felt like an accusation. She looked up over her glasses and said, <i>"Não estás aqui, filha."</i> You're not here, daughter.</p>
+            <p style="margin:0">I said I'm fine, just running hot this quarter. I say that a lot. <i>Running hot.</i> As if I am a machine. Maybe I am becoming one, a slow one, kept on the network out of politeness. That's the fear, if I'm honest, and this notebook is for honest. Obsolete. A biological mind wandering through a building made of light, bumping into walls everyone else can see through.</p>
+            <span aria-hidden="true" style="display:block;text-align:center;letter-spacing:.6em;color:color-mix(in srgb,var(--color-text) 40%,transparent)">···</span>
+            <p style="margin:0">Everyone says <i>abundance.</i> The commons feeds glow with it. Food, housing, energy: solved, solved, solved. And in the same feeds, quietly, the way obituaries used to run: Lena stepping back for <i>cognitive recovery leave.</i> Duarte, three months minimum. We don't say burnout anymore. We say "recovery leave" as if it were a holiday.</p>
+            <p style="margin:0">We ended the scarcity of things and created a famine of attention. Nobody planned for that famine. Nobody is coming with grain.</p>
+            <p style="margin:0">I'm angry. Let me just write it down and stop being polite. I'm angry at whoever designed the console to chime. I'm angry at the council that switched the planetary model on at full speed and handed us a breathing app as a parachute. I'm angry at the breathing app, which sent me a <i>notification</i>, a notification, reminding me to be present. And I'm angry at myself most of all, because everyone else seems fine, and I used to be the one who was fine for everyone.</p>
+            <span aria-hidden="true" style="display:block;text-align:center;letter-spacing:.6em;color:color-mix(in srgb,var(--color-text) 40%,transparent)">···</span>
+            <p style="margin:0">The manuscript is in the drawer under the dish towels. Eleven weeks since I touched it. <i>The river I can't finish.</i> Chapter four stops in the middle of a sentence: <i>"The river does not hurry, and yet—"</i></p>
+            <p style="margin:0">And yet what, Mara. And yet <i>what.</i></p>
+            <p style="margin:0">For the record, so I stop pretending, here is what I've tried. Two meditation apps (three weeks, six weeks). The headband: nineteen days of feeling fast and flat, like a river poured into a concrete channel, all speed and no life in it. The Alentejo retreat, bliss for three days and buried under backlog by the fourth. The adaptogen powders that tasted like a forest floor. The coach with his color-coded quadrants. Each one became a new feed. Each one became another tab.</p>
+            <p style="margin:0">Here is the thing I don't say out loud. <i>I don't want to get faster. I want to get clearer.</i> I want my mind to be one river again instead of a hundred puddles drying in the sun.</p>
+            <span aria-hidden="true" style="display:block;text-align:center;letter-spacing:.6em;color:color-mix(in srgb,var(--color-text) 40%,transparent)">···</span>
+            <p style="margin:0">Ana from the upriver crew said something strange after the gates today. She saw my hands shaking. She didn't say <i>"you're fried."</i> She said, <i>"I was where you are in the spring. It's not you. It's the seam between you and the machine. Nobody ever taught us how to work the seam."</i> Then her console called her away.</p>
+            <p style="margin:0">The seam. I have been turning that word over all night like a smooth stone in my pocket.</p>
+            <p style="margin:0"><i>It's not you.</i> I want so badly for that to be true that I don't trust it at all.</p>
+            <p style="margin:0">4:02. The sky over the river is going from black to bruise. In ninety minutes I can swim. There is a moment in the water, maybe two minutes after the cold stops screaming, when my mind runs as one clean stream and I remember who I was. Two minutes a day. That is all I have left of myself.</p>
+            <p style="margin:0">I'll ask Ana what she meant. Probably another app. Probably another feed.</p>
+            <p style="margin:0">But the seam. <i>The seam.</i></p>
+          </sc-if>
+          <sc-if value="{{ jt1 }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Entry Two — During</span>
+            <p style="margin:0 0 6px;font-size:14px;line-height:1.55;font-style:italic;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Transition Year 14, Day 226 · The field station at Vila Franca, window open to the river. Written in pieces, before, during and after. My handwriting gets worse and then, strangely, better.</p>
+            <span style="display:block;margin-top:10px;padding-top:12px;border-top:1px solid var(--color-divider);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-200);font-feature-settings:'tnum' 1">6:41 p.m.</span>
+            <p style="margin:0">I almost didn't do this. I closed the page twice.</p>
+            <p style="margin:0">The name alone. <i>A neural-symbiotic cognitive elevation matrix and decentralized planetary-stewardship operating system.</i> It sounds like it was named by a committee of hype in a glass tower. "Absolute clarity." "Seamless synchronization." Every word I distrust, stacked on top of each other like a cairn built by tourists. I said to Ana, <i>"You know I hate anything that calls itself absolute."</i> She said, <i>"So did I. Read the intake questions, not the headline."</i></p>
+            <p style="margin:0">So I read them. The third one stopped me cold:</p>
+            <p style="margin:0"><i>When did you last trust your own judgment over a model's, and were you right?</i></p>
+            <p style="margin:0">Nobody has ever asked me that. Not the council, not the coach, not the apps. I sat with my hand over my mouth. I wrote back: <i>"Yesterday. Yes. And Year 11, when I didn't, and I wasn't."</i></p>
+            <p style="margin:0">Other things that got past my guard, for the record, so I can't later pretend I was seduced. It is paid from my dividend, and part of it flows back into the Tagus commons. There is a sliding scale, so Bea's crew can come too, and Mamã if she ever wants to. And one line, plain as a fence post: <i>you can stop at any moment, and nothing remains changed that you did not choose to keep.</i></p>
+            <p style="margin:0">That sentence is the only reason my hands are here instead of in my pockets.</p>
+            <span style="display:block;margin-top:10px;padding-top:12px;border-top:1px solid var(--color-divider);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-200);font-feature-settings:'tnum' 1">6:58 p.m.</span>
+            <p style="margin:0">Hands cold. Stomach full of eels. I chose to do this here, at the field station, with the river in earshot, because if something is going to touch my mind I want the river to be a witness.</p>
+            <p style="margin:0">What I'm afraid of, specifically: that it will take the riverside knowing. That it will sand down the thing under my sternum, the cold fist of river stones, and replace it with a smooth green confidence score. That Isa will look at me tomorrow and see someone a little more like the console. That model-drift, the slow leak I already feel, will become a flood with the gates welded open.</p>
+            <p style="margin:0">Okay. Starting.</p>
+            <span style="display:block;margin-top:10px;padding-top:12px;border-top:1px solid var(--color-divider);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-200);font-feature-settings:'tnum' 1">7:20 p.m.</span>
+            <p style="margin:0">First disappointment: nothing glows. No light show. No rush. I was braced for the headband feeling, that electric, flattening speed, and instead it asks me a question in a voice that is almost too ordinary.</p>
+            <p style="margin:0"><i>Name the decision you are carrying.</i></p>
+            <p style="margin:0">The Alcochete gates. The release schedule for next week. Always the gates.</p>
+            <p style="margin:0">Then it does something I did not expect. It does <b style="font-weight:600">not</b> show me the data. It says, <i>Before the model speaks, where does this decision live in your body?</i></p>
+            <p style="margin:0">I laughed. A short, ugly bark of a laugh. Then I closed my eyes, and there it was, exactly where it always is, under the sternum, cold and tight. And the protocol named it back to me. Not "stress." Not "anxiety, try breathing." It called it a <i>signal</i>. It said this is information the planetary model does not have, and it gets a place at the table.</p>
+            <p style="margin:0">I have to stop writing for a minute.</p>
+            <span style="display:block;margin-top:10px;padding-top:12px;border-top:1px solid var(--color-divider);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-200);font-feature-settings:'tnum' 1">7:34 p.m.</span>
+            <p style="margin:0">The withdrawal is real and I want to describe it accurately because it is disgusting.</p>
+            <p style="margin:0">My right hand keeps drifting toward the console that isn't open. A phantom chime rings in my left ear, the exact pitch of the sign-off tone. My scalp prickles like I have ants walking in my hair. Every ninety seconds my whole body leans toward <i>another input</i>, the way a plant leans toward a window. I counted. Every ninety seconds.</p>
+            <p style="margin:0">The protocol doesn't block it, doesn't scold me, doesn't send a streak or a badge. It just notices with me. <i>There's the pull. Let it pass like a boat wake. The water settles.</i></p>
+            <p style="margin:0">At 7:31 I nearly quit. A hot wave of rage, <i>this is just one more thing, one more tab, one more seller of calm</i>, and my jaw was locked and my heart thudded in my throat like someone knocking on a door. I actually stood up. Then I looked out at the river, low and brown and indifferent, and sat back down. I'm not proud of the standing. I'm a little proud of the sitting.</p>
+            <span style="display:block;margin-top:10px;padding-top:12px;border-top:1px solid var(--color-divider);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-200);font-feature-settings:'tnum' 1">7:52 p.m.</span>
+            <p style="margin:0">Now the model comes in. But differently.</p>
+            <p style="margin:0">Not nine panes. One stream. Paced, somehow, to me. The twelve scenarios arrive one at a time, slowly enough that I can actually <i>feel</i> each one instead of skimming it. Beside the model's columns there is a column for me. My body's read. My history with this reach of river. The levee in Year 6. The slumping bank last week. Joaquim's barley.</p>
+            <p style="margin:0">For the first time in three years, the machine asked me what I knew. And then it <i>used</i> it.</p>
+            <p style="margin:0">Twelve scenarios became five. Five became two. And here is the thing I keep circling back to: on one of the two, the model was right and my gut was wrong. My fear about the west channel was old fear, Year 11 fear, not river fear. The protocol showed me the difference. It held both readings up to the light like two water samples in glass vials, one cloudy and one clear, and let me see which was which.</p>
+            <p style="margin:0">I was not overruled. I was not rubber-stamped. I <i>understood</i>.</p>
+            <span style="display:block;margin-top:10px;padding-top:12px;border-top:1px solid var(--color-divider);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-200);font-feature-settings:'tnum' 1">8:05 p.m.</span>
+            <p style="margin:0">Something happened I don't have the right words for, so I'll use the only words I trust.</p>
+            <p style="margin:0">It felt like the levee breach in Year 6. The moment the old earth wall finally gives. There is a sound, a long low exhale of water, and the river stops being forced into one straight concrete line and spreads back into its old braided channels, silver threads across the valley, and the whole floodplain breathes out at once.</p>
+            <p style="margin:0">That was my head.</p>
+            <p style="margin:0">Silence. Not empty silence. Full silence. I could hear the actual river outside the window. Frogs starting up in the reeds. A heron complaining. The tick of the station's old clock that I have never once heard in four years of working here.</p>
+            <p style="margin:0">I looked at the clock and realized I had not reached for another input in twenty-three minutes. <i>Twenty-three minutes.</i> I haven't had twenty-three minutes since before Isa could walk.</p>
+            <span style="display:block;margin-top:10px;padding-top:12px;border-top:1px solid var(--color-divider);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-200);font-feature-settings:'tnum' 1">8:19 p.m.</span>
+            <p style="margin:0">And then the grief came, which nobody warned me about.</p>
+            <p style="margin:0">Not sadness exactly. Recognition. Like coming up from a long dive and only then noticing how badly your lungs were burning the whole time. I had no idea how far underwater I'd been. Years. I cried at the station desk with my face in my sleeve, which smelled of river and wet wool. I cried for Joaquim. For Year 11. For every one of the forty-seven signatures. For the woman who stood at the levee in Year 6 and <i>knew</i>, and then slowly stopped believing she knew anything at all.</p>
+            <p style="margin:0">The protocol didn't try to fix it. It just stayed. Steady as a riverbank.</p>
+            <span style="display:block;margin-top:10px;padding-top:12px;border-top:1px solid var(--color-divider);font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--color-accent-200);font-feature-settings:'tnum' 1">9:40 p.m. · Home. Kitchen table.</span>
+            <p style="margin:0">I'm writing this part slowly and precisely so I can't romanticize it later.</p>
+            <p style="margin:0">One session is a flicker, not a river. I know that. I am still suspicious. I am still the woman who closed the page twice. My eyes are swollen and my shoulders ache as if I swam the whole estuary. I don't know yet whether any of this lasts past tomorrow's chimes.</p>
+            <p style="margin:0">But here is what happened at dinner. Mamã asked me to read her newest letter aloud, the one to her sister in Uppsala. Three pages in that slanted fountain-pen hand. And I read every word. All three pages. I didn't reach for anything. I heard my own voice saying her sentences, and I heard the sentences.</p>
+            <p style="margin:0">When I finished she put her hand over mine, papery and warm, and said, <i>"Ah. Aí estás."</i></p>
+            <p style="margin:0">Ah. There you are.</p>
+            <p style="margin:0">I don't trust it yet. But I wanted it on paper. There I was.</p>
+          </sc-if>
+          <sc-if value="{{ jt2 }}" hint-placeholder-val="{{ false }}">
+            <span style="font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-300)">Entry Three — After</span>
+            <p style="margin:0 0 6px;font-size:14px;line-height:1.55;font-style:italic;color:color-mix(in srgb,var(--color-text) 66%,transparent)">Transition Year 15, Day 9 · 6:12 a.m. · On the stone steps at the estuary, still in my swimsuit and towel. My hair is dripping onto the page, so some of these words will blur. I'm leaving them blurred.</p>
+            <p style="margin:0">I did not see 3:14 this morning.</p>
+            <p style="margin:0">I want to start there, because for three years that number was a place I lived. Last night I slept seven hours and woke at 5:20 to birds, not to the ceiling. The crack shaped like a dry tributary is still up there. I just didn't need to read it.</p>
+            <p style="margin:0">The water was 13 degrees. The cold screamed at my ribs the way it always does, and then it stopped, and the clean stream came, the two minutes I used to hoard like the last coins in a jar. Except they didn't end. I swam out to the old mooring post and back, and the stream kept running, and when I climbed out onto the steps with my skin burning pink and my breath smoking in the air, it was still running.</p>
+            <p style="margin:0">It's still running now. That's why I'm writing out here instead of waiting for the kitchen.</p>
+            <span aria-hidden="true" style="display:block;text-align:center;letter-spacing:.6em;color:color-mix(in srgb,var(--color-text) 40%,transparent)">···</span>
+            <p style="margin:0">Honesty first, because that is what this notebook is for, and because I refuse to become one of those glowing feeds.</p>
+            <p style="margin:0">I am not cured. I don't think "cured" is even the right shape for this. Day 261 was bad. The week of the first winter storm, the console chiming like a burglar alarm, Rui forwarding me eleven scenarios at midnight. The tab-brain came back for two days. Hot pan, skittering droplets, the old dread crawling up the back of my neck like cold water rising in a basement. At 3 a.m. I was awake and counting.</p>
+            <p style="margin:0">The difference is that I knew what it was. I could name it, the way you can name weather. <i>Overwhelm, here again, front moving in from the west.</i> It was weather, not climate. I worked the seam the way the protocol taught me: body first, then model, then both side by side. By the third day the water had settled.</p>
+            <p style="margin:0">That's the most important thing I can write down. The bad days still come. They just don't own the river anymore.</p>
+            <span aria-hidden="true" style="display:block;text-align:center;letter-spacing:.6em;color:color-mix(in srgb,var(--color-text) 40%,transparent)">···</span>
+            <p style="margin:0">The storm itself. I want this on paper.</p>
+            <p style="margin:0">2:10 a.m., Day 264. The Alcochete gates again, of course. Always the gates. Water rising a centimeter every nine minutes. The model recommended an early release on the east channel. And under my sternum, the cold fist of river stones. But this time I didn't fight it and I didn't obey it. I set it beside the model. Body, then data, then both, like two water samples held up to the lamp.</p>
+            <p style="margin:0">On the east channel my gut was right. Saturated clay, same as last summer, plus three days of rain the model was underweighting. We held. The bank held.</p>
+            <p style="margin:0">On the west channel the model was right and I was wrong, and I could <i>feel</i> that I was wrong. It was Year 11 fear, not river fear. I signed the west release with a clear mind and no shame. Not because I was tired. Because I understood.</p>
+            <p style="margin:0">At 5 a.m., when it was over and the gates were groaning softly in the dark, Rui looked at me over his coffee and said, <i>"How did you know about the east bank?"</i></p>
+            <p style="margin:0">I said, <i>"I asked the river. Then I asked the model. Then I listened to both."</i></p>
+            <p style="margin:0">He wrote it down. Rui, who never writes anything down.</p>
+            <span aria-hidden="true" style="display:block;text-align:center;letter-spacing:.6em;color:color-mix(in srgb,var(--color-text) 40%,transparent)">···</span>
+            <p style="margin:0">Three weeks ago I drove out to Quinta.</p>
+            <p style="margin:0">I had been carrying Joaquim for three years like a stone in my boot, limping on it, never stopping to take it out. I brought a jar of heritage barley from the seed circle, the old Alentejo strain, the color of burnt honey. I meant to make a speech. Instead I just held out the jar and said, <i>"I'm sorry. I knew, and I didn't trust that I knew."</i></p>
+            <p style="margin:0">He was quiet for a long time. Wind moving through the stubble. Then he said, <i>"Neither of us was listening to the river that year."</i> And he took the jar.</p>
+            <p style="margin:0">We planted a test row together that afternoon. I shot half a roll of film of his hands in the soil, knuckles like walnut shells, dirt in every crease. When the prints came back I cried at the lab counter. A different kind of crying. Not the sediment coming up brown. Something more like the river after rain: full, fast, clear.</p>
+            <p style="margin:0">Guilt was sediment. It turns out sediment, given time and the right current, becomes soil.</p>
+            <span aria-hidden="true" style="display:block;text-align:center;letter-spacing:.6em;color:color-mix(in srgb,var(--color-text) 40%,transparent)">···</span>
+            <p style="margin:0">Isa's second launch was on Day 351.</p>
+            <p style="margin:0">I was on the viewing deck at the spaceport, my console <i>in my bag</i>. Mamã beside me in her good coat, her papery hand in mine. I watched the whole ascent: the white bloom of exhaust, the roar arriving late and shaking my breastbone, the bright point climbing and climbing until it stopped being a ship and became a star among stars. I watched until there was nothing left to watch.</p>
+            <p style="margin:0">Forty minutes later a message arrived from orbit. Not <i>"it's fine, Mom."</i> It said: <i>"You watched the whole thing. I saw you on the deck camera. You were really there."</i></p>
+            <p style="margin:0">I had to sit down on the deck, right there among the strangers. Mamã patted my shoulder and said nothing, which is her way of saying everything.</p>
+            <p style="margin:0">Teo called from Haven Ring that night. Ten seconds in, he stopped mid-sentence and said, <i>"You sound like you."</i></p>
+            <p style="margin:0">I do. I sound like me.</p>
+            <span aria-hidden="true" style="display:block;text-align:center;letter-spacing:.6em;color:color-mix(in srgb,var(--color-text) 40%,transparent)">···</span>
+            <p style="margin:0">Things I would have called impossible on Day 211, listed plainly so I don't inflate them:</p>
+            <ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px"><li>I read long essays again, start to finish. Last week I finished a 9,000-word piece on sediment transport and enjoyed it, which is either recovery or madness.</li><li>I make about the same number of decisions a day. I can now name almost all of them as mine.</li><li>I'm teaching Bea's crew to work the seam. Two of them were where I was. One of them cried in the field station, face in a wet wool sleeve. I sat with her. Steady as a riverbank.</li><li>I am no longer the slowest node in the network. I was never a node. I am the place where the river's knowledge enters the system, and the system is better for it.</li></ul>
+            <p style="margin:0">I stopped calling it the Matrix, by the way. Even Ana laughs at that name now. I call it <i>the confluence</i>: the place where two rivers meet, mix, and keep flowing, and neither one stops being itself. My mind and the machine. Riverside knowing and planetary intelligence. Two currents, one river, and I can still taste which water is mine.</p>
+            <span aria-hidden="true" style="display:block;text-align:center;letter-spacing:.6em;color:color-mix(in srgb,var(--color-text) 40%,transparent)">···</span>
+            <p style="margin:0">The manuscript isn't in the drawer under the dish towels anymore. It's on the kitchen table, in plain sight, getting coffee rings.</p>
+            <p style="margin:0">Last month I finished chapter four. Eleven weeks of nothing, then three years of nothing, and then one morning after a swim I sat down and the sentence simply finished itself:</p>
+            <p style="margin:6px 0;font-family:var(--font-heading);font-weight:600;font-size:24px;line-height:1.25">“The river does not hurry, and yet it arrives.”</p>
+            <p style="margin:0">I'm on chapter seven now.</p>
+            <span aria-hidden="true" style="display:block;text-align:center;letter-spacing:.6em;color:color-mix(in srgb,var(--color-text) 40%,transparent)">···</span>
+            <p style="margin:0">One more thing before my fingers get too cold to hold the pen.</p>
+            <p style="margin:0">To the woman at the kitchen table at 3:14 a.m. on Day 211, counting signatures, smelling Joaquim's field, hearing her own laugh come through a wall:</p>
+            <p style="margin:0">It wasn't you. Ana was right. It was the seam. And the seam can be learned.</p>
+            <p style="margin:0">You didn't need to get faster. You needed to become one river again.</p>
+            <p style="margin:0">The sun is coming up over the estuary now, gold and pink laid across the water like a second bridge. A heron just landed on the mooring post I swam to. My towel is soaked, my ink is running, and my mind is one clean, quiet, astonishing stream.</p>
+            <p style="margin:0">I'm going to go home, make Mamã her coffee, and write a page before the console wakes up.</p>
+            <p style="margin:6px 0;font-family:var(--font-heading);font-weight:600;font-size:24px;line-height:1.25">“The river does not hurry. And yet.”</p>
+          </sc-if>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;border-top:1px solid var(--color-divider);padding-top:18px">
+          <button type="button" class="btn btn-primary" sc-camel-on-click="{{ openIntake }}" style="min-height:48px;padding:0 22px">Take the seam intake</button>
+          <button type="button" class="btn btn-ghost" sc-camel-on-click="{{ nextJ }}" style="min-height:48px">{{ nextJLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;preview&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Responsive&quot;,&quot;Mobile 390&quot;],&quot;default&quot;:&quot;Responsive&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Viewport&quot;},&quot;heroHeadline&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;river&quot;,&quot;forty-seven&quot;,&quot;seam&quot;],&quot;default&quot;:&quot;river&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;A/B copy&quot;},&quot;motion&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;},&quot;markPlaceholders&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Content&quot;}}">
+const NAV = [['The Problem','problem'],['The Seam','seam'],['Stories','stories'],['Access','access'],['Sovereignty','sovereignty']];
+const CHAPTERS = [
+  ['0:00','The intake question',0,'When did you last trust your own judgment over a model\u2019s, and were you right?'],
+  ['0:40','Where it lives in the body',40,'Before the model speaks, where does this decision live in your body?'],
+  ['1:25','The 90-second lean',85,'There\u2019s the pull. Let it pass like a boat wake.'],
+  ['2:10','Twelve become two',130,'Twelve scenarios became five. Five became two.'],
+  ['2:55','Stop, keep, release',175,'Stop anytime. Keep only what you choose.']];
+const CMP = [
+  ['The Practice',[['Seam intake and first session','y','y','y'],['Personal Seam Console','y','y','y'],['Clear Stream Tracker','y','y','y'],['Braid Visualizer + decision-story export','n','y','y'],['Present-Signal / Past-Echo training','n','y','y'],['Guided 3–6 month arc','n','y','y']]],
+  ['Integrations',[['Console integrations','n','y','y'],['Habitat-time support','n','y','y'],['Governance decision-story ledger','n','n','y']]],
+  ['Support',[['Peer circle','Monthly','Weekly, guided','Weekly, guided'],['Priority steward calls','n','y','y'],['Dedicated steward','n','n','y'],['On-site or in-habitat facilitation','n','n','y']]],
+  ['Commons & Sovereignty',[['Sovereign Stop with Keep/Release','y','y','y'],['Family seat (elder or teen)','n','1 seat','y'],['Sponsored crew and elder seats','n','n','y'],['Custom flow-back routing','n','n','y']]]];
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+class Component extends DCLogic {
+  pageRef = React.createRef();
+  jScrollRef = React.createRef();
+  setJ(i) { this.setState({ jTab: i }, () => { if (this.jScrollRef.current) this.jScrollRef.current.scrollTop = 0; }); }
+  state = {
+    narrow: false, scrolled: false, active: '', menu: false, still: false,
+    cs: 'running', ba: 50,
+    c: { hours: 9, lost: 90, decisions: 15, dividend: 2000, share: 6 },
+    calcStage: 'idle', cf: { name: '', email: '', consent: false }, calcErr: '',
+    season: false, compareOpen: false, faq: -1,
+    keep: [true, true, false],
+    video: 'facade', chapter: 0, transcript: false,
+    modal: null, iStep: 1, iErr: '',
+    intake: { name: '', email: '', where: 'Earth', role: '', question: '', source: 'Dividend', plan: 'Braid', consent: false },
+    steward: { name: '', email: '', commons: '', crew: 'Just me', mind: '', consent: false }, sStage: 'form', sErr: '',
+    signin: { email: '' }, siStage: 'form', siErr: false,
+    jTab: 0, news: '', newsStage: 'idle', newsErr: false,
+  };
+
+  componentDidMount() {
+    if (window.ResizeObserver && this.pageRef.current) {
+      this.ro = new ResizeObserver(es => { const n = es[0].contentRect.width < 1000; if (n !== this.state.narrow) this.setState({ narrow: n }); });
+      this.ro.observe(this.pageRef.current);
+    }
+    this.onScroll = () => {
+      const scrolled = window.scrollY > 24; let active = '';
+      for (const [, id] of NAV) { const el = document.getElementById(id); if (el && el.getBoundingClientRect().top < 140) active = id; }
+      if (scrolled !== this.state.scrolled || active !== this.state.active) this.setState({ scrolled, active });
+    };
+    window.addEventListener('scroll', this.onScroll, { passive: true }); this.onScroll();
+    this.onKey = e => { if (e.key === 'Escape' && (this.state.modal || this.state.menu)) this.setState({ modal: null, menu: false }); };
+    window.addEventListener('keydown', this.onKey);
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) this.setState({ still: true });
+  }
+  componentWillUnmount() { this.ro && this.ro.disconnect(); window.removeEventListener('scroll', this.onScroll); window.removeEventListener('keydown', this.onKey); clearTimeout(this.t); }
+
+  go(id) {
+    this.setState({ menu: false, modal: null });
+    const el = document.getElementById(id); if (!el) return;
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 64, behavior: this.state.still ? 'auto' : 'smooth' });
+  }
+  open(modal, extra) { this.setState({ modal, menu: false, ...(extra || {}) }); }
+
+  braid(w, h, animate, emph) {
+    const e = React.createElement, n = 12, pts = 56, kids = [];
+    const chA = h * 0.34, chB = h * 0.66, cut = 0.72;
+    for (let i = 0; i < n; i++) {
+      const y0 = h * (0.08 + 0.84 * i / (n - 1)), tgt = i % 2 ? chB : chA;
+      let d = '';
+      for (let k = 0; k <= pts; k++) {
+        const t = k / pts, x = t * w * cut + 0.5;
+        const ez = (1 - Math.cos(Math.PI * t)) / 2, amp = h * 0.07 * (1 - ez);
+        const y = y0 + (tgt - y0) * ez + Math.sin(t * Math.PI * 4 + i * 0.9) * amp;
+        d += (k ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+      }
+      kids.push(e('path', { key: 'b' + i, d, fill: 'none', stroke: 'color-mix(in srgb, var(--color-text) 22%, transparent)', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }));
+      kids.push(e('path', { key: 'f' + i, d, fill: 'none', stroke: 'var(--color-accent)', strokeWidth: 1, strokeDasharray: '2 6', vectorEffect: 'non-scaling-stroke', style: { animation: animate ? 'bwFlow 1.8s linear infinite' : 'none' } }));
+    }
+    [chA, chB].forEach((y, j) => kids.push(e('path', { key: 'c' + j, d: `M${w * cut} ${y} L${w} ${y}`, fill: 'none', stroke: 'var(--color-accent-300)', strokeWidth: emph ? 3 : 2, vectorEffect: 'non-scaling-stroke' })));
+    return e('svg', { viewBox: `0 0 ${w} ${h}`, preserveAspectRatio: 'none', width: '100%', height: '100%', 'aria-label': 'Scenarios narrowed from 12 to 2. Remaining: east channel hold, west channel release.', role: 'img', style: { display: 'block' } }, kids);
+  }
+  loader() {
+    const e = React.createElement;
+    const p = (d, k) => e('path', { key: k, d, fill: 'none', stroke: 'var(--color-accent)', strokeWidth: 1.5, strokeDasharray: '4 4', style: { animation: this.state.still ? 'none' : 'bwLoad 1.6s linear infinite' } });
+    return e('svg', { width: 64, height: 32, viewBox: '0 0 64 32', 'aria-hidden': true }, [p('M2 6 C 20 6, 24 16, 40 16 H 62', 'a'), p('M2 16 C 14 16, 18 10, 28 10 S 34 16, 40 16', 'b'), p('M2 26 C 20 26, 24 16, 40 16', 'c')]);
+  }
+  river() {
+    const W = 400, cy = 75, top = [], bot = [], eddies = [];
+    const g = (t, m, s, a) => a * Math.exp(-(((t - m) / s) ** 2));
+    for (let k = 0; k <= 80; k++) {
+      const t = k / 80, x = t * W;
+      const w = 4 + g(t, .12, .06, 50) + g(t, .42, .07, 24) + g(t, .68, .05, 14) + g(t, .88, .04, 8);
+      const y = cy + Math.sin(t * Math.PI * 2) * 10;
+      top.push(x.toFixed(1) + ' ' + (y - w / 2).toFixed(1)); bot.unshift(x.toFixed(1) + ' ' + (y + w / 2).toFixed(1));
+    }
+    [.27, .55, .78, .95].forEach((t, i) => { const y = cy + Math.sin(t * Math.PI * 2) * 10; eddies.push({ cx: (t * W).toFixed(1), cy: (y + (i % 2 ? 18 : -18)).toFixed(1) }); });
+    return { d: 'M' + top.join('L') + 'L' + bot.join('L') + 'Z', eddies };
+  }
+
+  validateStep() {
+    const s = this.state, f = s.intake;
+    if (s.iStep === 1) { if (!f.name.trim()) return 'Add your name so a steward knows who to write to.'; if (!EMAIL.test(f.email.trim())) return 'That email looks incomplete. Mind checking it?'; }
+    if (s.iStep === 2 && f.question.trim().length < 3) return 'This one matters most. A sentence is enough.';
+    if (s.iStep === 3 && !f.consent) return 'Please confirm you\u2019ve read how stopping works.';
+    return '';
+  }
+
+  renderVals() {
+    const s = this.state, p = this.props;
+    const anim = !s.still && (p.motion ?? true);
+    const variant = p.heroHeadline ?? 'river';
+    const mobileFrame = (p.preview ?? 'Responsive') === 'Mobile 390';
+    const n = (v, lo, hi) => Math.min(hi, Math.max(lo, Number(v) || 0));
+    const c = s.c;
+    const lost = n(c.lost, 0, 240), dec = n(c.decisions, 0, 200), div = n(c.dividend, 100, 20000), share = n(c.share, 4, 8);
+    const lostYr = lost * 240 / 60, recl = lostYr * 0.4, monthly = div * share / 100;
+    const fmt = v => Math.round(v).toLocaleString('en-US');
+    const r = this.river();
+    const ch = CHAPTERS[s.chapter];
+    const stopped = ['stopped', 'kept', 'released'].includes(s.cs);
+    const field = f => s.intake[f];
+    const iTitles = { 1: 'Begin the seam intake', 2: 'One question', 3: 'How it flows', sending: 'Sending', done: 'You\u2019re in' };
+    const step = s.iStep;
+    const mark = v => v === 'y' ? '\u2713' : v === 'n' ? '\u2014' : v;
+    const markL = v => v === 'y' ? 'Included' : v === 'n' ? 'Not included' : v;
+    const setFaq = i => () => this.setState(st => ({ faq: st.faq === i ? -1 : i }));
+    const setKeep = i => () => this.setState(st => { const k = st.keep.slice(); k[i] = !k[i]; return { keep: k }; });
+    const send = (stageKey, done) => { this.setState({ [stageKey]: 'sending' }); clearTimeout(this.t); this.t = setTimeout(() => this.setState({ [stageKey]: done }), 1300); };
+    const stillLabel = s.still ? 'Still water: on' : 'Still water: off';
+
+    return {
+      pageRef: this.pageRef,
+      pageMax: mobileFrame ? '390px' : 'none',
+      frameBorder: mobileFrame ? '1px solid var(--color-divider)' : '0',
+      outerBg: mobileFrame ? '#0a0e13' : 'var(--color-bg)',
+      narrow: s.narrow, wide: !s.narrow, menu: s.menu,
+      navBg: s.scrolled ? 'color-mix(in srgb, var(--color-bg) 92%, transparent)' : 'transparent',
+      navBlur: s.scrolled ? 'blur(10px)' : 'none',
+      navBorder: s.scrolled ? 'var(--color-divider)' : 'transparent',
+      navH: s.narrow ? '60px' : '72px',
+      navItems: NAV.map(([label, id]) => ({ label, href: '#' + id, ul: s.active === id ? 'var(--color-accent)' : 'transparent', onClick: ev => { ev.preventDefault(); this.go(id); } })),
+      goTop: ev => { ev.preventDefault(); window.scrollTo({ top: 0, behavior: s.still ? 'auto' : 'smooth' }); },
+      openMenu: () => this.setState({ menu: true }), closeMenu: () => this.setState({ menu: false }),
+      stop: ev => ev.stopPropagation(),
+      still: s.still, stillLabel, stillColor: s.still ? 'var(--color-accent)' : 'var(--color-text)',
+      toggleStill: () => this.setState(st => ({ still: !st.still })),
+      ast: (p.markPlaceholders ?? true) ? '*' : '', markPlaceholders: p.markPlaceholders ?? true,
+      hA: variant === 'river', hB: variant === 'forty-seven', hC: variant === 'seam',
+
+      openIntake: () => this.open('intake', { iStep: s.iStep === 'done' ? 1 : s.iStep, iErr: '' }),
+      openIntakeStream: () => this.open('intake', { iStep: 1, iErr: '', intake: { ...s.intake, plan: 'Stream' } }),
+      openSteward: () => this.open('steward', { sStage: s.sStage === 'done' ? 'form' : s.sStage, sErr: '' }),
+      openStewardLink: ev => { ev.preventDefault(); this.open('steward', { sStage: 'form', sErr: '' }); },
+      openJournal: () => this.open('journal', { jTab: 0 }),
+      openJournalLink: ev => { ev.preventDefault(); this.open('journal', { jTab: 0 }); },
+      openSignin: () => this.open('signin', { siStage: 'form', siErr: false }),
+      closeModal: ev => { if (ev && ev.currentTarget && ev.currentTarget.tagName === 'A') {} this.setState({ modal: null }); },
+      goVideo: () => this.go('video'),
+
+      braidHero: this.braid(480, 160, anim && s.cs === 'running'),
+      braidFeature: this.braid(480, 340, anim, true),
+      braidPoster: this.braid(640, 300, false),
+      loader: this.loader(),
+      consoleStopped: stopped,
+      stopAsk: s.cs === 'stopped', stopDone: s.cs === 'kept' || s.cs === 'released',
+      stopKicker: s.cs === 'stopped' ? 'Stopped · one tap' : 'Your choice is recorded',
+      stopTitle: s.cs === 'stopped' ? 'Session stopped.' : s.cs === 'kept' ? 'Kept.' : 'Released.',
+      stopBody: s.cs === 'stopped' ? 'Nothing changed that you didn\u2019t choose. Keep what you learned, or release all of it.' : s.cs === 'kept' ? 'Your body map and both reads are saved to your Field Notes. Nothing else stays.' : 'Everything from this session is released. Nothing remains changed.',
+      pauseLabel: s.cs === 'paused' ? 'Resume' : 'Pause',
+      onPause: () => this.setState(st => ({ cs: st.cs === 'paused' ? 'running' : 'paused' })),
+      onStop: () => this.setState({ cs: 'stopped' }),
+      onKeep: () => this.setState({ cs: 'kept' }), onRelease: () => this.setState({ cs: 'released' }),
+      onRestart: () => this.setState({ cs: 'running' }),
+
+      ba: s.ba, onBA: ev => this.setState({ ba: Number(ev.target.value) }),
+      baClip: `inset(0 0 0 ${s.ba}%)`, baLeft: s.ba + '%',
+
+      riverD: r.d, eddies: r.eddies,
+      keepList: ['Body map from this session', 'Both reads, side by side', 'Model\u2019s scenario weights'].map((label, i) => ({
+        label, on: s.keep[i], state: s.keep[i] ? 'Keep' : 'Release', color: s.keep[i] ? 'var(--color-accent-200)' : 'color-mix(in srgb, var(--color-text) 60%, transparent)',
+        knob: s.keep[i] ? '16px' : '2px', onClick: setKeep(i) })),
+
+      c, onCalc: ev => { const k = ev.target.dataset.key; this.setState(st => ({ c: { ...st.c, [k]: ev.target.value === '' ? '' : Number(ev.target.value) } })); },
+      hoursText: `${c.hours} hours a day`, lostText: `${c.lost} minutes a day`, shareText: `${c.share} percent of monthly dividend`,
+      out: { reclaimed: fmt(recl), days: fmt(recl / 8), lost: fmt(lostYr), remaining: fmt(lostYr - recl), decisions: fmt(dec * 48), monthly: fmt(monthly), flow: fmt(monthly * 0.15 * 12) },
+      barWith: lostYr ? ((lostYr - recl) / lostYr * 100).toFixed(1) + '%' : '0%',
+      calcIdle: s.calcStage === 'idle', calcFormOpen: s.calcStage === 'form' || s.calcStage === 'sending', calcDone: s.calcStage === 'done',
+      calcBtn: s.calcStage === 'sending' ? 'Braiding…' : 'Send',
+      openCalcForm: () => this.setState({ calcStage: 'form' }),
+      cf: s.cf, calcErr: s.calcErr, hasCalcErr: !!s.calcErr,
+      sendCalc: () => {
+        if (!EMAIL.test(s.cf.email.trim())) return this.setState({ calcErr: 'That email looks incomplete. Mind checking it?' });
+        if (!s.cf.consent) return this.setState({ calcErr: 'Tick the box so we can send the one email.' });
+        send('calcStage', 'done');
+      },
+
+      seasonOn: s.season, seasonOff: !s.season,
+      setMonthly: () => this.setState({ season: false }), setSeason: () => this.setState({ season: true }),
+      period: s.season ? 'of dividend, contributed each season (3 months)' : 'of monthly dividend',
+      flowBack: s.season ? '20%' : '15%',
+      braidOrder: s.narrow ? -1 : 0,
+      compareOpen: s.compareOpen, compareRot: s.compareOpen ? '180deg' : '0deg',
+      toggleCompare: () => this.setState(st => ({ compareOpen: !st.compareOpen })),
+      compareGroups: CMP.map(([name, rows]) => ({ name, rows: rows.map(([label, a, b, cc]) => ({ label, a: mark(a), b: mark(b), c: mark(cc), aL: markL(a), bL: markL(b), cL: markL(cc) })) })),
+      faq0: s.faq === 0, faq1: s.faq === 1, faq2: s.faq === 2, faq3: s.faq === 3,
+      faqSign0: s.faq === 0 ? '\u2212' : '+', faqSign1: s.faq === 1 ? '\u2212' : '+', faqSign2: s.faq === 2 ? '\u2212' : '+', faqSign3: s.faq === 3 ? '\u2212' : '+',
+      onFaq0: setFaq(0), onFaq1: setFaq(1), onFaq2: setFaq(2), onFaq3: setFaq(3),
+
+      videoFacade: s.video === 'facade', videoPlaying: s.video === 'playing',
+      playVideo: () => this.setState({ video: 'playing' }), pauseVideo: () => this.setState({ video: 'facade' }),
+      chapters: CHAPTERS.map(([t, label], i) => ({ t, label, current: s.video === 'playing' && s.chapter === i ? 'true' : 'false',
+        bg: s.video === 'playing' && s.chapter === i ? 'color-mix(in srgb, var(--color-accent) 16%, transparent)' : 'transparent',
+        onClick: () => this.setState({ chapter: i, video: 'playing' }) })),
+      chapterTitle: ch[1], chapterTime: ch[0], captionText: ch[3], progressPct: (ch[2] / 192 * 100).toFixed(1) + '%',
+      transcriptOpen: s.transcript, transcriptLabel: s.transcript ? 'Hide transcript' : 'Read the full transcript',
+      toggleTranscript: () => this.setState(st => ({ transcript: !st.transcript })),
+
+      mIntake: s.modal === 'intake', mSteward: s.modal === 'steward', mJournal: s.modal === 'journal', mSignin: s.modal === 'signin',
+      onField: ev => {
+        const t = ev.target, form = t.dataset.form, key = t.dataset.key || t.name;
+        const v = t.type === 'checkbox' ? t.checked : t.value;
+        this.setState(st => ({ [form]: { ...st[form], [key]: v }, iErr: '', sErr: '', calcErr: '', siErr: false }));
+      },
+      intake: s.intake, iErr: s.iErr, hasIErr: !!s.iErr,
+      iStep1: step === 1, iStep2: step === 2, iStep3: step === 3, iSending: step === 'sending', iDone: step === 'done',
+      stepLabel: typeof step === 'number' ? `Step ${step} of 3` : step === 'done' ? 'Complete' : 'Sending',
+      stepPct: typeof step === 'number' ? (step / 3 * 100) + '%' : '100%',
+      intakeTitle: iTitles[step],
+      showBack: step === 2 || step === 3, noBack: step === 1,
+      showNext: typeof step === 'number', nextLabel: step === 3 ? 'Send my intake' : 'Continue',
+      iBack: () => this.setState(st => ({ iStep: st.iStep - 1, iErr: '' })),
+      iNext: () => {
+        const err = this.validateStep(); if (err) return this.setState({ iErr: err });
+        if (step < 3) return this.setState({ iStep: step + 1 });
+        send('iStep', 'done');
+      },
+      whereEarth: field('where') === 'Earth', whereOrbit: field('where') === 'Orbital', whereSettle: field('where') === 'Settlement',
+      srcDiv: field('source') === 'Dividend', srcTok: field('source') === 'Tokens', srcHrs: field('source') === 'Hours',
+      planStream: field('plan') === 'Stream', planBraid: field('plan') === 'Braid', planUnsure: field('plan') === 'Unsure',
+
+      steward: s.steward, sErr: s.sErr, hasSErr: !!s.sErr,
+      sForm: s.sStage === 'form', sSending: s.sStage === 'sending', sDone: s.sStage === 'done',
+      sSubmit: () => {
+        const f = s.steward;
+        if (!f.name.trim()) return this.setState({ sErr: 'Add your name so a steward knows who to write to.' });
+        if (!EMAIL.test(f.email.trim())) return this.setState({ sErr: 'That email looks incomplete. Mind checking it?' });
+        if (!f.consent) return this.setState({ sErr: 'Tick the box so a steward can write back.' });
+        send('sStage', 'done');
+      },
+      signin: s.signin, siForm: s.siStage === 'form', siDone: s.siStage === 'done', hasSiErr: s.siErr,
+      siSubmit: () => EMAIL.test(s.signin.email.trim()) ? this.setState({ siStage: 'done' }) : this.setState({ siErr: true }),
+
+      jt0: s.jTab === 0, jt1: s.jTab === 1, jt2: s.jTab === 2,
+      jScrollRef: this.jScrollRef,
+      setJ0: () => this.setJ(0), setJ1: () => this.setJ(1), setJ2: () => this.setJ(2),
+      nextJ: () => s.jTab < 2 ? this.setJ(s.jTab + 1) : this.setState({ modal: null }),
+      nextJLabel: s.jTab === 0 ? 'Next: During →' : s.jTab === 1 ? 'Next: After →' : 'Close journal',
+
+      news: s.news, newsIdle: s.newsStage !== 'done', newsDone: s.newsStage === 'done', hasNewsErr: s.newsErr,
+      onNews: ev => this.setState({ news: ev.target.value, newsErr: false }),
+      subscribe: () => EMAIL.test(s.news.trim()) ? this.setState({ newsStage: 'done' }) : this.setState({ newsErr: true }),
+    };
+  }
+}
+
+</script>
+
+
+</body></html>
