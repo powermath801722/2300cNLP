@@ -10,7 +10,9 @@ Static landing page for Braidwater ("Clearer Minds for the Planetary Transition"
 - `assets/fonts/` — Barlow / Barlow Condensed (self-hosted woff2)
 - `word2vec/` — Word2Vec Lab page (`index.html`, `app.js`) and the exported model in `word2vec/model/`
 - `training/train_word2vec.py` — script that trains the model and exports it for the browser
-- `tests/e2e.mjs` — Playwright end-to-end check for both pages
+- `tests/e2e.mjs` — Playwright end-to-end check for the landing page and Word2Vec Lab
+- `lab/` — NLP Lab: hub and 19 module pages (see below)
+- `tests/lab.mjs`, `tests/lab/` — NLP Lab tests
 - `assets/vendor/plotly-2.35.2.min.js` — Plotly, used for the 2D/3D plots
 - `netlify.toml` — Netlify config for the main site (no build step; publishes repo root)
 - `forms.html` — hidden static forms that register the landing page's forms with Netlify Forms
@@ -46,6 +48,25 @@ python3 -m http.server 8080
 ```
 
 Then open http://localhost:8080.
+
+## NLP Lab (`/lab/`)
+
+Twenty interactive NLP modules in six tiers, linked from the landing page nav, menu, footer and section 09. Everything runs in the browser: classic modules use data shipped in `lab/<slug>/data/`; transformer modules download a quantized model from Hugging Face on first use (sizes are shown on each page) and cache it.
+
+| Tier | Modules |
+|---|---|
+| 1 Beginner | tokenize, stemming, ngram |
+| 2 Intermediate | spell, search, sentiment, textrank |
+| 3 Advanced | pos, topics, word2vec, ner |
+| 4 Expert | tokenizers, semantic-search, qa, zero-shot, translation |
+| 5 Graduate | contextual, generation |
+| 6 Research | bias, surprisal |
+
+- `lab/shared/modules.js`: module registry (titles, tiers) and the `LIVE` list that controls which modules the hub links.
+- `lab/shared/lab.js`, `lab.css`: shared header/hero/pager/footer and styles. `lab/shared/hf.js`: transformers.js loader (self-hosted v3.8.1 in `assets/vendor/transformers-3.8.1/`).
+- `lab/_template/index.html`: starting point for a new module.
+- `training/`: scripts that build each module's shipped data (NLTK corpora, text8, gensim LDA, scikit-style NB/LR, HMM, embeddings).
+- Tests: `node tests/lab.mjs [baseUrl] [slug ...]` runs every module (or the named ones) at 1440px and 390px, plus `tests/lab/<slug>.mjs` checks. Transformer tests download models, so a full run takes several minutes.
 
 ## Word2Vec Lab (`/word2vec/`)
 

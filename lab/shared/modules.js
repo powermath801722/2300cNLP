@@ -41,7 +41,7 @@ export const MODULES = [
 
 // Modules that have passed tests and are linked from the hub and pagers. Others show as "In development"
 // even if their files are on main, so unfinished work never appears as a working page.
-export const LIVE = new Set(['word2vec', 'tokenize', 'stemming', 'ngram', 'spell', 'search', 'textrank', 'sentiment', 'pos', 'topics', 'ner', 'qa', 'zero-shot', 'translation', 'generation', 'surprisal']);
+export const LIVE = new Set(MODULES.map((m) => m.slug));
 export const isLive = (m) => LIVE.has(m.slug);
 
 export const tierOf = (n) => TIERS.find((t) => t.n === n);

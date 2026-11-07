@@ -1,9 +1,0 @@
-<!DOCTYPE html><html><body><pre id=o></pre><script type="module">
-import { tokenizer } from '/lab/shared/hf.js';
-const out={};
-for (const m of ['Xenova/gpt2','Xenova/bert-base-uncased','Xenova/t5-small']) {
-  const t=await tokenizer(m); const s='Tokenization of naïve café 2026 🤖 pneumonoultramicroscopic';
-  out[m]={tok:t.tokenize? t.tokenize(s):'no tokenize', ids:t.encode(s,{add_special_tokens:false}), idsSp:t.encode(s), unk:t.unk_token, cls:t.constructor.name, model:t.model?.constructor?.name, dec: t.model?.convert_ids_to_tokens? 'y':'n'};
-}
-document.getElementById('o').textContent=JSON.stringify(out,null,1); window.done=true;
-</script></body></html>

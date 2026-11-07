@@ -7,6 +7,9 @@ import { MODULES, TIERS, moduleBySlug, tierOf, hrefOf, isLive, LIVE } from '/lab
 
 export { MODULES, TIERS, moduleBySlug, tierOf, hrefOf, isLive, LIVE };
 
+// Exists from first load so modules can attach state before ready().
+window.__lab = window.__lab || {};
+
 /** Tiny element helper: el('div', {class:'x', text:'hi', onclick:fn}, [children]) */
 export function el(tag, attrs = {}, children = []) {
   const n = document.createElement(tag);
