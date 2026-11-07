@@ -62,7 +62,9 @@ export function lemmatize(word, lexicon, pos = 'auto') {
         cands.push({ form: f, rule: `-${suf} → ${rep ? '-' + rep : '∅'}${f !== base + rep ? ' (undouble)' : ''}`, pos: p, count, eRestore });
       }
     }
-    const known = cands.filter((c) => c.pos === p && c.count > 0);
+    // -er/-est: only accept a base that is more frequent than the word itself (ever ↛ eve, faster → fast)
+    const self = lexicon.get(w) || 0;
+    const known = cands.filter((c) => c.pos === p && c.count > 0 && (p !== 'adj' || c.count > self));
     const eForm = known.find((c) => c.eRestore);
     if (eForm) return { lemma: eForm.form, pos: p, how: `${eForm.rule}; silent e restored (single consonant after a single vowel)`, candidates: cands };
     if (known.length) {

@@ -37,12 +37,10 @@ const bucketOf = (rank) => BUCKETS.findIndex((b) => rank <= b.max);
 
 let view = 'surprisal', current = null, selected = -1, sampleLabel = null;
 const ui = progressUI($('#load'), 'model');
-const models = {};
-
 async function getModel(id) {
   const label = id.endsWith('distilgpt2') ? 'distilgpt2 (≈85 MB)' : 'gpt2 (≈128 MB)';
   ui.set(`Preparing ${label}…`, 0);
-  const m = await loadGPT(id, ui);
+  const m = await loadGPT(id, ui, `Ready · ${label}`);
   ui.done(`Ready · ${id.replace('Xenova/', '')} (8-bit), cached in your browser`);
   return m;
 }

@@ -16,9 +16,11 @@ export default async ({ page, check, warn }) => {
   await page.waitForFunction(() => window.__lab.lastMT, null, { timeout: 120000 });
   const b = await page.evaluate(() => window.__lab.lastMT);
   check(b.hyps.length === 3 && new Set(b.hyps).size >= 2, `beam 3 returns 3 hypotheses (${JSON.stringify(b.hyps)})`);
+  check(!(await page.isVisible('#backbox')), 'round-trip panel stays hidden until back-translation');
   // back-translation
   await page.click('#back');
   await page.waitForFunction(() => window.__lab.lastBack || window.__lab.runError, null, { timeout: 300000 });
   const back = await page.evaluate(() => window.__lab.lastBack || '');
+  check(await page.isVisible('#backbox'), 'round-trip panel appears');
   check(/river|stream/i.test(back) && /sea/i.test(back), `back-translation returns to English ("${back}")`);
 };

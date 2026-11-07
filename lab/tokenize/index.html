@@ -9,7 +9,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/lab/shared/lab.css">
 <style>
-.toklist{max-height:320px;overflow:auto;padding:4px 0;line-height:1.9}
+.toklist{max-height:360px;overflow:auto;padding:4px 0;line-height:1.9}
 .tok.t-word{border-color:color-mix(in srgb,#e4e7eb 22%,transparent)}
 .tok.t-num{border-color:#d8b66a;color:#f0d79b}
 .tok.t-punct{border-color:color-mix(in srgb,#e4e7eb 12%,transparent);color:var(--faint)}
@@ -26,7 +26,7 @@
 .stats div{background:var(--bg);padding:12px 14px}
 .stats b{display:block;font-family:var(--heading);font-weight:600;font-size:30px;line-height:1}
 .stats span{font-size:12px;color:var(--faint)}
-ol.sents{margin:0;padding-left:26px;display:flex;flex-direction:column;gap:6px;font-size:15px;max-height:320px;overflow:auto}
+ol.sents{margin:0;padding-left:26px;display:flex;flex-direction:column;gap:6px;font-size:15px;max-height:440px;overflow:auto}
 ol.sents li::marker{color:var(--faint);font-size:12px}
 .freq td:last-child{width:45%}
 .fbar{height:6px;background:var(--accent)}
@@ -54,12 +54,12 @@ ol.sents li::marker{color:var(--faint);font-size:12px}
         <div class="panel pad tcol">
           <h3>Whitespace split</h3>
           <p class="note"><code>text.split(/\s+/)</code> — punctuation stays glued to words.</p>
-          <div class="toklist" id="ws" aria-label="Whitespace tokens"></div>
+          <div class="toklist" id="ws" tabindex="0" aria-label="Whitespace tokens"></div>
         </div>
         <div class="panel pad tcol">
           <h3>Word tokenizer</h3>
           <p class="note">Regular expressions for URLs, emails, @mentions, #hashtags, emoji, numbers, clitics (<code>n’t</code>, <code>’s</code>) and punctuation.</p>
-          <div class="toklist" id="rx" aria-label="Word tokenizer tokens"></div>
+          <div class="toklist" id="rx" tabindex="0" aria-label="Word tokenizer tokens"></div>
           <div class="legend" id="legend"></div>
         </div>
         <div class="panel pad tcol">
@@ -68,7 +68,7 @@ ol.sents li::marker{color:var(--faint);font-size:12px}
             <label class="opt"><input type="radio" name="sseg" value="aware" checked> Abbreviation-aware</label>
             <label class="opt"><input type="radio" name="sseg" value="naive"> Naive (every . ! ?)</label>
           </div>
-          <ol class="sents" id="sents" aria-label="Sentences"></ol>
+          <ol class="sents" id="sents" tabindex="0" aria-label="Sentences"></ol>
         </div>
       </div>
     </div>

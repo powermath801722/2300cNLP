@@ -119,7 +119,7 @@ function render() {
     })]));
   }
   tbl.append(tb);
-  window.__lab.last = { words, tags: tagOf, baseline: base };
+  (window.__lab ||= {}).last = { words, tags: tagOf, baseline: base };
 }
 
 async function init() {
