@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>Braidwater forms</title>
+</head>
+<body>
+<!--
+  Netlify Forms registration. The real forms on / are rendered by JavaScript, which Netlify's
+  deploy-time form detection can't see, so each one is declared here with every field it posts.
+  The page submits via fetch('/') with a matching form-name. Keep field names in sync with
+  postForm() calls in index.html.
+-->
+<form name="intake" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input name="bot-field"><input name="name"><input name="email"><input name="where"><input name="role">
+  <textarea name="question"></textarea><input name="source"><input name="plan"><input name="consent">
+</form>
+<form name="steward" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input name="bot-field"><input name="name"><input name="email"><input name="commons"><input name="crew">
+  <textarea name="mind"></textarea><input name="consent">
+</form>
+<form name="calculator-results" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input name="bot-field"><input name="name"><input name="email"><input name="consent">
+  <input name="hoursPerDay"><input name="lostMinutesPerDay"><input name="decisionsPerWeek">
+  <input name="monthlyDividend"><input name="sharePercent"><input name="reclaimedHoursPerYear">
+</form>
+<form name="signin-request" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input name="bot-field"><input name="email">
+</form>
+<form name="newsletter" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input name="bot-field"><input name="email">
+</form>
+</body>
+</html>

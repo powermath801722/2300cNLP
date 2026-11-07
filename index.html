@@ -1163,7 +1163,7 @@ a{color:var(--color-accent-300)}a:hover{color:var(--color-accent-200)}
             <input id="bw-news" class="input" type="email" placeholder="you@commons.earth" value="{{ news }}" sc-camel-on-change="{{ onNews }}" style="flex:1;min-height:44px">
             <button type="button" class="btn btn-primary" sc-camel-on-click="{{ subscribe }}" style="min-height:44px;padding:0 16px">Subscribe</button>
           </div>
-          <sc-if value="{{ hasNewsErr }}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size:13px;color:#e57a70">That email looks incomplete. Mind checking it?</span></sc-if>
+          <sc-if value="{{ hasNewsErr }}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size:13px;color:#e57a70">{{ newsErrMsg }}</span></sc-if>
         </sc-if>
         <sc-if value="{{ newsDone }}" hint-placeholder-val="{{ false }}"><span role="status" style="color:var(--color-accent-200)">Subscribed. The first Field Notes arrives next month.</span></sc-if>
         <div style="display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px"><a href="#" style="color:var(--color-text)" style-hover="color:var(--color-accent-300)">Video channel</a><a href="#" style="color:var(--color-text)" style-hover="color:var(--color-accent-300)">Professional network</a><a href="#" style="color:var(--color-text)" style-hover="color:var(--color-accent-300)">Commons Board</a><a href="#" style="color:var(--color-text)" style-hover="color:var(--color-accent-300)">Field Notes RSS</a></div>
@@ -1331,7 +1331,7 @@ a{color:var(--color-accent-300)}a:hover{color:var(--color-accent-200)}
       <div style="display:flex;justify-content:space-between;align-items:center"><span id="si-title" class="dialog-title" style="font-size:26px;text-transform:uppercase">Sign in</span><button type="button" class="btn btn-icon btn-secondary" sc-camel-on-click="{{ closeModal }}" aria-label="Close" style="width:44px;height:44px"><svg width="18" height="18" sc-camel-view-box="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button></div>
       <sc-if value="{{ siForm }}" hint-placeholder-val="{{ true }}">
         <div class="field"><label for="si-email">Email</label><input id="si-email" class="input" type="email" data-form="signin" data-key="email" value="{{ signin.email }}" sc-camel-on-change="{{ onField }}" style="min-height:48px;font-size:16px"></div>
-        <sc-if value="{{ hasSiErr }}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size:14px;color:#e57a70">That email looks incomplete. Mind checking it?</span></sc-if>
+        <sc-if value="{{ hasSiErr }}" hint-placeholder-val="{{ false }}"><span role="alert" style="font-size:14px;color:#e57a70">{{ siErrMsg }}</span></sc-if>
         <button type="button" class="btn btn-primary btn-block" sc-camel-on-click="{{ siSubmit }}" style="min-height:48px">Send me a sign-in link</button>
         <span style="font-size:13px;color:color-mix(in srgb,var(--color-text) 66%,transparent)">No passwords. One link, valid for 15 minutes.</span>
       </sc-if>
@@ -1529,6 +1529,13 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 class Component extends DCLogic {
   pageRef = React.createRef();
   jScrollRef = React.createRef();
+  // Netlify Forms: POST url-encoded fields + form-name to the site root. Forms are registered via the static /forms.html.
+  postForm(name, data) {
+    const body = new URLSearchParams({ 'form-name': name });
+    for (const [k, v] of Object.entries(data)) body.append(k, typeof v === 'boolean' ? (v ? 'yes' : 'no') : String(v ?? ''));
+    return fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() })
+      .then(r => { if (!r.ok) throw new Error('Form POST failed: ' + r.status); });
+  }
   setJ(i) { this.setState({ jTab: i }, () => { if (this.jScrollRef.current) this.jScrollRef.current.scrollTop = 0; }); }
   state = {
     narrow: false, scrolled: false, active: '', menu: false, still: false,
@@ -1633,7 +1640,8 @@ class Component extends DCLogic {
     const markL = v => v === 'y' ? 'Included' : v === 'n' ? 'Not included' : v;
     const setFaq = i => () => this.setState(st => ({ faq: st.faq === i ? -1 : i }));
     const setKeep = i => () => this.setState(st => { const k = st.keep.slice(); k[i] = !k[i]; return { keep: k }; });
-    const send = (stageKey, done) => { this.setState({ [stageKey]: 'sending' }); clearTimeout(this.t); this.t = setTimeout(() => this.setState({ [stageKey]: done }), 1300); };
+    const NET_ERR = 'Couldn\u2019t send that just now. Check your connection and try again.';
+    const send = (stageKey, done, form, data, onFail) => { this.setState({ [stageKey]: 'sending' }); this.postForm(form, data).then(() => this.setState({ [stageKey]: done }), () => this.setState(onFail)); };
     const stillLabel = s.still ? 'Still water: on' : 'Still water: off';
 
     return {
@@ -1699,7 +1707,7 @@ class Component extends DCLogic {
       sendCalc: () => {
         if (!EMAIL.test(s.cf.email.trim())) return this.setState({ calcErr: 'That email looks incomplete. Mind checking it?' });
         if (!s.cf.consent) return this.setState({ calcErr: 'Tick the box so we can send the one email.' });
-        send('calcStage', 'done');
+        send('calcStage', 'done', 'calculator-results', { ...s.cf, hoursPerDay: c.hours, lostMinutesPerDay: c.lost, decisionsPerWeek: c.decisions, monthlyDividend: c.dividend, sharePercent: c.share, reclaimedHoursPerYear: fmt(recl) }, { calcStage: 'form', calcErr: NET_ERR });
       },
 
       seasonOn: s.season, seasonOff: !s.season,
@@ -1740,7 +1748,7 @@ class Component extends DCLogic {
       iNext: () => {
         const err = this.validateStep(); if (err) return this.setState({ iErr: err });
         if (step < 3) return this.setState({ iStep: step + 1 });
-        send('iStep', 'done');
+        send('iStep', 'done', 'intake', s.intake, { iStep: 3, iErr: NET_ERR });
       },
       whereEarth: field('where') === 'Earth', whereOrbit: field('where') === 'Orbital', whereSettle: field('where') === 'Settlement',
       srcDiv: field('source') === 'Dividend', srcTok: field('source') === 'Tokens', srcHrs: field('source') === 'Hours',
@@ -1753,10 +1761,10 @@ class Component extends DCLogic {
         if (!f.name.trim()) return this.setState({ sErr: 'Add your name so a steward knows who to write to.' });
         if (!EMAIL.test(f.email.trim())) return this.setState({ sErr: 'That email looks incomplete. Mind checking it?' });
         if (!f.consent) return this.setState({ sErr: 'Tick the box so a steward can write back.' });
-        send('sStage', 'done');
+        send('sStage', 'done', 'steward', s.steward, { sStage: 'form', sErr: NET_ERR });
       },
-      signin: s.signin, siForm: s.siStage === 'form', siDone: s.siStage === 'done', hasSiErr: s.siErr,
-      siSubmit: () => EMAIL.test(s.signin.email.trim()) ? this.setState({ siStage: 'done' }) : this.setState({ siErr: true }),
+      signin: s.signin, siForm: s.siStage !== 'done', siDone: s.siStage === 'done', hasSiErr: !!s.siErr, siErrMsg: s.siErr === 'net' ? NET_ERR : 'That email looks incomplete. Mind checking it?', siBusy: s.siStage === 'sending',
+      siSubmit: () => { if (s.siStage === 'sending') return; if (!EMAIL.test(s.signin.email.trim())) return this.setState({ siErr: true }); this.setState({ siErr: false }); send('siStage', 'done', 'signin-request', { email: s.signin.email.trim() }, { siStage: 'form', siErr: 'net' }); },
 
       jt0: s.jTab === 0, jt1: s.jTab === 1, jt2: s.jTab === 2,
       jScrollRef: this.jScrollRef,
@@ -1764,9 +1772,9 @@ class Component extends DCLogic {
       nextJ: () => s.jTab < 2 ? this.setJ(s.jTab + 1) : this.setState({ modal: null }),
       nextJLabel: s.jTab === 0 ? 'Next: During →' : s.jTab === 1 ? 'Next: After →' : 'Close journal',
 
-      news: s.news, newsIdle: s.newsStage !== 'done', newsDone: s.newsStage === 'done', hasNewsErr: s.newsErr,
+      news: s.news, newsIdle: s.newsStage !== 'done', newsDone: s.newsStage === 'done', hasNewsErr: !!s.newsErr, newsErrMsg: s.newsErr === 'net' ? NET_ERR : 'That email looks incomplete. Mind checking it?',
       onNews: ev => this.setState({ news: ev.target.value, newsErr: false }),
-      subscribe: () => EMAIL.test(s.news.trim()) ? this.setState({ newsStage: 'done' }) : this.setState({ newsErr: true }),
+      subscribe: () => { if (s.newsStage === 'sending') return; if (!EMAIL.test(s.news.trim())) return this.setState({ newsErr: true }); this.setState({ newsErr: false }); send('newsStage', 'done', 'newsletter', { email: s.news.trim() }, { newsStage: 'idle', newsErr: 'net' }); },
     };
   }
 }
