@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tokenization &amp; Zipf’s Law — NLP Lab — Braidwater</title>
+<meta name="description" content="Split text into sentences and tokens three ways, count types and tokens, and see Zipf’s and Heaps’ laws on 17 million words of Wikipedia.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.toklist{max-height:320px;overflow:auto;padding:4px 0;line-height:1.9}
+.tok.t-word{border-color:color-mix(in srgb,#e4e7eb 22%,transparent)}
+.tok.t-num{border-color:#d8b66a;color:#f0d79b}
+.tok.t-punct{border-color:color-mix(in srgb,#e4e7eb 12%,transparent);color:var(--faint)}
+.tok.t-url,.tok.t-email{border-color:#6cc3c3;color:#a6e3e3}
+.tok.t-mention,.tok.t-hashtag{border-color:#b49bd6;color:#d4c4ee}
+.tok.t-emoji{border-color:#d98c7a}
+.tok.t-clitic{border-color:#8fbf9a;color:#bfe0c6}
+.tok.t-sym{border-color:#7ea3c8;color:#b5d9fd}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--faint)}
+.legend .tok{font-size:12px;padding:0 5px;margin:0 4px 0 0}
+.tcol h3{font-size:20px;margin-bottom:4px}
+.tcol .note{margin-bottom:6px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.stats div{background:var(--bg);padding:12px 14px}
+.stats b{display:block;font-family:var(--heading);font-weight:600;font-size:30px;line-height:1}
+.stats span{font-size:12px;color:var(--faint)}
+ol.sents{margin:0;padding-left:26px;display:flex;flex-direction:column;gap:6px;font-size:15px;max-height:320px;overflow:auto}
+ol.sents li::marker{color:var(--faint);font-size:12px}
+.freq td:last-child{width:45%}
+.fbar{height:6px;background:var(--accent)}
+.plot{width:100%;height:360px}
+.opt{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--muted);cursor:pointer}
+.opt input{accent-color:var(--accent);width:16px;height:16px}
+</style>
+</head>
+<body data-slug="tokenize">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Your text, three ways</h2>
+      <p class="sub">Paste anything. The same text is split by whitespace, by a rule-based word tokenizer, and into sentences. Everything is counted from the word tokenizer’s output.</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <label class="field-label" for="txt">Text</label>
+        <div class="chips" id="samples" role="group" aria-label="Sample texts"></div>
+        <textarea id="txt" spellcheck="false"></textarea>
+        <div class="stats" id="stats" aria-live="polite"></div>
+      </div>
+
+      <div class="grid3" style="margin-top:8px">
+        <div class="panel pad tcol">
+          <h3>Whitespace split</h3>
+          <p class="note"><code>text.split(/\s+/)</code> — punctuation stays glued to words.</p>
+          <div class="toklist" id="ws" aria-label="Whitespace tokens"></div>
+        </div>
+        <div class="panel pad tcol">
+          <h3>Word tokenizer</h3>
+          <p class="note">Regular expressions for URLs, emails, @mentions, #hashtags, emoji, numbers, clitics (<code>n’t</code>, <code>’s</code>) and punctuation.</p>
+          <div class="toklist" id="rx" aria-label="Word tokenizer tokens"></div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="panel pad tcol">
+          <h3>Sentences</h3>
+          <div class="row" style="gap:14px;margin-bottom:6px">
+            <label class="opt"><input type="radio" name="sseg" value="aware" checked> Abbreviation-aware</label>
+            <label class="opt"><input type="radio" name="sseg" value="naive"> Naive (every . ! ?)</label>
+          </div>
+          <ol class="sents" id="sents" aria-label="Sentences"></ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="freq-h">
+    <div class="wrap">
+      <span class="kicker">02 · Counting</span>
+      <h2 id="freq-h">Word frequencies</h2>
+      <p class="sub">The most frequent types in your text. Function words dominate any English text; a stopword list hides them so content words surface.</p>
+      <div class="grid2">
+        <div class="panel pad stack">
+          <div class="row" style="gap:16px">
+            <label class="opt"><input type="checkbox" id="stop"> Remove stopwords (NLTK English list, 198 words)</label>
+            <label class="opt"><input type="checkbox" id="lower" checked> Lowercase</label>
+            <label class="opt"><input type="checkbox" id="wordsonly" checked> Words only</label>
+          </div>
+          <div class="scroll-x"><table class="data freq" id="freq"><thead><tr><th scope="col">#</th><th scope="col">Type</th><th scope="col">Count</th><th scope="col">Share</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="panel pad stack">
+          <h3 style="font-size:22px">Zipf’s law</h3>
+          <p class="note" id="zipfnote">Rank vs frequency on log–log axes. A straight line with slope ≈ −1 is Zipf’s law.</p>
+          <div class="plot" id="zipf" role="img" aria-label="Zipf plot of rank against relative frequency, log-log"></div>
+        </div>
+      </div>
+      <div class="panel pad stack" style="margin-top:20px">
+        <h3 style="font-size:22px">Heaps’ law: vocabulary keeps growing</h3>
+        <p class="note" id="heapsnote">Distinct words seen after reading N tokens of text8.</p>
+        <div class="plot" id="heaps" role="img" aria-label="Heaps plot of vocabulary size against tokens read, log-log"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">03 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Tokens and types</h3><p>A <b>token</b> is one occurrence of a word-like unit; a <b>type</b> is a distinct form. “the cat saw the dog” has 5 tokens and 4 types. The <b>type/token ratio</b> (types ÷ tokens) measures lexical variety, but it falls as texts get longer, so only compare texts of similar length.</p></div>
+        <div class="panel card"><h3>Why tokenizing is hard</h3><p>Whitespace leaves “dog.” and “dog” as different types. A good tokenizer separates punctuation, but must keep “3.14”, “U.S.”, “e-mail”, URLs and emoji intact, and decide whether “don’t” is one token or <i>do + n’t</i> (the Penn Treebank convention used here).</p></div>
+        <div class="panel card"><h3>Sentence segmentation</h3><p>A period ends a sentence, except after “Dr.”, “e.g.”, initials like “J. R.”, or inside “3.5”. Rule-based segmenters use abbreviation lists and context (is the next word capitalized?); Punkt (Kiss &amp; Strunk, 2006) learns abbreviations from raw text without supervision.</p></div>
+        <div class="panel card"><h3>Zipf’s law</h3><p>Frequency is roughly inversely proportional to rank: <code>f(r) ∝ 1 / r<sup>α</sup></code> with α ≈ 1. A few words are extremely common and most are rare: in text8, about 47% of the 254k types occur exactly once (<b>hapax legomena</b>).</p></div>
+        <div class="panel card"><h3>Heaps’ law</h3><p>Vocabulary grows sublinearly with corpus size: <code>V(N) = K·N<sup>β</sup></code>, typically β ≈ 0.4–0.6. You never run out of new words, which is why models need strategies for unknown words: <code>&lt;UNK&gt;</code> tokens, smoothing, or subword units.</p></div>
+        <div class="panel card"><h3>Normalization choices</h3><p>Lowercasing, removing stopwords, stemming and Unicode normalization (NFC/NFKC) all merge types. They help count-based methods like search and topic models, and can hurt tasks where case and function words matter, such as named entity recognition or parsing.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">04 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Jurafsky &amp; Martin, <i>Speech and Language Processing</i> (3rd ed. draft), Chapter 2: Regular Expressions, Tokenization, Edit Distance.</li>
+        <li>Manning, Raghavan &amp; Schütze (2008), <i>Introduction to Information Retrieval</i>, Ch. 2 (tokenization, stop words) and Ch. 5 (Heaps’ and Zipf’s laws).</li>
+        <li>Kiss, T. &amp; Strunk, J. (2006). Unsupervised Multilingual Sentence Boundary Detection. <i>Computational Linguistics</i> 32(4).</li>
+        <li>Zipf, G. K. (1949). <i>Human Behavior and the Principle of Least Effort.</i></li>
+        <li>Heaps, H. S. (1978). <i>Information Retrieval: Computational and Theoretical Aspects.</i></li>
+        <li>Bird, Klein &amp; Loper (2009), <i>Natural Language Processing with Python</i> (the NLTK book), Ch. 3: Processing Raw Text.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

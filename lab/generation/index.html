@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decoding Strategies for Text Generation — NLP Lab — Braidwater</title>
+<meta name="description" content="Greedy, beam, temperature, top-k and nucleus sampling on GPT-2 in your browser, with the probability of every step.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:14px 18px}
+.ctl{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ctl[hidden]{display:none}
+.ctl .val{font-variant-numeric:tabular-nums;color:var(--text);font-weight:500}
+.ctl .lbl{display:flex;justify-content:space-between;gap:8px}
+.ctl input[type=range]{width:100%}
+.btnrow{display:flex;flex-wrap:wrap;gap:10px}
+.btnrow .btn{white-space:normal;text-align:center}
+.gen-out{background:var(--bg);border:1px solid var(--divider);padding:16px;font-size:18px;line-height:1.9;min-height:96px;white-space:pre-wrap;overflow-wrap:anywhere}
+.gen-out .prompt{color:var(--faint)}
+button.tk{all:unset;cursor:pointer;white-space:pre-wrap;border-bottom:2px solid var(--c, var(--accent));background:color-mix(in srgb,var(--c, var(--accent)) var(--a, 12%),transparent);padding:1px 0;border-radius:1px}
+button.tk:hover{background:color-mix(in srgb,var(--accent) 30%,transparent)}
+button.tk:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button.tk[aria-pressed=true]{background:color-mix(in srgb,var(--accent) 42%,transparent);color:#fff}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--faint)}
+.legend i{display:inline-block;width:12px;height:12px;vertical-align:-1px;margin-right:6px}
+.inspector h3{font-size:22px;margin-bottom:4px}
+.cands{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.cands li{display:grid;grid-template-columns:minmax(0,9ch) minmax(0,1fr) 5.2ch 5.2ch;gap:10px;align-items:center;font-size:14px}
+.cands .w{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;overflow:hidden;text-overflow:ellipsis}
+.cands .bars{position:relative;height:16px;background:var(--divider)}
+.cands .bars i{position:absolute;left:0;top:0;bottom:0}
+.cands .bars i.raw{background:color-mix(in srgb,var(--text) 26%,transparent)}
+.cands .bars i.adj{background:var(--accent);top:4px;bottom:4px}
+.cands li.cut .w{text-decoration:line-through;color:var(--faint)}
+.cands li.cut .bars i.raw{background:repeating-linear-gradient(135deg,rgba(217,140,122,.45) 0 4px,transparent 4px 8px)}
+.cands li.chosen .w{color:var(--accent-200);font-weight:700}
+.cands .num{font-variant-numeric:tabular-nums;text-align:right;color:var(--muted)}
+.cands .hdr{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.metrics div{background:var(--bg);padding:12px 14px}
+.metrics b{display:block;font-family:var(--heading);font-size:26px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.metrics span{font-size:12px;color:var(--faint)}
+#chart{width:100%;height:260px}
+.cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.cmp .card{padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.cmp .card h3{font-size:22px}
+.cmp .txt{font-size:16px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+.cmp .txt .prompt{color:var(--faint)}
+.cmp .rep{background:rgba(217,140,122,.28);border-bottom:1px solid #d98c7a}
+.cmp dl{display:grid;grid-template-columns:auto auto;justify-content:start;gap:2px 14px;margin:0;font-size:13px}
+.cmp dt{color:var(--faint)}.cmp dd{margin:0;font-variant-numeric:tabular-nums}
+.formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;color:var(--accent-200);background:var(--bg);border:1px solid var(--divider);padding:8px 10px;margin:8px 0 0;overflow-x:auto;white-space:pre}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body data-slug="generation">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Decode GPT-2 step by step</h2>
+      <p class="sub" style="margin:0">A language model only ever outputs a probability distribution over its next token. Everything else (greedy, beam search, temperature, top-k, nucleus) is a <em>decoding strategy</em> layered on top. Pick one, generate, then click any generated token to see the distribution it was chosen from.</p>
+
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div id="load" class="load" aria-live="polite"><span class="note">Model: distilgpt2 (82M parameters, 8-bit quantized). The first run downloads about 85 MB from Hugging Face; after that it is cached by your browser.</span></div>
+
+        <label class="field-label" for="prompt">Prompt</label>
+        <textarea id="prompt" rows="2" style="min-height:72px" spellcheck="false">The old lighthouse keeper opened the door and</textarea>
+        <div class="chips" id="prompts" aria-label="Example prompts"></div>
+
+        <div class="controls">
+          <div class="ctl"><label class="field-label" for="strategy">Strategy</label>
+            <select id="strategy">
+              <option value="greedy">Greedy (argmax)</option>
+              <option value="beam">Beam search</option>
+              <option value="sample">Pure sampling (temperature)</option>
+              <option value="topk">Top-k sampling</option>
+              <option value="topp" selected>Nucleus (top-p) sampling</option>
+            </select></div>
+          <div class="ctl" data-for="sample topk topp"><span class="lbl"><label class="field-label" for="temp">Temperature</label><span class="val" id="temp-v"></span></span><input type="range" id="temp" min="0.1" max="2" step="0.05" value="1"></div>
+          <div class="ctl" data-for="topk"><span class="lbl"><label class="field-label" for="topk">Top-k</label><span class="val" id="topk-v"></span></span><input type="range" id="topk" min="1" max="200" step="1" value="40"></div>
+          <div class="ctl" data-for="topp"><span class="lbl"><label class="field-label" for="topp">Top-p</label><span class="val" id="topp-v"></span></span><input type="range" id="topp" min="0.05" max="1" step="0.01" value="0.9"></div>
+          <div class="ctl" data-for="beam"><span class="lbl"><label class="field-label" for="beams">Beam width</label><span class="val" id="beams-v"></span></span><input type="range" id="beams" min="2" max="6" step="1" value="4"></div>
+          <div class="ctl"><span class="lbl"><label class="field-label" for="reppen">Repetition penalty</label><span class="val" id="reppen-v"></span></span><input type="range" id="reppen" min="1" max="2" step="0.05" value="1"></div>
+          <div class="ctl"><span class="lbl"><label class="field-label" for="maxnew">New tokens</label><span class="val" id="maxnew-v"></span></span><input type="range" id="maxnew" min="5" max="40" step="1" value="30"></div>
+          <div class="ctl" data-for="sample topk topp"><label class="field-label" for="seed">Random seed</label><input type="number" id="seed" value="42" min="0" step="1" inputmode="numeric"></div>
+        </div>
+
+        <div class="btnrow">
+          <button class="btn btn-primary" id="gen" type="button">Generate</button>
+          <button class="btn btn-secondary" id="cmp" type="button">Compare greedy · beam · nucleus</button>
+          <button class="btn btn-secondary" id="stop" type="button" disabled>Stop</button>
+        </div>
+        <p class="msg" id="msg" role="alert" hidden></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="out-h">
+    <div class="wrap stack">
+      <span class="kicker">Output</span>
+      <h2 id="out-h">Generated text</h2>
+      <div class="grid2">
+        <div class="stack" style="min-width:0">
+          <div class="gen-out" id="out" aria-live="polite"><span class="note">Press Generate to start.</span></div>
+          <div class="legend" aria-hidden="true"><span><i style="background:rgba(143,191,154,.55)"></i>chosen with high probability</span><span><i style="background:rgba(217,140,122,.6)"></i>low-probability pick</span><span>Click a token to inspect its step.</span></div>
+          <div class="metrics" id="metrics" aria-label="Generation statistics"></div>
+          <div class="panel" style="padding:8px 4px 0"><div id="chart" role="img" aria-label="Probability of each chosen token by step"></div></div>
+        </div>
+        <div class="panel pad inspector" id="inspector" aria-live="polite">
+          <h3>Step inspector</h3>
+          <p class="note">The top-10 candidates the model proposed at a step. Grey bar: the model’s own probability (temperature 1). Blue bar: the probability actually sampled from after temperature, top-k or top-p. Struck-out candidates were cut by truncation.</p>
+          <div id="step"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="cmp-h">
+    <div class="wrap stack">
+      <span class="kicker">Side by side</span>
+      <h2 id="cmp-h">Three strategies, one prompt</h2>
+      <p class="sub" style="margin:0">Maximization (greedy, beam) usually finds text the model rates as <em>more</em> likely than sampled text, yet it often reads worse: bland, and prone to loops. Repeated 3-grams are highlighted.</p>
+      <div class="cmp" id="cmpout"><div class="panel empty">Press “Compare greedy · beam · nucleus”.</div></div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">02 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>One distribution per step</h3>
+          <p>An autoregressive model factorizes a sequence as a product of next-token conditionals. At each step it outputs logits <code>z</code> over the 50,257-token GPT-2 vocabulary; softmax turns them into probabilities. Generation is a loop: choose a token, append it, run the model again.</p>
+          <p class="formula">P(x₁…x_T) = ∏ₜ P(xₜ | x₍&lt;t₎)
+pᵢ = exp(zᵢ / T) / Σⱼ exp(zⱼ / T)</p></div>
+        <div class="panel card"><h3>Greedy and beam search</h3>
+          <p>Greedy takes the argmax at every step. Beam search keeps the <em>W</em> partial sequences with the highest total log-probability, expanding each and pruning back to <em>W</em>; here hypotheses are ranked by log-probability per token (length normalization) so short ones don’t win by default. Both approximate the mode, argmax over all sequences, which is intractable to find exactly.</p>
+          <p class="formula">score(y) = (1/|y|) Σₜ log P(yₜ | y₍&lt;t₎, x)</p></div>
+        <div class="panel card"><h3>Temperature</h3>
+          <p>Dividing logits by <em>T</em> before the softmax reshapes the distribution without changing the ranking: <em>T</em> &lt; 1 sharpens it toward greedy (T → 0 is argmax), <em>T</em> &gt; 1 flattens it toward uniform, so rare tokens get sampled more often.</p></div>
+        <div class="panel card"><h3>Top-k and nucleus (top-p)</h3>
+          <p>Top-k (Fan et al., 2018) samples only from the <em>k</em> most likely tokens, renormalized. A fixed <em>k</em> is too many when the model is confident and too few when it isn’t. Nucleus sampling (Holtzman et al., 2020) instead keeps the smallest set whose probability mass reaches <em>p</em>, so the candidate pool grows and shrinks with the model’s uncertainty.</p>
+          <p class="formula">V⁽ᵖ⁾ = smallest V′ ⊆ V with Σ_{x∈V′} P(x | x₍&lt;t₎) ≥ p</p></div>
+        <div class="panel card"><h3>Degeneration and the probability–quality paradox</h3>
+          <p>Maximization-based decoding produces generic, repetitive text: once a phrase repeats, the model assigns the repeat even higher probability, so loops reinforce themselves. Human text is not the most probable text; its per-token surprisal sits in a “typical” band rather than near zero. Higher likelihood therefore does not mean higher quality past a point; in machine translation the single most probable output is sometimes the empty string (Stahlberg &amp; Byrne, 2019).</p></div>
+        <div class="panel card"><h3>Why truncation helps</h3>
+          <p>A trained model spreads a little probability over thousands of implausible tokens. Each is unlikely, but together the tail can hold real mass, and one draw from it can derail everything that follows. Truncation (top-k, top-p) cuts that unreliable tail before sampling (Hewitt et al., 2022), keeping diversity from the head of the distribution without the occasional nonsense.</p></div>
+        <div class="panel card"><h3>Repetition penalty</h3>
+          <p>The CTRL-style penalty (Keskar et al., 2019) discounts every token already in the context: positive logits are divided by θ and negative ones multiplied by θ. It reduces loops but also penalizes legitimate repeats like “the”, so values just above 1 work best.</p>
+          <p class="formula">zᵢ ← zᵢ / θ  if zᵢ &gt; 0 and i ∈ context
+zᵢ ← zᵢ · θ  if zᵢ ≤ 0 and i ∈ context</p></div>
+        <div class="panel card"><h3>This implementation</h3>
+          <p>All decoding is written by hand on top of raw logits from distilgpt2 (a 6-layer distilled GPT-2 trained by Hugging Face) running in WebAssembly. Each step feeds only the newest token and reuses the cached attention keys and values; beam search batches its hypotheses and reorders the cache to match. Sampling uses a seeded PRNG, so the same seed reproduces the same text. The model is 8-bit quantized, so probabilities can differ slightly from the full-precision model.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">03 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Holtzman, Buys, Du, Forbes &amp; Choi (2020). <em>The Curious Case of Neural Text Degeneration.</em> ICLR. Introduces nucleus sampling.</li>
+        <li>Fan, Lewis &amp; Dauphin (2018). <em>Hierarchical Neural Story Generation.</em> ACL. Popularized top-k sampling.</li>
+        <li>Radford, Wu, Child, Luan, Amodei &amp; Sutskever (2019). <em>Language Models are Unsupervised Multitask Learners.</em> OpenAI technical report (GPT-2).</li>
+        <li>Keskar, McCann, Varshney, Xiong &amp; Socher (2019). <em>CTRL: A Conditional Transformer Language Model for Controllable Generation.</em> arXiv:1909.05858. Repetition penalty.</li>
+        <li>Stahlberg &amp; Byrne (2019). <em>On NMT Search Errors and Model Errors: Cat Got Your Tongue?</em> EMNLP-IJCNLP.</li>
+        <li>Hewitt, Manning &amp; Liang (2022). <em>Truncation Sampling as Language Model Desmoothing.</em> Findings of EMNLP.</li>
+        <li>Meister, Pimentel, Wiher &amp; Cotterell (2023). <em>Locally Typical Sampling.</em> TACL.</li>
+        <li>Sanh, Debut, Chaumond &amp; Wolf (2019). <em>DistilBERT, a distilled version of BERT.</em> arXiv:1910.01108. The distillation method behind distilgpt2.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

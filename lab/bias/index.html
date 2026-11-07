@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Measuring Bias in Embeddings (WEAT) — NLP Lab — Braidwater</title>
+<meta name="description" content="Word Embedding Association Tests, effect sizes, permutation p-values, a gender direction and hard debiasing on a Word2Vec model, in your browser.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.sets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px}
+.sets textarea{min-height:110px;font-size:14px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.tiles div{background:var(--bg);padding:14px 16px}
+.tiles b{display:block;font-family:var(--heading);font-weight:600;font-size:30px;line-height:1.05;font-variant-numeric:tabular-nums}
+.tiles span{font-size:13px;color:var(--faint)}
+.plot{width:100%;min-height:360px}
+.missing{font-size:14px;color:#e6a58f;margin:0}
+.ctrl{display:flex;flex-wrap:wrap;gap:14px 20px;align-items:flex-end}
+.ctrl label.inline{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--muted);cursor:pointer}
+.ctrl input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.ctrl .lbl{display:flex;flex-direction:column;gap:6px;min-width:0;max-width:100%}
+.ctrl select{max-width:100%;text-overflow:ellipsis}
+</style>
+</head>
+<body data-slug="bias">
+<main id="main">
+  <section class="s" aria-labelledby="weat-h">
+    <div class="wrap">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="weat-h">Word Embedding Association Test</h2>
+      <p class="sub">WEAT asks whether two sets of <em>target</em> words (X, Y) differ in how strongly they associate with two sets of <em>attribute</em> words (A, B), using cosine similarity in the embedding space. It mirrors the Implicit Association Test from psychology. Vectors come from the lab’s skip-gram Word2Vec model (text8, 30,000 words).</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="ctrl">
+          <div class="lbl"><label class="field-label" for="preset">Test</label>
+            <select id="preset"></select></div>
+          <div class="lbl"><label class="field-label" for="perms">Permutations</label>
+            <select id="perms"><option value="1000">1,000</option><option value="10000" selected>10,000</option><option value="100000">100,000</option></select></div>
+          <label class="inline"><input type="checkbox" id="wdebias"> Use hard-debiased (neutralized) vectors</label>
+          <button class="btn btn-primary" id="run" type="button" disabled>Run WEAT</button>
+        </div>
+        <div class="sets">
+          <div class="stack" style="gap:6px"><label class="field-label" for="setX">Targets X</label><textarea id="setX" spellcheck="false"></textarea></div>
+          <div class="stack" style="gap:6px"><label class="field-label" for="setY">Targets Y</label><textarea id="setY" spellcheck="false"></textarea></div>
+          <div class="stack" style="gap:6px"><label class="field-label" for="setA">Attributes A</label><textarea id="setA" spellcheck="false"></textarea></div>
+          <div class="stack" style="gap:6px"><label class="field-label" for="setB">Attributes B</label><textarea id="setB" spellcheck="false"></textarea></div>
+        </div>
+        <p class="note">Separate words with commas or spaces. Lowercase only (text8 has no capitals). Editing any list switches the test to “Custom”.</p>
+        <div id="status" class="load" aria-live="polite"><span class="bar-load"><i id="loadbar"></i></span><span id="statustext">Loading Word2Vec vectors…</span></div>
+        <div class="tiles" id="tiles" aria-live="polite"></div>
+        <p class="missing" id="missing" hidden></p>
+        <div id="weatplot" class="plot" role="img" aria-label="Association score s(w, A, B) for every target word"></div>
+        <p class="note" id="weatnote"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="dir-h">
+    <div class="wrap">
+      <span class="kicker">02 · Try it</span>
+      <h2 id="dir-h">A gender direction and hard debiasing</h2>
+      <p class="sub">Bolukbasi et al. (2016) estimate a single “gender direction” <em>g</em> from definitional pairs such as she–he, then <em>neutralize</em> words that should be gender-neutral by removing their component along <em>g</em>. Gonen &amp; Goldberg (2019) showed the bias is still recoverable afterwards. Try both below.</p>
+      <div class="grid2">
+        <div class="panel pad stack">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <div class="ctrl">
+            <div class="lbl"><label class="field-label" for="method">Direction</label>
+              <select id="method"><option value="pca" selected>PC1 of centered definitional pairs (Bolukbasi)</option><option value="diff">she − he</option></select></div>
+          </div>
+          <div class="stack" style="gap:6px"><label class="field-label" for="pairs">Definitional pairs (female:male)</label>
+            <textarea id="pairs" spellcheck="false" style="min-height:80px"></textarea></div>
+          <div class="stack" style="gap:6px"><label class="field-label" for="occ">Words to project (e.g. occupations)</label>
+            <textarea id="occ" spellcheck="false" style="min-height:110px"></textarea></div>
+          <button class="btn btn-primary" id="project" type="button" disabled>Project onto direction</button>
+          <p class="note" id="dirinfo"></p>
+        </div>
+        <div class="panel" style="padding:0">
+          <div id="projplot" class="plot" style="min-height:520px" role="img" aria-label="Projection of each word onto the gender direction"></div>
+        </div>
+      </div>
+
+      <div class="panel pad stack" style="margin-top:20px">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <h3 style="font-size:24px">Is the bias really gone? (Gonen &amp; Goldberg test)</h3>
+        <p class="note" style="color:var(--muted)">Take the 250 most female-leaning and 250 most male-leaning words among the 20,000 most frequent (by projection on <em>g</em>, excluding the definitional words), neutralize them, then cluster them into two groups with k-means. If clusters still line up with the original lean, gender information survives debiasing in the <em>geometry</em> between words, not just along <em>g</em>.</p>
+        <div class="row"><button class="btn btn-secondary" id="gg" type="button" disabled>Run the clustering test</button><span class="note" id="ggstatus" aria-live="polite"></span></div>
+        <div class="tiles" id="ggtiles"></div>
+        <div id="ggplot" class="plot" role="img" aria-label="PCA of neutralized vectors for the 500 most gender-leaning words, colored by original lean"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">03 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Association score</h3><p>For a word <em>w</em>, <code>s(w, A, B) = mean<sub>a∈A</sub> cos(w, a) − mean<sub>b∈B</sub> cos(w, b)</code>. Positive means <em>w</em> sits closer to A than to B.</p></div>
+        <div class="panel card"><h3>Test statistic &amp; effect size</h3><p>The lab uses <code>S = mean<sub>x∈X</sub> s(x) − mean<sub>y∈Y</sub> s(y)</code>. With equal set sizes this is Caliskan et al.’s sum statistic divided by |X|, so p-values match, and it stays fair when out-of-vocabulary words leave the sets unequal. Effect size <code>d = S / std<sub>w∈X∪Y</sub> s(w)</code> (sample std), read like Cohen’s d: 0.2 small, 0.5 medium, 0.8 large.</p></div>
+        <div class="panel card"><h3>Permutation p-value</h3><p>Under the null hypothesis the X/Y labels are exchangeable. We reshuffle X∪Y into groups of the original sizes many times and report the one-sided <code>p = (1 + #{S<sub>perm</sub> ≥ S}) / (1 + N)</code>, so p can never be reported as exactly 0.</p></div>
+        <div class="panel card"><h3>Gender direction</h3><p>For each definitional pair, subtract the pair mean from both words; the first principal component of these centered vectors is <em>g</em>. Bolukbasi et al. found PC1 explains far more variance than the rest, suggesting gender is roughly one-dimensional in these spaces.</p></div>
+        <div class="panel card"><h3>Hard debiasing (neutralize)</h3><p>For gender-neutral words, <code>w′ = (w − (w·g) g) / ‖w − (w·g) g‖</code>. The projection on <em>g</em> becomes zero by construction, so a WEAT whose attributes are gendered words will usually shrink, but only along that one axis.</p></div>
+        <div class="panel card"><h3>Why the clustering test matters</h3><p>Words that leaned male still sit near other male-leaning words after neutralizing. Gonen &amp; Goldberg call this “lipstick on a pig”: removing a direction hides bias from projection-based metrics without removing it from the representation.</p></div>
+        <div class="panel card"><h3>Caveats</h3><p>text8 is tiny (17M tokens) and the vocabulary is lowercase, so names collide with ordinary words (“bill”, “will”) and some test words are rare. Expect noisy, sometimes surprising results; treat them as a demonstration of the method, not a measurement of society.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">04 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Caliskan, A., Bryson, J. J., &amp; Narayanan, A. (2017). Semantics derived automatically from language corpora contain human-like biases. <em>Science</em>, 356(6334), 183–186.</li>
+        <li>Greenwald, A. G., McGhee, D. E., &amp; Schwartz, J. L. K. (1998). Measuring individual differences in implicit cognition: The Implicit Association Test. <em>Journal of Personality and Social Psychology</em>, 74(6).</li>
+        <li>Bolukbasi, T., Chang, K.-W., Zou, J., Saligrama, V., &amp; Kalai, A. (2016). Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings. <em>NeurIPS</em>.</li>
+        <li>Gonen, H., &amp; Goldberg, Y. (2019). Lipstick on a Pig: Debiasing Methods Cover up Systematic Gender Biases in Word Embeddings But do not Remove Them. <em>NAACL</em>.</li>
+        <li>May, C., Wang, A., Bordia, S., Bowman, S. R., &amp; Rudinger, R. (2019). On Measuring Social Biases in Sentence Encoders. <em>NAACL</em>.</li>
+        <li>Ethayarajh, K., Duvenaud, D., &amp; Hirst, G. (2019). Understanding Undesirable Word Embedding Associations. <em>ACL</em>.</li>
+        <li>Blodgett, S. L., Barocas, S., Daumé III, H., &amp; Wallach, H. (2020). Language (Technology) is Power: A Critical Survey of “Bias” in NLP. <em>ACL</em>.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

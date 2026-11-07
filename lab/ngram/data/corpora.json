@@ -1,0 +1,32 @@
+[
+ {
+  "key": "austen",
+  "name": "Jane Austen \u2014 Emma",
+  "sentences": 7399,
+  "tokens": 185433
+ },
+ {
+  "key": "shakespeare",
+  "name": "Shakespeare \u2014 Hamlet, Macbeth, Julius Caesar",
+  "sentences": 4449,
+  "tokens": 77018
+ },
+ {
+  "key": "carroll",
+  "name": "Lewis Carroll \u2014 Alice\u2019s Adventures in Wonderland",
+  "sentences": 1652,
+  "tokens": 31031
+ },
+ {
+  "key": "bible",
+  "name": "King James Bible \u2014 Genesis to Numbers",
+  "sentences": 4200,
+  "tokens": 148923
+ },
+ {
+  "key": "wikipedia",
+  "name": "Wikipedia (text8, first 150k tokens; no sentence breaks)",
+  "sentences": 7500,
+  "tokens": 150000
+ }
+]

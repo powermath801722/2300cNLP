@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edit Distance &amp; Spelling Correction — NLP Lab — Braidwater</title>
+<meta name="description" content="Fill in the Levenshtein dynamic-programming table step by step, then correct misspellings with a noisy-channel model.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.ed-inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px;align-items:end}
+.ed-inputs label{display:flex;flex-direction:column;gap:6px}
+.ed-inputs input[type=text]{min-height:46px;font-size:17px}
+.costs{display:flex;flex-wrap:wrap;gap:10px 18px;font-size:14px;color:var(--muted);align-items:center}
+.costs label{display:flex;align-items:center;gap:6px}
+.costs input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px}
+.costs select{min-height:38px;padding:4px 8px}
+table.dp{border-collapse:collapse;font:500 14px/1 ui-monospace,SFMono-Regular,Menlo,monospace;font-variant-numeric:tabular-nums}
+table.dp th,table.dp td{width:34px;min-width:34px;height:32px;text-align:center;border:1px solid var(--divider)}
+table.dp th{color:var(--accent-300);font-weight:600;background:var(--surface-2)}
+table.dp td{color:var(--text)}
+table.dp td.empty{color:transparent}
+table.dp td.pred{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+table.dp td.cur{background:var(--accent);color:var(--bg);font-weight:700}
+table.dp td.path{background:color-mix(in srgb,#d8b66a 26%,transparent);color:#fff;font-weight:700;box-shadow:inset 0 0 0 1px #d8b66a}
+.explain{font:400 14px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);min-height:2.6em;overflow-wrap:anywhere}
+.align{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(28px,auto);gap:2px;font:500 15px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;width:max-content}
+.align span{text-align:center;padding:3px 4px}
+.align .op{font-size:11px;letter-spacing:.06em;color:var(--faint)}
+.align .M{color:var(--faint)}.align .S{color:#d8b66a}.align .D{color:#d98c7a}.align .I{color:#8fbf9a}.align .T{color:#b49bd6}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--faint)}
+.legend b{font-weight:600}
+.big{font-family:var(--heading);font-weight:600;font-size:40px;line-height:1}
+.speed{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.corrected{font-size:18px;line-height:2}
+.corrected .fix{all:unset;cursor:pointer;border-bottom:2px solid #8fbf9a;color:#d6ebff;padding:0 2px}
+.corrected .fix:focus-visible{outline:2px solid var(--accent)}
+.corrected .fix small{color:#d98c7a;text-decoration:line-through;margin-right:4px;font-size:.8em}
+.corrected .nos{border-bottom:2px dashed #d98c7a}
+.cand-ok{color:#8fbf9a}
+.wbar{height:4px;background:var(--divider);min-width:60px}.wbar i{display:block;height:100%;background:var(--accent)}
+</style>
+</head>
+<body data-slug="spell">
+<main id="main">
+  <section class="s" aria-labelledby="ed-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="ed-h">Minimum edit distance</h2>
+      <p class="sub">How many insertions, deletions and substitutions turn one string into another? Dynamic programming fills a table where each cell is the cheapest way to turn a prefix of the source into a prefix of the target.</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <form class="ed-inputs" id="edform" autocomplete="off">
+          <label><span class="field-label">Source</span><input type="text" id="src" value="intention" maxlength="24" spellcheck="false" autocapitalize="none"></label>
+          <label><span class="field-label">Target</span><input type="text" id="tgt" value="execution" maxlength="24" spellcheck="false" autocapitalize="none"></label>
+          <button class="btn btn-primary" type="submit">Compute</button>
+        </form>
+        <div class="costs" role="group" aria-label="Operation costs">
+          <label>Insertion <select id="cIns" aria-label="Insertion cost"><option>1</option><option>2</option></select></label>
+          <label>Deletion <select id="cDel" aria-label="Deletion cost"><option>1</option><option>2</option></select></label>
+          <label>Substitution <select id="cSub" aria-label="Substitution cost"><option>1</option><option selected>2</option></select></label>
+          <label><input type="checkbox" id="cTrans"> Allow transposition (Damerau, cost 1)</label>
+        </div>
+        <div class="chips" id="edchips" aria-label="Example pairs"></div>
+        <div class="row">
+          <button class="btn btn-secondary" type="button" id="bReset">Reset table</button>
+          <button class="btn btn-secondary" type="button" id="bStep">Step</button>
+          <button class="btn btn-secondary" type="button" id="bPlay" aria-pressed="false">Play</button>
+          <button class="btn btn-secondary" type="button" id="bFill">Fill all</button>
+          <label class="speed">Speed <input type="range" id="speed" min="20" max="600" step="20" value="160" aria-label="Animation delay in milliseconds" style="direction:rtl"></label>
+        </div>
+        <div class="scroll-x" id="dpwrap" tabindex="0" aria-label="Dynamic programming table"></div>
+        <p class="explain" id="explain" aria-live="polite"></p>
+        <div class="grid2">
+          <div class="stack">
+            <span class="field-label">Distance</span>
+            <span class="big" id="dist">—</span>
+            <p class="note" id="opsum"></p>
+          </div>
+          <div class="stack">
+            <span class="field-label">Alignment (backtrace)</span>
+            <div class="scroll-x"><div class="align" id="align"></div></div>
+            <div class="legend"><span><b class="S">S</b> substitute</span><span><b class="D">D</b> delete</span><span><b class="I">I</b> insert</span><span><b class="T">T</b> transpose</span><span>· match</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="sp-h">
+    <div class="wrap stack">
+      <span class="kicker">02 · Try it</span>
+      <h2 id="sp-h">Noisy-channel spelling correction</h2>
+      <p class="sub">Treat a typo as a clean word sent through a noisy keyboard. Pick the word <em>w</em> that maximizes P(w) · P(typo | w): how common the word is, times how likely those exact mistakes are.</p>
+      <div class="load" id="load" role="status"><span class="bar-load"><i id="loadbar"></i></span><span id="loadtext">Loading word frequencies…</span></div>
+      <div class="grid2">
+        <div class="panel pad stack">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <label for="sent" class="field-label">Sentence to correct</label>
+          <textarea id="sent" spellcheck="false" style="min-height:110px">the qiuck brown fox jumpd ovr teh lazzy dog beside the rivr</textarea>
+          <div class="costs">
+            <label>Model <select id="model" aria-label="Correction model">
+              <option value="channel" selected>Noisy channel (keyboard-aware)</option>
+              <option value="norvig">Norvig (fewest edits, then most frequent)</option>
+            </select></label>
+          </div>
+          <div class="row"><button class="btn btn-primary" type="button" id="bCorrect" disabled>Correct sentence</button></div>
+          <div class="chips" id="spchips" aria-label="Example sentences"></div>
+          <div class="corrected" id="corrected" aria-live="polite"></div>
+          <p class="note">Underlined words were changed; click one to see its candidates. Dashed words had no candidate within two edits.</p>
+        </div>
+        <div class="panel pad stack">
+          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+          <form class="row" id="wform" autocomplete="off">
+            <label for="word" class="field-label" style="flex-basis:100%">Single word</label>
+            <input type="text" id="word" value="acress" spellcheck="false" autocapitalize="none" style="flex:1 1 160px;min-width:0">
+            <button class="btn btn-primary" type="submit" id="bWord" disabled>Candidates</button>
+          </form>
+          <p class="note" id="candinfo"></p>
+          <div class="scroll-x"><table class="data" id="cands" aria-label="Candidate corrections"></table></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">03 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>The recurrence</h3>
+          <p>With source <code>x</code> (length n) and target <code>y</code> (length m), let D[i, j] be the distance between the first i characters of x and the first j of y. Then D[i, 0] = i·del, D[0, j] = j·ins, and</p>
+          <p><code>D[i, j] = min( D[i−1, j] + del, D[i, j−1] + ins, D[i−1, j−1] + (x<sub>i</sub> = y<sub>j</sub> ? 0 : sub) )</code></p>
+          <p>The answer is D[n, m]. Filling the table takes O(nm) time; Wagner &amp; Fischer (1974) gave this algorithm.</p></div>
+        <div class="panel card"><h3>Levenshtein vs. cost choices</h3>
+          <p>Levenshtein distance counts every edit as 1. Jurafsky &amp; Martin’s textbook example uses substitution cost 2 (a substitution is a deletion plus an insertion), which makes <em>intention → execution</em> cost 8 instead of 5. Damerau’s variant adds swapping two adjacent letters as one edit, which matches a very common typing error (<em>teh</em> → <em>the</em>). The version here is the “optimal string alignment” form, which never edits the same substring twice.</p></div>
+        <div class="panel card"><h3>Backtrace and alignment</h3>
+          <p>Remembering which neighbor produced each cell’s minimum lets you walk back from D[n, m] to D[0, 0]. That path is an alignment: every diagonal step is a match or substitution, every vertical step a deletion, every horizontal step an insertion. Several paths can tie; this demo prefers diagonal moves.</p></div>
+        <div class="panel card"><h3>The noisy channel</h3>
+          <p>Bayes’ rule turns “which word did they mean?” into <code>ŵ = argmax<sub>w ∈ V</sub> P(x | w) · P(w)</code>. The prior P(w) comes from word counts in 17 million words of Wikipedia (text8). The channel model P(x | w) scores the edits: here, each substitution with a neighboring key is five times as likely as one with a distant key, and transpositions and doubled letters are cheap.</p></div>
+        <div class="panel card"><h3>Candidate generation</h3>
+          <p>Following Norvig, candidates are every dictionary word reachable by one or two deletions, transpositions, substitutions or insertions. For a word of length n there are 54n + 25 strings one edit away, and tens of thousands two edits away, but only a handful are real words. Damerau found that about 80% of misspellings are a single edit.</p></div>
+        <div class="panel card"><h3>Real-word errors</h3>
+          <p>This corrector only fixes words missing from its dictionary. “I need a <em>peace</em> of paper” has no unknown word, so nothing is flagged. Catching real-word errors needs context: a language model compares P(“a piece of paper”) with P(“a peace of paper”) across confusable candidates. Production systems also learn the channel from confusion matrices of real typos (Kernighan, Church &amp; Gale, 1990).</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">04 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Jurafsky, D. &amp; Martin, J. H. <em>Speech and Language Processing</em> (3rd ed. draft). Chapter 2, “Regular Expressions, Text Normalization, Edit Distance”, and the appendix “Spelling Correction and the Noisy Channel”.</li>
+        <li>Levenshtein, V. I. (1966). Binary codes capable of correcting deletions, insertions, and reversals. <em>Soviet Physics Doklady</em>, 10(8).</li>
+        <li>Damerau, F. J. (1964). A technique for computer detection and correction of spelling errors. <em>Communications of the ACM</em>, 7(3).</li>
+        <li>Wagner, R. A. &amp; Fischer, M. J. (1974). The string-to-string correction problem. <em>Journal of the ACM</em>, 21(1).</li>
+        <li>Kernighan, M. D., Church, K. W. &amp; Gale, W. A. (1990). A spelling correction program based on a noisy channel model. <em>COLING 1990</em>.</li>
+        <li>Norvig, P. (2007). <a href="https://norvig.com/spell-correct.html" rel="noopener">How to Write a Spelling Corrector</a>.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

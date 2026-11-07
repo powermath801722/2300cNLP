@@ -72,21 +72,22 @@ def prep(fileids):
 
 os.makedirs(f"{ROOT}/ngram/data", exist_ok=True)
 corpora = {
-    "austen": ("Jane Austen — Emma, Persuasion", ["austen-emma.txt", "austen-persuasion.txt"]),
+    "austen": ("Jane Austen — Emma", ["austen-emma.txt"]),
     "shakespeare": ("Shakespeare — Hamlet, Macbeth, Julius Caesar", ["shakespeare-hamlet.txt", "shakespeare-macbeth.txt", "shakespeare-caesar.txt"]),
     "carroll": ("Lewis Carroll — Alice’s Adventures in Wonderland", ["carroll-alice.txt"]),
-    "bible": ("King James Bible — Genesis to Ruth", ["bible-kjv.txt"]),
+    "bible": ("King James Bible — Genesis to Numbers", ["bible-kjv.txt"]),
 }
 meta = []
 for key, (name, fids) in corpora.items():
     lines = prep(fids)
-    if key == "bible":  # first ~30k lines keeps the file small
-        lines = lines[:9000]
+    if key == "bible":  # Genesis to Numbers keeps the file small; drop "12 : 3" verse numbers
+        lines = [re.sub(r"^(?:[0-9]+ : [0-9]+ )+", "", l) for l in lines[:4200]]
+        lines = [l for l in lines if len(l.split()) >= 3]
     open(f"{ROOT}/ngram/data/{key}.txt", "w").write("\n".join(lines))
     meta.append({"key": key, "name": name, "sentences": len(lines), "tokens": sum(len(l.split()) for l in lines)})
 # text8 has no sentence boundaries: chunk into pseudo-sentences of 20 tokens
-t8 = [" ".join(toks[i:i + 20]) for i in range(0, 400_000, 20)]
+t8 = [" ".join(toks[i:i + 20]) for i in range(0, 150_000, 20)]
 open(f"{ROOT}/ngram/data/wikipedia.txt", "w").write("\n".join(t8))
-meta.append({"key": "wikipedia", "name": "Wikipedia (text8, first 400k tokens; no sentence breaks)", "sentences": len(t8), "tokens": 400_000})
+meta.append({"key": "wikipedia", "name": "Wikipedia (text8, first 150k tokens; no sentence breaks)", "sentences": len(t8), "tokens": 150_000})
 json.dump(meta, open(f"{ROOT}/ngram/data/corpora.json", "w"), indent=1)
 print(json.dumps(meta, indent=1))

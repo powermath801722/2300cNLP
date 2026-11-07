@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Named Entity Recognition — NLP Lab — Braidwater</title>
+<meta name="description" content="Find people, places and organizations with a BERT token classifier running in your browser; inspect BIO tags per WordPiece.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;display:inline-block;border-radius:2px}
+.inline-out{font-size:18px;line-height:2.1;white-space:pre-wrap;word-break:break-word}
+mark.ent{color:var(--text);padding:2px 4px;border-radius:2px;border-bottom:2px solid}
+mark.ent sup{font:600 10px/1 var(--body);letter-spacing:.06em;margin-left:4px;vertical-align:super}
+.tokrow{display:flex;flex-wrap:wrap;gap:6px}
+.tokrow .tok{display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;margin:0;border-left-width:3px}
+.tokrow .tok small{font:500 11px/1.2 var(--body);color:var(--faint);letter-spacing:.02em}
+.tokrow .tok.o{opacity:.7}
+.hard{font-size:14px}
+</style>
+</head>
+<body data-slug="ner">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Tag the entities in any text</h2>
+      <p class="sub">The model is BERT-base (cased) fine-tuned on CoNLL-2003 English news. It labels every WordPiece with one of nine BIO tags; consecutive tags are then grouped into entities. First run downloads the model (about 109 MB, quantized), after which your browser caches it.</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <label class="field-label" for="text">Text</label>
+        <textarea id="text" maxlength="2000" spellcheck="false">Ada Lovelace published her notes on Charles Babbage's Analytical Engine in London in 1843, translating an article by the Italian engineer Luigi Menabrea.</textarea>
+        <div class="row">
+          <button class="btn btn-primary" id="run" type="button">Find entities</button>
+          <span class="note" id="status" aria-live="polite"></span>
+        </div>
+        <div id="load"></div>
+        <div>
+          <span class="field-label">Samples · including hard cases</span>
+          <div class="chips" id="samples" style="margin-top:8px"></div>
+          <p class="note hard" id="sample-note" aria-live="polite"></p>
+        </div>
+      </div>
+
+      <div class="grid2" style="margin-top:24px">
+        <div class="panel pad stack">
+          <h3 style="font-size:24px">Highlighted text</h3>
+          <div class="legend" id="legend"></div>
+          <div class="inline-out" id="inline"><span class="note">Run the model to see entities.</span></div>
+        </div>
+        <div class="panel pad stack">
+          <h3 style="font-size:24px">Entities</h3>
+          <div class="scroll-x"><table class="data" id="ents"><thead><tr><th scope="col">Entity</th><th scope="col">Type</th><th scope="col">Confidence</th><th scope="col">WordPieces</th></tr></thead><tbody><tr><td colspan="4" class="note">No entities yet.</td></tr></tbody></table></div>
+        </div>
+      </div>
+
+      <div class="panel pad stack" style="margin-top:24px">
+        <h3 style="font-size:24px">Token view: BIO tag per WordPiece</h3>
+        <p class="note">What the classifier actually outputs. <code>##</code> marks a piece that continues the previous word; the number is the softmax probability of the chosen tag. Grouping uses the tag of each word’s first piece.</p>
+        <div class="tokrow" id="tokens"><span class="note">—</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">02 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>NER as token classification</h3><p>BERT encodes the whole sentence; a linear layer on top of each token’s final hidden state predicts one of nine labels. Because every token sees every other token through self-attention, “Washington” can be tagged a person, place or organization depending on its neighbours.</p></div>
+        <div class="panel card"><h3>BIO (IOB2) tags</h3><p><code>B-X</code> begins an entity of type X, <code>I-X</code> continues it, <code>O</code> is outside any entity. Two adjacent entities of the same type stay separate because the second starts with <code>B-</code>. The scheme can’t express overlapping or nested entities: in “Bank of England”, England is a location inside an organization, but only one label per token is allowed.</p></div>
+        <div class="panel card"><h3>CoNLL-2003</h3><p>The training data: about 300k tokens of English Reuters newswire from 1996, annotated with four types: PER (people), ORG (organizations), LOC (locations) and MISC (nationalities, events, works and other names). Models trained on it inherit its domain: they do best on capitalized, well-edited news and degrade on lowercase chat, tweets or clinical notes.</p></div>
+        <div class="panel card"><h3>Subwords and alignment</h3><p>WordPiece splits rare words (“Lovelace” → “Love”, “##lace”). Training labels exist per word, so the usual recipe labels the first piece and ignores the rest in the loss. At prediction time we take each word’s first-piece tag and average the piece confidences, which is why a word can never be half inside an entity here.</p></div>
+        <div class="panel card"><h3>Span-level F1</h3><p>NER is scored on whole entities, not tokens: a predicted entity counts only if its boundaries and type both match the gold span exactly (the CoNLL <code>conlleval</code> script). Precision = correct / predicted, recall = correct / gold, F1 is their harmonic mean. Getting “Charles Babbage’s” as “Charles” alone is a miss, even though one token was right.</p></div>
+        <div class="panel card"><h3>This model</h3><p><code>dslim/bert-base-NER</code> (BERT-base cased, 110M parameters) converted to ONNX and quantized to 8-bit by Xenova. Its model card reports roughly 91 F1 on the CoNLL-2003 test set. Quantization saves three quarters of the download at a small cost in accuracy.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">03 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Tjong Kim Sang, E. F. &amp; De Meulder, F. (2003). Introduction to the CoNLL-2003 Shared Task: Language-Independent Named Entity Recognition. <em>CoNLL</em>.</li>
+        <li>Ramshaw, L. &amp; Marcus, M. (1995). Text Chunking using Transformation-Based Learning. <em>Third Workshop on Very Large Corpora</em>. (Origin of IOB tagging.)</li>
+        <li>Lample, G., Ballesteros, M., Subramanian, S., Kawakami, K. &amp; Dyer, C. (2016). Neural Architectures for Named Entity Recognition. <em>NAACL</em>.</li>
+        <li>Devlin, J., Chang, M.-W., Lee, K. &amp; Toutanova, K. (2019). BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. <em>NAACL</em>.</li>
+        <li>Finkel, J. R. &amp; Manning, C. D. (2009). Nested Named Entity Recognition. <em>EMNLP</em>.</li>
+        <li>Jurafsky, D. &amp; Martin, J. H. <em>Speech and Language Processing</em> (3rd ed. draft), chapter on sequence labeling for parts of speech and named entities.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
