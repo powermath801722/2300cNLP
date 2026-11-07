@@ -157,6 +157,7 @@ function adjacent(x, y) { const p = KEYPOS[x], q = KEYPOS[y]; if (!p || !q) retu
 // Per-edit probabilities of the channel model (illustrative, not learned from data)
 const P_EDIT = { subNear: 0.01, subFar: 0.002, del: 0.004, delDouble: 0.01, ins: 0.004, insDouble: 0.01, trans: 0.008 };
 const P_CORRECT = 0.95; // probability a word is typed with no error
+const RARE = 100;       // dictionary words rarer than this are re-checked by the noisy channel
 
 function edits1(w) {
   const out = new Set();
@@ -246,8 +247,12 @@ export function correctSentence(text, model = $('#model').value) {
   for (const tok of text.match(/[A-Za-z]+|[^A-Za-z]+/g) || []) {
     if (!/^[A-Za-z]+$/.test(tok)) { out.push({ orig: tok }); continue; }
     const lw = tok.toLowerCase();
-    if (WORDS.has(lw) || lw.length < 2) { out.push({ orig: tok }); continue; }
+    if (lw.length < 2) { out.push({ orig: tok }); continue; }
+    // Norvig keeps every dictionary word. The noisy channel also lets rare dictionary words (e.g. "teh", 25
+    // occurrences in text8) compete with their neighbors, since P(x|w)·P(w) can favor a much more common word.
+    if (WORDS.has(lw) && (model === 'norvig' || WORDS.get(lw) >= RARE)) { out.push({ orig: tok }); continue; }
     const best = rank(lw, model)[0];
+    if (best && best.w === lw) { out.push({ orig: tok }); continue; }
     if (!best) { out.push({ orig: tok, nos: true }); continue; }
     let fixed = best.w;
     if (tok[0] === tok[0].toUpperCase()) fixed = fixed[0].toUpperCase() + fixed.slice(1);

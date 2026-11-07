@@ -2,6 +2,7 @@
 import { el, $, ready, plotly, plotLayout, PLOT_CONFIG, COLORS } from '/lab/shared/lab.js';
 import { tokenizer, progressUI } from '/lab/shared/hf.js';
 
+window.__lab = window.__lab || {};
 const EOW = '</w>';
 const CORPORA = {
   classic: Array(5).fill('low').concat(Array(2).fill('lower'), Array(6).fill('newest'), Array(3).fill('widest')).join(' '),

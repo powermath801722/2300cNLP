@@ -111,7 +111,7 @@ table.dp td.path{background:color-mix(in srgb,#d8b66a 26%,transparent);color:#ff
           <div class="row"><button class="btn btn-primary" type="button" id="bCorrect" disabled>Correct sentence</button></div>
           <div class="chips" id="spchips" aria-label="Example sentences"></div>
           <div class="corrected" id="corrected" aria-live="polite"></div>
-          <p class="note">Underlined words were changed; click one to see its candidates. Dashed words had no candidate within two edits.</p>
+          <p class="note">Underlined words were changed; click one to see its candidates. Dashed words had no candidate within two edits. The noisy-channel model also re-checks rare dictionary words (fewer than 100 occurrences, like <em>teh</em>, which appears 25 times in Wikipedia text); Norvig’s method keeps any word it knows.</p>
         </div>
         <div class="panel pad stack">
           <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
