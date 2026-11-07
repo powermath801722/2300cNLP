@@ -16,5 +16,6 @@ export default async ({ page, check, warn }) => {
   r = await page.evaluate(() => window.__lab.lastZS);
   const get = (l) => r.find((x) => x.label === l).score;
   warn(get('battery') > 0.5 && get('display') > 0.5, `multi-label: battery and display both high (battery ${get('battery').toFixed(2)}, display ${get('display').toFixed(2)}, price ${get('price').toFixed(2)})`);
-  check(r.reduce((a, x) => a + x.score, 0) > 1.0001 || r.length === 1 || true, 'multi-label scores are independent');
+  const msum = r.reduce((a, x) => a + x.score, 0);
+  check(Math.abs(msum - 1) > 0.01, `multi-label scores are independent, not normalized to 1 (sum ${msum.toFixed(2)})`);
 };

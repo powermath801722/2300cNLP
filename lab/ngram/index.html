@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>N-gram Language Models — NLP Lab — Braidwater</title>
+<meta name="description" content="Train unigram, bigram and trigram language models on public-domain books, generate text, and compare MLE, add-k, interpolation and Kneser–Ney smoothing by perplexity.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:14px;align-items:end}
+.controls label{display:flex;flex-direction:column;gap:6px}
+.controls select,.controls input[type=number]{width:100%}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.stats div{background:var(--bg);padding:12px 14px}
+.stats b{display:block;font-family:var(--heading);font-weight:600;font-size:28px;line-height:1}
+.stats span{font-size:12px;color:var(--faint)}
+.qrow{display:flex;gap:10px;flex-wrap:wrap}
+.qrow input{flex:1 1 220px;min-width:0;min-height:48px;background:var(--bg);color:var(--text);border:1px solid var(--divider);padding:0 14px;font:500 16px var(--body)}
+.qrow input:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 1px var(--accent)}
+td.bar{width:40%}.pbar{height:6px;background:var(--accent)}
+.gen{font-size:18px;line-height:1.7;margin:0;min-height:3.4em}
+.gen .seed{color:var(--accent-200)}
+.gen p{margin:0 0 10px}
+.tokp td:nth-child(3){font-variant-numeric:tabular-nums}
+.heat{display:inline-block;width:10px;height:10px;margin-right:6px;vertical-align:middle}
+.plot{width:100%;height:340px}
+input[type=range]{width:100%}
+.busy{opacity:.55;pointer-events:none}
+</style>
+</head>
+<body data-slug="ngram">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Train a model</h2>
+      <p class="sub">An n-gram model predicts each word from the previous n − 1 words using counts from a corpus. Pick a book, an order and a smoothing method; everything trains in a background thread in your browser.</p>
+      <div class="panel pad stack" id="modelpanel">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="controls">
+          <label><span class="field-label">Corpus</span><select id="corpus"></select></label>
+          <label><span class="field-label">Order</span><select id="order"><option value="1">Unigram (n = 1)</option><option value="2">Bigram (n = 2)</option><option value="3" selected>Trigram (n = 3)</option></select></label>
+          <label><span class="field-label">Smoothing</span><select id="method">
+            <option value="mle">MLE (no smoothing)</option><option value="addk">Add-k (Laplace when k = 1)</option>
+            <option value="interp">Linear interpolation</option><option value="kn" selected>Interpolated Kneser–Ney</option><option value="backoff">Stupid backoff</option></select></label>
+          <label id="kwrap"><span class="field-label">k</span><input type="number" id="k" value="0.01" min="0.0001" max="5" step="0.01"></label>
+          <label id="dwrap"><span class="field-label">Discount D</span><input type="number" id="D" value="0.75" min="0.05" max="0.99" step="0.05"></label>
+        </div>
+        <p class="note" id="methodnote"></p>
+        <div class="stats" id="mstats" aria-live="polite"></div>
+        <div class="load" id="status"><span class="bar-load"><i></i></span><span class="t">Loading…</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="next-h">
+    <div class="wrap">
+      <span class="kicker">02 · Prediction</span>
+      <h2 id="next-h">What comes next?</h2>
+      <p class="sub">Type a few words. The model looks only at the last n − 1 of them.</p>
+      <div class="grid2">
+        <div class="panel pad stack">
+          <form class="qrow" id="nform" autocomplete="off"><label class="field-label" for="ctx" style="flex-basis:100%">Context</label><input id="ctx" value="she was not" spellcheck="false"><button class="btn btn-primary" type="submit">Predict</button></form>
+          <p class="note" id="ctxnote"></p>
+          <div class="scroll-x"><table class="data" id="next"><thead><tr><th scope="col">Next word</th><th scope="col">P</th><th scope="col">Count</th><th scope="col"><span style="position:absolute;left:-9999px">Bar</span></th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="panel pad stack">
+          <h3 style="font-size:22px">Generate</h3>
+          <form class="qrow" id="gform" autocomplete="off"><label class="field-label" for="seed" style="flex-basis:100%">Start with (optional)</label><input id="seed" value="it was" spellcheck="false"><button class="btn btn-primary" type="submit">Generate</button></form>
+          <label><span class="field-label">Temperature <span id="tval">1.0</span></span><input type="range" id="temp" min="0.2" max="2" step="0.1" value="1"></label>
+          <div class="gen" id="gen" aria-live="polite"></div>
+          <p class="note">Temperature reshapes the distribution as p<sup>1/T</sup>: below 1 favors likely words (repetitive), above 1 flattens it (chaotic). Generations stop at an end-of-sentence token or 40 words.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="score-h">
+    <div class="wrap">
+      <span class="kicker">03 · Evaluation</span>
+      <h2 id="score-h">Scoring sentences and perplexity</h2>
+      <div class="grid2">
+        <div class="panel pad stack">
+          <form class="qrow" id="sform" autocomplete="off"><label class="field-label" for="sent" style="flex-basis:100%">Sentence to score</label><input id="sent" value="she had never seen him so happy ." spellcheck="false"><button class="btn btn-primary" type="submit">Score</button></form>
+          <p class="note" id="snote"></p>
+          <div class="scroll-x"><table class="data tokp" id="stab"><thead><tr><th scope="col">Token</th><th scope="col">Counts (tri / bi / uni)</th><th scope="col">P</th><th scope="col">−log₂ P</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div class="panel pad stack">
+          <h3 style="font-size:22px">Held-out perplexity</h3>
+          <p class="note" id="pnote">Every 10th sentence of the corpus is held out. Lower perplexity = the model is less surprised by unseen text.</p>
+          <div class="plot" id="pplot" role="img" aria-label="Perplexity by n-gram order and smoothing method"></div>
+          <div class="scroll-x"><table class="data" id="ptab"></table></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">04 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>The Markov assumption</h3><p>The chain rule gives P(w₁…wₙ) = ∏ P(wᵢ | w₁…wᵢ₋₁). An n-gram model approximates each factor with only the last n − 1 words: P(wᵢ | wᵢ₋₂, wᵢ₋₁) for a trigram. Sentences are padded with <code>&lt;s&gt;</code> and end with <code>&lt;/s&gt;</code>.</p></div>
+        <div class="panel card"><h3>Maximum likelihood</h3><p>P<sub>MLE</sub>(w | h) = c(h, w) / c(h). It fits the training data best, but gives probability zero to anything unseen, so a single new trigram makes the whole test set impossible (infinite perplexity).</p></div>
+        <div class="panel card"><h3>Add-k smoothing</h3><p>(c(h, w) + k) / (c(h) + k·V). Laplace (k = 1) moves far too much mass to unseen events when V is large; small k works better but is still a blunt tool.</p></div>
+        <div class="panel card"><h3>Interpolation &amp; backoff</h3><p>Mix orders: λ₃P(w | uv) + λ₂P(w | v) + λ₁P(w), with Σλ = 1 (here 0.6 / 0.3 / 0.1; normally tuned on held-out data). Stupid backoff (Brants et al., 2007) uses the highest order with a count and multiplies by 0.4 each step down; its scores don’t sum to 1, so it can’t be evaluated by perplexity.</p></div>
+        <div class="panel card"><h3>Kneser–Ney</h3><p>Subtract a discount D from every seen count and give that mass to a lower-order model. The lower order uses <b>continuation counts</b>: how many different words precede w, not how often w occurs. “Francisco” is frequent but only follows “San”, so it should be an unlikely guess after a new context.</p></div>
+        <div class="panel card"><h3>Perplexity</h3><p>PP = 2<sup>−(1/N) Σ log₂ P(wᵢ | h)</sup>: the geometric mean inverse probability per token, or the effective number of equally likely choices. Compare perplexities only with the same vocabulary and test set. Words seen once in training are mapped to <code>&lt;UNK&gt;</code> here so every test word has a probability.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">05 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Jurafsky &amp; Martin, <i>Speech and Language Processing</i> (3rd ed. draft), Chapter 3: N-gram Language Models.</li>
+        <li>Shannon, C. E. (1948). A Mathematical Theory of Communication. <i>Bell System Technical Journal</i> 27. (Generates text from letter and word n-grams.)</li>
+        <li>Kneser, R. &amp; Ney, H. (1995). Improved backing-off for M-gram language modeling. <i>ICASSP</i>.</li>
+        <li>Chen, S. F. &amp; Goodman, J. (1999). An empirical study of smoothing techniques for language modeling. <i>Computer Speech &amp; Language</i> 13(4).</li>
+        <li>Brants, T., Popat, A. C., Xu, P., Och, F. J. &amp; Dean, J. (2007). Large Language Models in Machine Translation. <i>EMNLP-CoNLL</i>. (Stupid backoff.)</li>
+        <li>Jelinek, F. &amp; Mercer, R. L. (1980). Interpolated estimation of Markov source parameters from sparse data. <i>Pattern Recognition in Practice</i>.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

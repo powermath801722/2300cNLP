@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neural Machine Translation — NLP Lab — Braidwater</title>
+<meta name="description" content="MarianMT encoder–decoder translation in the browser with greedy and beam search, per-token probabilities, BLEU and back-translation.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.out{font-family:var(--heading);font-weight:600;font-size:clamp(24px,3vw,34px);line-height:1.2;text-transform:none;word-break:break-word}
+.tokline{display:flex;flex-wrap:wrap;gap:4px}
+.tokline .tok{margin:0;display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px}
+.tokline .tok small{font:500 11px/1.2 var(--body);color:var(--faint)}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px}
+.opts label{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--muted)}
+.opts select,.opts input{width:100%}
+.bleu{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:14px;color:var(--muted)}
+.bleu b{color:var(--text);font-variant-numeric:tabular-nums}
+.big{font-family:var(--heading);font-weight:600;font-size:40px;line-height:1;color:var(--accent-200)}
+.diff ins{text-decoration:none;background:color-mix(in srgb,#d8b66a 25%,transparent);border-bottom:1px solid #d8b66a}
+.diff del{color:#e6a58f}
+table.data td.hyp{min-width:14em}
+</style>
+</head>
+<body data-slug="translation">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Translate, and watch the decoder choose</h2>
+      <p class="sub">A MarianMT encoder–decoder from the OPUS-MT project translates English into French, German or Spanish. The decoder here is written out step by step on top of the model’s raw logits, so you can compare greedy and beam search and see the probability of every output piece. Each language direction downloads about 107 MB (quantized encoder + decoder) the first time.</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="opts">
+          <label>Direction<select id="dir"><option value="fr">English → French</option><option value="de">English → German</option><option value="es">English → Spanish</option></select></label>
+          <label>Decoding<select id="beams"><option value="1">Greedy (beam 1)</option><option value="2">Beam search · 2</option><option value="3">Beam search · 3</option><option value="4" selected>Beam search · 4</option><option value="5">Beam search · 5</option></select></label>
+          <label>Length penalty α<input type="number" id="alpha" min="0" max="2" step="0.1" value="1"></label>
+        </div>
+        <label class="field-label" for="src">English source</label>
+        <textarea id="src" maxlength="600" spellcheck="false" style="min-height:96px"></textarea>
+        <div class="row">
+          <button class="btn btn-primary" id="run" type="button">Translate</button>
+          <button class="btn btn-secondary" id="back" type="button" disabled>Back-translate to English</button>
+          <span class="note" id="status" aria-live="polite"></span>
+        </div>
+        <div id="load"></div>
+        <div>
+          <span class="field-label">Samples</span>
+          <div class="chips" id="samples" style="margin-top:8px"></div>
+          <p class="note" id="sample-note" aria-live="polite" style="margin-top:6px"></p>
+        </div>
+      </div>
+
+      <div class="panel pad stack" style="margin-top:24px" aria-live="polite">
+        <h3 style="font-size:24px">Translation</h3>
+        <div class="out" id="out">—</div>
+        <div><span class="field-label">Source pieces (SentencePiece)</span><div class="tokline" id="srctoks" style="margin-top:6px"></div></div>
+        <div><span class="field-label">Output pieces · probability when chosen</span><div class="tokline" id="outtoks" style="margin-top:6px"></div></div>
+      </div>
+
+      <div class="grid2" style="margin-top:24px">
+        <div class="panel pad stack">
+          <h3 style="font-size:24px">Final beam</h3>
+          <p class="note">Each finished hypothesis with its total log-probability and the length-normalized score used to rank it: log P / length<sup>α</sup>.</p>
+          <div class="scroll-x"><table class="data" id="hyps"><thead><tr><th scope="col">#</th><th scope="col">Hypothesis</th><th scope="col">log P</th><th scope="col">Pieces</th><th scope="col">Score</th></tr></thead><tbody><tr><td colspan="5" class="note">—</td></tr></tbody></table></div>
+        </div>
+        <div class="panel pad stack">
+          <h3 style="font-size:24px">BLEU against a reference</h3>
+          <label class="field-label" for="ref">Reference translation</label>
+          <textarea id="ref" style="min-height:80px" spellcheck="false" placeholder="Type a human translation to score against"></textarea>
+          <div class="row"><span class="big" id="bleu">—</span><span class="note">sentence BLEU-4, 0–100</span></div>
+          <div class="bleu" id="bleu-detail"></div>
+          <p class="note">Sentence BLEU is noisy: one valid paraphrase can score near zero. It was designed for corpus-level comparison of systems.</p>
+        </div>
+      </div>
+
+      <div class="panel pad stack" style="margin-top:24px" id="backbox" hidden aria-live="polite">
+        <h3 style="font-size:24px">Round trip</h3>
+        <p class="note">The translation run back through the reverse model. Words that differ from your original are marked: drift accumulates from both directions.</p>
+        <div class="diff out" id="backout" style="font-size:24px"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">02 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Encoder–decoder</h3><p>The encoder (6 transformer layers) reads the whole English sentence into contextual vectors. The decoder (6 layers) writes the target one piece at a time; at each step it attends to its own previous output (masked self-attention) and to the encoder vectors (cross-attention), then a softmax over the 59k-piece vocabulary gives the next-token distribution.</p></div>
+        <div class="panel card"><h3>Greedy vs beam search</h3><p>Greedy picks the single most likely piece at each step and can paint itself into a corner. Beam search keeps the k best partial translations, extends each with its most likely continuations, and keeps the best k again, approximating the most probable whole sentence. MarianMT systems are usually run with a beam of 4–6.</p></div>
+        <div class="panel card"><h3>Length normalization</h3><p>Every extra token multiplies in another probability below 1, so raw log-probability favours short outputs. Dividing by length<sup>α</sup> counteracts this: α = 0 is no normalization, α = 1 is per-token average. Set α to 0 and long inputs may get truncated translations from the beam.</p></div>
+        <div class="panel card"><h3>Subwords</h3><p>OPUS-MT uses SentencePiece: words are split into pieces, with ▁ marking the start of a word, so rare words, names and inflections can be built from known pieces instead of becoming unknown tokens.</p></div>
+        <div class="panel card"><h3>BLEU</h3><p>BLEU multiplies the geometric mean of 1- to 4-gram precisions (clipped by reference counts) by a brevity penalty for outputs shorter than the reference. Here a simple tokenizer splits punctuation and n ≥ 2 precisions are add-one smoothed so short sentences don’t score zero. For real evaluations use sacreBLEU, and report chrF or a learned metric such as COMET alongside it.</p></div>
+        <div class="panel card"><h3>This model</h3><p><code>Helsinki-NLP/opus-mt-en-fr</code>, <code>-en-de</code> and <code>-en-es</code> (and their reverse models for back-translation): transformer-base MarianMT models of about 75M parameters each, trained on the OPUS parallel corpora, converted to ONNX and quantized to 8 bits by Xenova.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">03 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Vaswani, A. et al. (2017). Attention Is All You Need. <em>NeurIPS</em>.</li>
+        <li>Junczys-Dowmunt, M. et al. (2018). Marian: Fast Neural Machine Translation in C++. <em>ACL System Demonstrations</em>.</li>
+        <li>Tiedemann, J. &amp; Thottingal, S. (2020). OPUS-MT — Building open translation services for the World. <em>EAMT</em>.</li>
+        <li>Papineni, K., Roukos, S., Ward, T. &amp; Zhu, W.-J. (2002). BLEU: a Method for Automatic Evaluation of Machine Translation. <em>ACL</em>.</li>
+        <li>Post, M. (2018). A Call for Clarity in Reporting BLEU Scores. <em>WMT</em>.</li>
+        <li>Sennrich, R., Haddow, B. &amp; Birch, A. (2016). Improving Neural Machine Translation Models with Monolingual Data. <em>ACL</em>. (Back-translation.)</li>
+        <li>Wu, Y. et al. (2016). Google’s Neural Machine Translation System: Bridging the Gap between Human and Machine Translation. <em>arXiv:1609.08144</em>. (Length normalization.)</li>
+        <li>Stanovsky, G., Smith, N. A. &amp; Zettlemoyer, L. (2019). Evaluating Gender Bias in Machine Translation. <em>ACL</em>.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
