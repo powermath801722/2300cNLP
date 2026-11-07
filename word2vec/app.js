@@ -244,8 +244,9 @@
     const is3 = nc === 3;
     const pctTxt = (ratio.slice(0, nc).reduce((a, b) => a + b, 0) * 100).toFixed(1);
     $('varinfo').textContent = 'PCA over ' + pts.length + ' plotted words · PC1–PC' + nc + ' explain ' + pctTxt + '% of their variance (' + ratio.slice(0, nc).map((r, j) => 'PC' + (j + 1) + ' ' + (r * 100).toFixed(1) + '%').join(', ') + ')';
-    $('vizhint').textContent = is3 ? 'Drag to rotate · scroll to zoom · double-click to reset' : 'Drag to zoom · double-click to reset · hover for scores';
+    $('vizhint').textContent = is3 ? (host.clientWidth < 560 ? 'Vertical axis = PC3 · drag to rotate · pinch to zoom' : 'Drag to rotate · scroll to zoom · double-click to reset') : 'Drag to zoom · double-click to reset · hover for scores';
 
+    const narrow = host.clientWidth < 560;
     const traces = [];
     const coord = (k) => pts.map((p, j) => proj[j][k]);
     const P = pts.map((p, j) => ({ p, x: proj[j][0], y: proj[j][1], z: proj[j][2] }));
@@ -275,7 +276,7 @@
           customdata: sel.map((o) => [r.word, o.p.isQ ? 'query word' : 'cos ' + o.p.sim.toFixed(3)]),
           hovertemplate: '<b>%{text}</b><br>cluster: %{customdata[0]}<br>%{customdata[1]}<extra></extra>',
           textposition: 'top center',
-          textfont: { family: 'Barlow, sans-serif', size: wantQ ? 15 : 12, color: wantQ ? '#ffffff' : '#c9ced6' },
+          textfont: { family: 'Barlow, sans-serif', size: narrow ? (wantQ ? 13 : 10) : (wantQ ? 15 : 12), color: wantQ ? '#ffffff' : '#c9ced6' },
           marker: wantQ
             ? { size: is3 ? 9 : 16, color, symbol: 'diamond', line: { color: '#ffffff', width: 2 } }
             : { size: is3 ? 5 : 9, color, opacity: 0.9, line: { color: '#121820', width: is3 ? 0 : 1 } },
@@ -288,7 +289,6 @@
     const grid = 'rgba(228,231,235,.08)', zero = 'rgba(228,231,235,.22)';
     const axis = (title) => ({ title: { text: title, font: { size: 13, color: '#9aa3ad' } }, gridcolor: grid, zerolinecolor: zero, color: '#9aa3ad', tickfont: { size: 11 } });
     const axis3 = (title) => ({ ...axis(title), backgroundcolor: 'rgba(0,0,0,0)', showbackground: false, showspikes: false });
-    const narrow = host.clientWidth < 560;
     const layout = {
       paper_bgcolor: 'rgba(0,0,0,0)', plot_bgcolor: 'rgba(0,0,0,0)',
       font: { family: 'Barlow, system-ui, sans-serif', color: '#e4e7eb' },
@@ -299,7 +299,15 @@
       uirevision: state.mode + '|' + state.queries.join(','),
       dragmode: is3 ? 'orbit' : 'zoom',
     };
-    if (is3) layout.scene = { xaxis: axis3('PC1'), yaxis: axis3('PC2'), zaxis: axis3('PC3'), aspectmode: 'cube', camera: { eye: { x: 1.5, y: 1.5, z: 1.1 } } };
+    if (is3) {
+      // On narrow screens the default camera puts the cube's corners outside the plot, clipping
+      // edge labels; pull the camera back and shrink tick text so the whole cube fits.
+      const k = narrow ? 1.45 : 1;
+      const ax3 = (title) => narrow ? { ...axis3(title), tickfont: { size: 9 }, title: { text: title, font: { size: 11, color: '#9aa3ad' } } } : axis3(title);
+      layout.scene = { xaxis: ax3('PC1'), yaxis: ax3('PC2'), zaxis: ax3('PC3'), aspectmode: 'cube', camera: { eye: { x: 1.5 * k, y: 1.5 * k, z: 1.1 * k } } };
+      // gl3d clips text to the scene viewport and the vertical axis title lands on the very edge on phones; name it in the hint instead.
+      if (narrow) layout.scene.zaxis.title = { text: '' };
+    }
     else { layout.xaxis = axis('PC1'); layout.yaxis = { ...axis('PC2'), scaleanchor: 'x', scaleratio: 1 }; }
     if (host.querySelector('.empty')) host.innerHTML = '';
     // Plotly can't morph a cartesian plot into a gl3d scene in place; start fresh when the mode changes.
