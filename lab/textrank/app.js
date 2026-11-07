@@ -1,6 +1,6 @@
 import { el, $, ready, fail, plotly, plotLayout, PLOT_CONFIG } from '/lab/shared/lab.js';
 
-const STOP = new Set(('a about above after again against all also am an and any are as at be because been before being below between both but by can could did do does doing down during each either every few for from further had has have having he her here hers herself him himself his how however i if in into is it its itself just let may me might more most must my myself neither no nor not now of off on once one only or other our ours ourselves out over own same shall she should so some such than that the their theirs them themselves then there these they this those through thus to too under until up upon us very was we were what when where whether which while who whom whose why will with within without would yet you your yours yourself yourselves hath thee thou thy unto many much'.split(' ')));
+const STOP = new Set(('a about above after again against all also am an and any are as at be because been before being below between both but by can could did do does doing down during each either every few for from further had has have having he her here hers herself him himself his how however i if in into is it its itself just let may me might more most must my myself neither no nor not now of off on once one only or other our ours ourselves out over own same shall she should so some such than that the their theirs them themselves then there these they this those through thus to too under until up upon us very was we were what when where whether which while who whom whose why will with within without would yet you your yours yourself yourselves hath thee thou thy unto many much cannot make makes made like'.split(' ')));
 
 const ABBR = /\b(Mr|Mrs|Ms|Dr|St|Jr|Sr|No|vs|etc|e\.g|i\.e|U\.S|Gen|Gov|Sen|Rep|Prof)\.$/;
 
@@ -164,7 +164,7 @@ function draw() {
     all.sort((a, b) => b[2] - a[2]).slice(0, Math.round(n * 1.5)).forEach(([i, j]) => keep.add(`${i},${j}`));
     const wmax = Math.max(...all.map((e) => e[2]), 1e-9);
     const buckets = [[], [], []];
-    for (const key of keep) { const [i, j] = key.split(',').map(Number); const b = Math.min(2, Math.floor((W[i][j] / wmax) * 3)); buckets[b].push(xy[i][0], xy[j][0], null); buckets[b].push(); buckets[b].ys = (buckets[b].ys || []).concat([xy[i][1], xy[j][1], null]); }
+    for (const key of keep) { const [i, j] = key.split(',').map(Number); const b = Math.min(2, Math.floor((W[i][j] / wmax) * 3)); buckets[b].push(xy[i][0], xy[j][0], null); buckets[b].ys = (buckets[b].ys || []).concat([xy[i][1], xy[j][1], null]); }
     const lineTraces = buckets.map((b, k) => ({ type: 'scatter', mode: 'lines', x: b, y: b.ys || [], line: { color: '#7ea3c8', width: 1 + k }, opacity: 0.15 + 0.2 * k, hoverinfo: 'skip', showlegend: false }));
     const sel = new Set(picked), narrow = $('#graph').clientWidth < 520;
     const nodes = { type: 'scatter', mode: n <= 45 ? 'markers+text' : 'markers', x: xy.map((p) => p[0]), y: xy.map((p) => p[1]),

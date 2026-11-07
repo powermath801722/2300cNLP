@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surprisal, Perplexity &amp; Machine-Text Forensics — NLP Lab — Braidwater</title>
+<meta name="description" content="Per-token surprisal and perplexity from GPT-2, GLTR-style rank coloring, and garden-path sentences, in your browser.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.ctlrow{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-end}
+.ctl{display:flex;flex-direction:column;gap:6px}
+.btnrow{display:flex;flex-wrap:wrap;gap:10px}
+.btnrow .btn{white-space:normal;text-align:center}
+.chipgroup{display:flex;flex-direction:column;gap:6px}
+.chipgroup .chips .chip{text-align:left}
+.text-out{background:var(--bg);border:1px solid var(--divider);padding:16px;font-size:18px;line-height:2;white-space:pre-wrap;overflow-wrap:anywhere;min-height:90px}
+button.tk{all:unset;cursor:pointer;white-space:pre-wrap;padding:2px 0;border-radius:2px;box-shadow:inset 0 -2px 0 var(--edge, transparent)}
+button.tk:hover{outline:1px solid var(--accent-400)}
+button.tk:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button.tk[aria-pressed=true]{outline:2px solid #fff}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--faint);align-items:center}
+.legend i{display:inline-block;width:14px;height:14px;vertical-align:-2px;margin-right:6px}
+.ramp{display:inline-block;width:120px;height:10px;background:linear-gradient(90deg,rgba(217,140,122,0),rgba(217,140,122,1));border:1px solid var(--divider);vertical-align:middle;margin:0 6px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.metrics div{background:var(--bg);padding:12px 14px}
+.metrics b{display:block;font-family:var(--heading);font-size:26px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.metrics span{font-size:12px;color:var(--faint)}
+#line{width:100%;height:280px}
+#hist{width:100%;height:260px}
+.detail dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:8px 0 0;font-size:15px}
+.detail dt{color:var(--faint)}.detail dd{margin:0;font-variant-numeric:tabular-nums}
+.detail ol{margin:6px 0 0;padding-left:22px;font-size:15px;color:var(--muted)}
+.detail ol code{white-space:pre}
+.formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;color:var(--accent-200);background:var(--bg);border:1px solid var(--divider);padding:8px 10px;margin:8px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+</style>
+</head>
+<body data-slug="surprisal">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">How surprising is each word?</h2>
+      <p class="sub" style="margin:0">Surprisal is how unexpected a token is to a language model given everything before it: −log₂ P(token | prefix), measured in bits. It predicts human reading times, and it is the signal behind many detectors of machine-generated text.</p>
+
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="ctlrow">
+          <div class="ctl"><label class="field-label" for="model">Language model</label>
+            <select id="model">
+              <option value="Xenova/distilgpt2" selected>distilgpt2 · 82M params · ≈85 MB</option>
+              <option value="Xenova/gpt2">gpt2 · 124M params · ≈128 MB</option>
+            </select></div>
+          <div id="load" class="load" aria-live="polite" style="flex:1 1 240px"><span class="note">The model downloads from Hugging Face the first time you analyze, then stays cached in your browser.</span></div>
+        </div>
+
+        <label class="field-label" for="text">Text to analyze</label>
+        <textarea id="text" spellcheck="false"></textarea>
+        <div class="chipgroup">
+          <span class="note">Samples</span>
+          <div class="chips" id="samples" aria-label="Sample texts"></div>
+        </div>
+        <div class="btnrow">
+          <button class="btn btn-primary" id="go" type="button">Analyze surprisal</button>
+          <div class="tabs" role="tablist" aria-label="Coloring">
+            <button role="tab" id="v-s" aria-selected="true" aria-controls="tokens">Surprisal</button>
+            <button role="tab" id="v-r" aria-selected="false" aria-controls="tokens">GLTR rank</button>
+          </div>
+        </div>
+        <p class="msg" id="msg" role="alert" hidden></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="res-h">
+    <div class="wrap stack">
+      <span class="kicker">Results</span>
+      <h2 id="res-h">Token by token</h2>
+      <div class="metrics" id="metrics" aria-label="Summary statistics"></div>
+      <div class="grid2">
+        <div class="stack" style="min-width:0">
+          <div class="text-out" id="tokens" role="tabpanel" aria-live="polite"><span class="note">Analyze a text to color its tokens.</span></div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="panel pad detail" id="detail" aria-live="polite"><h3 style="font-size:22px">Token detail</h3><p class="note">Click any token to see its probability, rank and what the model expected instead.</p></div>
+      </div>
+      <div class="grid2">
+        <div class="panel" style="padding:8px 4px 0;min-width:0"><div id="line" role="img" aria-label="Surprisal in bits for each token"></div></div>
+        <div class="panel" style="padding:8px 4px 0;min-width:0"><div id="hist" role="img" aria-label="Histogram of token ranks in GLTR buckets"></div></div>
+      </div>
+      <div class="panel pad stack">
+        <h3 style="font-size:22px">Your analyses</h3>
+        <p class="note">Each run is logged here so you can compare texts: try the human passage, then the machine passage.</p>
+        <div class="scroll-x"><table class="data" id="runs"><thead><tr><th scope="col">Text</th><th scope="col">Model</th><th scope="col">Tokens</th><th scope="col">Mean bits</th><th scope="col">Perplexity</th><th scope="col">Top-10</th><th scope="col">Top-100</th><th scope="col">Top-1000</th><th scope="col">Beyond</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">02 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Surprisal</h3>
+          <p>The information content of an event is the negative log of its probability (Shannon, 1948). A token the model gave probability ½ carries 1 bit; one it gave 1/1024 carries 10 bits. Surprisal theory (Hale, 2001; Levy, 2008) proposes that the processing effort for a word is proportional to its surprisal in context.</p>
+          <p class="formula">s(wₜ) = −log₂ P(wₜ | w₁ … wₜ₋₁)</p></div>
+        <div class="panel card"><h3>Perplexity</h3>
+          <p>Average the surprisal over the N tokens and exponentiate: perplexity is the effective number of equally likely choices the model faced per token. Lower means the text was more predictable <em>to this model</em>. It is a property of a text–model pair, not of the text alone.</p>
+          <p class="formula">H̄ = (1/N) Σₜ s(wₜ)        PPL = 2^H̄</p></div>
+        <div class="panel card"><h3>Garden-path sentences</h3>
+          <p>In “The horse raced past the barn fell” (Bever, 1970), readers take <em>raced</em> as the main verb, then hit <em>fell</em> and must reanalyze <em>raced past the barn</em> as a reduced relative clause. A language model shows the same spike: <em>fell</em> gets very high surprisal. Compare it with the unambiguous “The horse that was raced past the barn fell.” Surprisal predicts that the effect exists, though it often underestimates how large it is for humans (van Schijndel &amp; Linzen, 2021).</p></div>
+        <div class="panel card"><h3>GLTR: ranks, not just probabilities</h3>
+          <p>GLTR (Gehrmann, Strobelt &amp; Rush, 2019) colors each token by its <em>rank</em> in the model’s prediction: top-10 green, top-100 yellow, top-1000 red, beyond that purple. Text produced by likelihood-maximizing decoding is overwhelmingly green, while human writing has more yellow, red and purple: people pick words a model would not have bet on.</p></div>
+        <div class="panel card"><h3>The first token and tokenization</h3>
+          <p>GPT-2 needs some context to predict anything, so this page prepends the <code>&lt;|endoftext|&gt;</code> token as a start-of-text marker and scores every real token, including the first. Surprisal is per <em>subword token</em>: a rare word split into three pieces spends most of its surprisal on the first piece. To get word-level surprisal, sum over a word’s pieces. Leading spaces belong to the token (“ fell”), which is why tokens appear with their spacing.</p></div>
+        <div class="panel card"><h3>Why detectors are unreliable</h3>
+          <p>Low perplexity is evidence, not proof. Formulaic human writing (legal boilerplate, simple English, text by non-native writers) also scores low, and detectors built on perplexity have been shown to misclassify non-native writers’ essays as AI-generated (Liang et al., 2023). Sampling with higher temperature, paraphrasing, or a different scoring model shifts the statistics easily. DetectGPT (Mitchell et al., 2023) uses the curvature of log-probability under perturbations instead of raw perplexity, but no current method is reliable enough to accuse anyone.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">03 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Shannon (1948). <em>A Mathematical Theory of Communication.</em> Bell System Technical Journal.</li>
+        <li>Bever (1970). <em>The Cognitive Basis for Linguistic Structures.</em> In Hayes (ed.), Cognition and the Development of Language.</li>
+        <li>Hale (2001). <em>A Probabilistic Earley Parser as a Psycholinguistic Model.</em> NAACL.</li>
+        <li>Levy (2008). <em>Expectation-based Syntactic Comprehension.</em> Cognition 106(3).</li>
+        <li>Smith &amp; Levy (2013). <em>The Effect of Word Predictability on Reading Time Is Logarithmic.</em> Cognition 128(3).</li>
+        <li>van Schijndel &amp; Linzen (2021). <em>Single-Stage Prediction Models Do Not Explain the Magnitude of Syntactic Disambiguation Difficulty.</em> Cognitive Science 45(6).</li>
+        <li>Radford, Wu, Child, Luan, Amodei &amp; Sutskever (2019). <em>Language Models are Unsupervised Multitask Learners.</em> OpenAI technical report (GPT-2).</li>
+        <li>Gehrmann, Strobelt &amp; Rush (2019). <em>GLTR: Statistical Detection and Visualization of Generated Text.</em> ACL System Demonstrations.</li>
+        <li>Mitchell, Lee, Khazatsky, Manning &amp; Finn (2023). <em>DetectGPT: Zero-Shot Machine-Generated Text Detection using Probability Curvature.</em> ICML.</li>
+        <li>Liang, Yuksekgonul, Mao, Wu &amp; Zou (2023). <em>GPT Detectors Are Biased Against Non-Native English Writers.</em> Patterns 4(7).</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
