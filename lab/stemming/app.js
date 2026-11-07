@@ -62,7 +62,6 @@ function failures() {
   const over = $('#over tbody');
   for (const g of OVER) {
     const stems = g.map((w) => porter(w).stem);
-    const s = stems[0];
     over.append(el('tr', {}, [el('td', { text: [...new Set(stems)].join(' / ') }), el('td', { text: g.join(', ') }), el('td', { text: g.map((w) => lemmatize(w, LEX, 'noun').lemma).join(', ') })]));
   }
   const under = $('#under tbody');

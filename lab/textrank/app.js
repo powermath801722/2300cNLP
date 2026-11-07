@@ -62,26 +62,35 @@ function simMatrix(sents, mode) {
   return W;
 }
 
-/** TextRank keyword extraction over a co-occurrence graph (window 2). */
+/** TextRank keyword extraction: co-occurrence graph (window 2) over the stopword-filtered word sequence. */
 export function keywords(text, d = 0.85) {
-  const seq = (text.toLowerCase().replace(/[’']s\b/g, '').match(/[a-z]+|[^a-z\s]+/g) || []).map((t) => (/^[a-z]+$/.test(t) && t.length > 2 && !STOP.has(t) ? t : null));
-  const vocab = new Map(); seq.forEach((t) => { if (t && !vocab.has(t)) vocab.set(t, vocab.size); });
+  // tokens: {key, surface} for candidate words, null for stopwords/punctuation (these break phrases)
+  const toks = (text.replace(/[’']s\b/g, '').match(/[A-Za-z]+|[^A-Za-z\s]+/g) || []).map((t) => {
+    const w = t.toLowerCase();
+    return /^[a-z]+$/.test(w) && w.length > 2 && !STOP.has(w) ? { key: norm(w), surface: w } : null;
+  });
+  const filtered = toks.filter(Boolean);
+  const vocab = new Map(); filtered.forEach((t) => { if (!vocab.has(t.key)) vocab.set(t.key, vocab.size); });
   const n = vocab.size; if (!n) return [];
   const W = Array.from({ length: n }, () => new Float64Array(n));
-  for (let i = 0; i + 1 < seq.length; i++) { const a = seq[i], b = seq[i + 1]; if (a && b && a !== b) { const x = vocab.get(a), y = vocab.get(b); W[x][y] = W[y][x] = 1; } }
+  for (let i = 0; i + 1 < filtered.length; i++) { const x = vocab.get(filtered[i].key), y = vocab.get(filtered[i + 1].key); if (x !== y) W[x][y] = W[y][x] = 1; }
   const { scores } = pagerank(W, d);
-  const words = [...vocab.keys()];
-  const T = Math.max(5, Math.min(15, Math.round(n / 3)));
-  const top = new Set(words.map((w, i) => [w, scores[i]]).sort((p, q) => q[1] - p[1]).slice(0, T).map(([w]) => w));
-  const sc = (w) => scores[vocab.get(w)];
+  const keys = [...vocab.keys()], sc = (k) => scores[vocab.get(k)];
+  const T = Math.max(5, Math.min(20, Math.round(n / 3)));
+  const top = new Set(keys.map((k) => [k, sc(k)]).sort((p, q) => q[1] - p[1]).slice(0, T).map(([k]) => k));
+  const surface = new Map(); filtered.forEach((t) => { if (!surface.has(t.key)) surface.set(t.key, t.surface); });
   const phrases = new Map(), used = new Set();
-  for (let i = 0; i < seq.length; i++) {
-    if (!seq[i] || !top.has(seq[i])) continue;
-    let j = i; while (j + 1 < seq.length && seq[j + 1] && top.has(seq[j + 1])) j++;
-    if (j > i) { const ph = seq.slice(i, j + 1); const key = ph.join(' '); phrases.set(key, ph.reduce((a, w) => a + sc(w), 0)); ph.forEach((w) => used.add(w)); i = j; }
+  for (let i = 0; i < toks.length; i++) {
+    if (!toks[i] || !top.has(toks[i].key)) continue;
+    let j = i; while (j + 1 < toks.length && toks[j + 1] && top.has(toks[j + 1].key)) j++;
+    if (j > i) {
+      const ph = toks.slice(i, j + 1), key = ph.map((t) => t.key).join(' ');
+      if (!phrases.has(key)) phrases.set(key, { text: ph.map((t) => t.surface).join(' '), score: ph.reduce((a, t) => a + sc(t.key), 0) / ph.length * Math.sqrt(ph.length), phrase: true });
+      ph.forEach((t) => used.add(t.key)); i = j;
+    }
   }
-  const singles = [...top].filter((w) => !used.has(w)).map((w) => ({ text: w, score: sc(w), phrase: false }));
-  return [...[...phrases].map(([text, score]) => ({ text, score, phrase: true })), ...singles].sort((p, q) => q.score - p.score).slice(0, 15);
+  const singles = [...top].filter((k) => !used.has(k)).map((k) => ({ text: surface.get(k), score: sc(k), phrase: false }));
+  return [...phrases.values(), ...singles].sort((p, q) => q.score - p.score).slice(0, 15);
 }
 
 /** Full pipeline. */
