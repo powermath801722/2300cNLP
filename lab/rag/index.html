@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Retrieval-Augmented Generation — NLP Lab — Braidwater</title>
+<meta name="description" content="Retrieve passages, generate an answer from them with a small instruction-tuned T5, and check each claim against its sources with an NLI model, all in your browser.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:14px 18px}
+.ctl{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ctl .lbl{display:flex;justify-content:space-between;gap:8px}
+.ctl .val{font-variant-numeric:tabular-nums;color:var(--text);font-weight:500}
+.toggle{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--muted);cursor:pointer}
+.toggle input{accent-color:var(--accent);width:16px;height:16px}
+.loads{display:flex;flex-direction:column;gap:6px}
+.pipeline{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px;color:var(--faint)}
+.pipeline span.st{border:1px solid var(--divider);padding:3px 8px}
+.pipeline span.st.on{border-color:var(--accent);color:var(--accent-200)}
+.answer{background:var(--bg);border:1px solid var(--divider);padding:14px 16px;font-size:18px;line-height:1.7;overflow-wrap:anywhere}
+.answer .cite{font-size:12px;font-weight:600;vertical-align:super;margin-left:3px;color:var(--accent-300)}
+.claim{border-bottom:2px solid var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);padding:1px 2px}
+.verdicts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.verdicts li{border-left:3px solid var(--c);padding:6px 10px;background:color-mix(in srgb,var(--c) 7%,transparent);font-size:14px;overflow-wrap:anywhere}
+.verdicts b{color:var(--c)}
+.passages{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.passages li{border:1px solid var(--divider);padding:10px 12px;font-size:14px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 12px;align-items:start}
+.passages li.used{border-color:var(--accent-500)}
+.passages li.distractor{border-color:#d98c7a}
+.passages .pid{font:600 13px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accent-300)}
+.passages li.distractor .pid{color:#d98c7a}
+.passages .sc{font-variant-numeric:tabular-nums;color:var(--faint);font-size:13px;text-align:right}
+.passages .meta{grid-column:2/4;font-size:12px;color:var(--faint)}
+details.prompt summary{cursor:pointer;color:var(--accent-300);font-size:14px}
+details.prompt pre{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--bg);border:1px solid var(--divider);padding:10px 12px;margin:8px 0 0;max-height:320px;overflow:auto}
+.cb{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.cb .card{padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+.cb h3{font-size:22px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--faint)}
+.legend i{display:inline-block;width:12px;height:12px;vertical-align:-1px;margin-right:6px}
+.formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;color:var(--accent-200);background:var(--bg);border:1px solid var(--divider);padding:8px 10px;margin:8px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+td.ok{color:#8fbf9a}td.bad{color:#d98c7a}
+</style>
+</head>
+<body data-slug="rag">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Ask a town that doesn’t exist</h2>
+      <p class="sub" style="margin:0">The knowledge base is 100 short passages about <strong>Vellmouth</strong>, a fictional delta town written for this demo, plus 10 passages about <strong>Vellbridge</strong>, a fictional look-alike upstream. No model has seen these facts, so anything correct in an answer has to come from retrieval. Retrieve, generate, then check every sentence of the answer against the passages it was given.</p>
+
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <label class="field-label" for="q">Question</label>
+        <div class="row" style="flex-wrap:nowrap">
+          <input type="search" id="q" value="Who is the mayor of Vellmouth?" autocomplete="off" spellcheck="false" style="flex:1 1 0;min-width:0">
+          <button class="btn btn-primary" id="run" type="button">Ask</button>
+        </div>
+        <div class="chips" id="samples" aria-label="Example questions"></div>
+        <div class="controls">
+          <div class="ctl"><div class="lbl"><label class="field-label" for="k">Passages retrieved (k)</label><span class="val" id="k-val">3</span></div><input type="range" id="k" min="1" max="8" value="3"></div>
+          <div class="ctl"><label class="field-label" for="mode">Retriever</label>
+            <select id="mode"><option value="dense">Dense (MiniLM)</option><option value="bm25">BM25 (keywords)</option><option value="hybrid">Hybrid (reciprocal rank fusion)</option></select></div>
+          <div class="ctl"><label class="field-label" for="gen">Reader / generator</label>
+            <select id="gen">
+              <option value="Xenova/LaMini-Flan-T5-77M">LaMini-Flan-T5-77M (generative, ≈95 MB)</option>
+              <option value="Xenova/flan-t5-small">Flan-T5-small (generative, ≈95 MB)</option>
+              <option value="extractive">DistilBERT-SQuAD (extractive, ≈66 MB)</option>
+            </select></div>
+        </div>
+        <div class="row" style="gap:10px 22px">
+          <label class="toggle"><input type="checkbox" id="distract"> Inject 2 Vellbridge distractor passages</label>
+          <label class="toggle"><input type="checkbox" id="closed" checked> Also answer closed-book (no retrieval)</label>
+        </div>
+        <div class="pipeline" aria-hidden="true" id="pipeline"><span class="st" data-s="ret">1 · retrieve</span>→<span class="st" data-s="gen">2 · generate</span>→<span class="st" data-s="nli">3 · verify claims</span></div>
+        <div class="loads">
+          <div id="load-emb"></div><div id="load-gen"></div><div id="load-nli"></div>
+        </div>
+        <p class="note" id="status" aria-live="polite">Models download on first use: MiniLM embeddings ≈23 MB, the generator ≈95 MB, the NLI verifier ≈87 MB. All are cached by your browser afterwards.</p>
+        <p class="msg" id="msg" hidden></p>
+      </div>
+
+      <div class="grid2" style="margin-top:8px">
+        <div class="panel pad stack" aria-live="polite">
+          <h3 style="font-size:24px">Answer, with claim checks</h3>
+          <div class="answer" id="answer"><span class="note">Ask a question to see a grounded answer.</span></div>
+          <div class="legend"><span><i style="background:#8fbf9a"></i>supported (entailed by a passage)</span><span><i style="background:#d98c7a"></i>contradicted</span><span><i style="background:#d8b66a"></i>not supported</span></div>
+          <ul class="verdicts" id="verdicts"></ul>
+          <details class="prompt"><summary>Show the exact prompt the generator saw</summary><pre id="prompt">—</pre></details>
+        </div>
+        <div class="panel pad stack">
+          <h3 style="font-size:24px">Retrieved passages</h3>
+          <p class="note" id="ret-note">Top passages by retrieval score. Outlined ones went into the prompt.</p>
+          <ol class="passages" id="passages"></ol>
+        </div>
+      </div>
+
+      <div class="cb" id="cbwrap" hidden>
+        <div class="panel card"><h3>Closed-book (no retrieval)</h3><div class="answer" id="cb-answer"></div><ul class="verdicts" id="cb-verdicts"></ul></div>
+        <div class="panel card"><h3>Why the difference</h3><p class="note" id="cb-why"></p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="eval-h">
+    <div class="wrap stack">
+      <span class="kicker">02 · Measure it</span>
+      <h2 id="eval-h">Evaluate the whole pipeline</h2>
+      <p class="sub" style="margin:0">Twelve questions with known answers and known source passages. Retrieval is scored by recall@k (was the gold passage retrieved?); answers by whether the gold answer appears in the output; faithfulness by the share of answer sentences entailed by a retrieved passage. The same questions also run closed-book. Uses the settings above; takes a minute or two.</p>
+      <div class="panel pad stack">
+        <div class="row"><button class="btn btn-secondary" id="eval" type="button">Run evaluation</button><span class="note" id="eval-status" aria-live="polite"></span></div>
+        <div class="scroll-x"><table class="data" id="eval-table"><thead><tr><th scope="col">Question</th><th scope="col">Gold</th><th scope="col">Recall@k</th><th scope="col">RAG answer</th><th scope="col">Correct</th><th scope="col">Faithful</th><th scope="col">Closed-book</th><th scope="col">Correct</th></tr></thead><tbody><tr><td colspan="8" class="note">Not run yet.</td></tr></tbody></table></div>
+        <div class="metrics" id="eval-summary"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">03 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Parametric vs non-parametric memory</h3><p>A language model stores facts implicitly in its weights (parametric memory), which is hard to update, hard to inspect and prone to confident invention. Retrieval-augmented generation adds a non-parametric memory: a document index queried at run time, so knowledge can be added or corrected by editing documents, and answers can point to sources.</p></div>
+        <div class="panel card"><h3>The RAG objective</h3><p>Lewis et al. (2020) treat the retrieved document z as a latent variable and marginalize over the top-k:</p><p class="formula">p(y | x) ≈ Σ_{z ∈ top-k(x)} p_η(z | x) · p_θ(y | x, z)</p><p>with a dense retriever p_η(z | x) ∝ exp(d(z)ᵀq(x)) (DPR) and a seq2seq generator p_θ. This page uses the simpler, now standard <em>retrieve-then-read</em> variant: concatenate the top-k passages into the prompt and decode once (as in Fusion-in-Decoder, which encodes passages separately and lets the decoder attend over all of them).</p></div>
+        <div class="panel card"><h3>Dense, sparse, hybrid</h3><p>Dense retrieval embeds queries and passages into one vector space (here all-MiniLM-L6-v2, cosine similarity), so paraphrases match. BM25 matches exact terms, which helps with names and numbers. Reciprocal rank fusion, score(d) = Σ 1/(60 + rank), combines them without calibrating scores.</p></div>
+        <div class="panel card"><h3>Grounding check with NLI</h3><p>Fluent is not the same as faithful. Each answer sentence is used as an NLI hypothesis against every retrieved passage (premise); the claim counts as <em>supported</em> if some passage entails it with p ≥ 0.5, <em>contradicted</em> if the best passage contradicts it, otherwise <em>unsupported</em>. The citation shown is the most entailing passage. Faithfulness = supported claims / claims, the idea behind metrics such as RAGAS faithfulness and FActScore. Very short answers (“1342”) are turned into a sentence with the question first.</p></div>
+        <div class="panel card"><h3>Failure modes to try</h3><p><strong>Retrieval miss</strong>: k = 1 with BM25 on a paraphrased question. <strong>Distractors</strong>: inject Vellbridge passages and ask about mayors or founding years; a small reader can copy the wrong town’s fact, and the NLI check usually flags it. <strong>Closed-book hallucination</strong>: without retrieval the model invents a mayor. <strong>Abstention</strong>: ask something the corpus doesn’t say.</p></div>
+        <div class="panel card"><h3>The models</h3><p><strong>Retriever</strong>: all-MiniLM-L6-v2, 384-d sentence embeddings; the 110 passage vectors are precomputed with the same model and pooling (8-bit). <strong>Generators</strong>: LaMini-Flan-T5-77M (Flan-T5-small further tuned on 2.6M instruction responses distilled from larger models) and Flan-T5-small, both 77M parameters. <strong>Extractive reader</strong>: DistilBERT fine-tuned on SQuAD v1.1. <strong>Verifier</strong>: DeBERTa-v3-xsmall cross-encoder trained on SNLI + MultiNLI.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">04 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Lewis, P., Perez, E., Piktus, A., et al. (2020). Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks. <em>NeurIPS</em>.</li>
+        <li>Karpukhin, V., Oğuz, B., Min, S., et al. (2020). Dense Passage Retrieval for Open-Domain Question Answering. <em>EMNLP</em>.</li>
+        <li>Guu, K., Lee, K., Tung, Z., Pasupat, P. &amp; Chang, M.-W. (2020). REALM: Retrieval-Augmented Language Model Pre-Training. <em>ICML</em>.</li>
+        <li>Izacard, G. &amp; Grave, E. (2021). Leveraging Passage Retrieval with Generative Models for Open Domain Question Answering. <em>EACL</em>.</li>
+        <li>Borgeaud, S., Mensch, A., Hoffmann, J., et al. (2022). Improving language models by retrieving from trillions of tokens. <em>ICML</em>.</li>
+        <li>Shi, F., Chen, X., Misra, K., et al. (2023). Large Language Models Can Be Easily Distracted by Irrelevant Context. <em>ICML</em>.</li>
+        <li>Liu, N. F., Lin, K., Hewitt, J., et al. (2024). Lost in the Middle: How Language Models Use Long Contexts. <em>TACL</em>.</li>
+        <li>Min, S., Krishna, K., Lyu, X., et al. (2023). FActScore: Fine-grained Atomic Evaluation of Factual Precision in Long Form Text Generation. <em>EMNLP</em>.</li>
+        <li>Es, S., James, J., Espinosa-Anke, L. &amp; Schockaert, S. (2024). RAGAS: Automated Evaluation of Retrieval Augmented Generation. <em>EACL (demos)</em>.</li>
+        <li>Wu, M., Waheed, A., Zhang, C., Abdul-Mageed, M. &amp; Aji, A. F. (2024). LaMini-LM: A Diverse Herd of Distilled Models from Large-Scale Instructions. <em>EACL</em>.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

@@ -3,6 +3,10 @@
 // Everything is 2-D: a tensor is a row-major [rows, cols] matrix; a batch of B sequences of length T
 // is stored as B*T rows.
 
+// Array type for all tensors. Float32 in the browser; the gradient check switches to Float64.
+let FA = Float32Array;
+export function useFloat64(on = true) { FA = on ? Float64Array : Float32Array; }
+
 // ---------- seeded randomness ----------
 export function mulberry32(seed) {
   let a = seed >>> 0;
@@ -25,10 +29,10 @@ export function gaussian(rng) {
 export class Tensor {
   constructor(rows, cols, data) {
     this.rows = rows; this.cols = cols;
-    this.data = data || new Float32Array(rows * cols);
+    this.data = data || new FA(rows * cols);
     this.grad = null;
   }
-  g() { return this.grad || (this.grad = new Float32Array(this.data.length)); }
+  g() { return this.grad || (this.grad = new FA(this.data.length)); }
 }
 
 export class Tape {
@@ -115,7 +119,7 @@ export function embed(tape, E, P, ids, B, T) {
 
 export function layernorm(tape, X, gain, bias, eps = 1e-5) {
   const n = X.rows, d = X.cols, Y = new Tensor(n, d), x = X.data, y = Y.data, g = gain.data, b = bias.data;
-  const xhat = new Float32Array(n * d), rstd = new Float32Array(n);
+  const xhat = new FA(n * d), rstd = new FA(n);
   for (let i = 0; i < n; i++) {
     let mu = 0; for (let j = 0; j < d; j++) mu += x[i * d + j]; mu /= d;
     let v = 0; for (let j = 0; j < d; j++) { const c = x[i * d + j] - mu; v += c * c; } v /= d;
@@ -149,7 +153,7 @@ export function attention(tape, Q, K, V, B, T, H) {
   for (let b = 0; b < B; b++) {
     const ph = [];
     for (let h = 0; h < H; h++) {
-      const A = new Float32Array(T * T), off = h * dh;
+      const A = new FA(T * T), off = h * dh;
       for (let t = 0; t < T; t++) {
         const qi = (b * T + t) * d + off; let mx = -Infinity;
         for (let u = 0; u <= t; u++) {
@@ -172,7 +176,7 @@ export function attention(tape, Q, K, V, B, T, H) {
   tape && tape.push(() => {
     if (!O.grad) return;
     const dO = O.grad, dQ = Q.g(), dK = K.g(), dV = V.g();
-    const dA = new Float32Array(T);
+    const dA = new FA(T);
     for (let b = 0; b < B; b++) for (let h = 0; h < H; h++) {
       const A = probs[b][h], off = h * dh;
       for (let t = 0; t < T; t++) {
@@ -197,7 +201,7 @@ export function attention(tape, Q, K, V, B, T, H) {
 // Mean cross-entropy over rows whose target >= 0. Returns { loss, perRow } and seeds the logits gradient.
 export function crossEntropy(tape, logits, targets) {
   const n = logits.rows, V = logits.cols, z = logits.data;
-  const p = new Float32Array(n * V), perRow = new Float32Array(n).fill(NaN);
+  const p = new FA(n * V), perRow = new FA(n).fill(NaN);
   let loss = 0, cnt = 0;
   for (let i = 0; i < n; i++) {
     let mx = -Infinity; for (let j = 0; j < V; j++) if (z[i * V + j] > mx) mx = z[i * V + j];
@@ -243,7 +247,7 @@ export class TinyTransformer {
     if (cfg.ln) { reg('lnfg', ones(d)); reg('lnfb', new Tensor(1, d)); }
     reg('U', P(d, V, 1 / Math.sqrt(d)));
     this.adam = { t: 0, m: {}, v: {} };
-    for (const [k, t] of Object.entries(this.params)) { this.adam.m[k] = new Float32Array(t.data.length); this.adam.v[k] = new Float32Array(t.data.length); }
+    for (const [k, t] of Object.entries(this.params)) { this.adam.m[k] = new FA(t.data.length); this.adam.v[k] = new FA(t.data.length); }
   }
 
   nParams() { return Object.values(this.params).reduce((s, t) => s + t.data.length, 0); }
@@ -302,17 +306,25 @@ export class TinyTransformer {
 // Every task returns { ids, targets } for B sequences of length T (targets[r] = next token, -1 = not scored).
 export const TASKS = {
   induction: {
-    label: 'Repeated random sequences (induction)',
-    // [x1..xn, x1..xn]: the first half is random, the second half is only predictable by copying.
-    make(cfg) { const n = cfg.half; return { vocab: cfg.vocab, ctx: 2 * n }; },
+    label: 'Repeated random segments (induction)',
+    // Random tokens with one segment of length n repeated later, at a random start and a random gap.
+    // Because the offset between the copies changes every sequence, attending by absolute position
+    // can't solve it: the model has to find the previous occurrence of the current token by content.
+    make(cfg) { return { vocab: cfg.vocab, ctx: cfg.ctx }; },
     batch(rng, B, cfg) {
-      const n = cfg.half, T = 2 * n, ids = new Int32Array(B * T), tg = new Int32Array(B * T);
+      const T = cfg.ctx, n = cfg.seg, slack = T - 2 * n;
+      if (slack < 0) throw new Error('ctx must be at least 2 × segment length');
+      const ids = new Int32Array(B * T), tg = new Int32Array(B * T), rep = new Int8Array(B * T), meta = [];
       for (let b = 0; b < B; b++) {
-        for (let t = 0; t < n; t++) ids[b * T + t] = (rng() * cfg.vocab) | 0;
-        for (let t = 0; t < n; t++) ids[b * T + n + t] = ids[b * T + t];
+        for (let t = 0; t < T; t++) ids[b * T + t] = (rng() * cfg.vocab) | 0;
+        const s1 = (rng() * (slack + 1)) | 0, gap = (rng() * (slack - s1 + 1)) | 0, s2 = s1 + n + gap;
+        for (let i = 0; i < n; i++) ids[b * T + s2 + i] = ids[b * T + s1 + i];
         for (let t = 0; t < T; t++) tg[b * T + t] = t + 1 < T ? ids[b * T + t + 1] : -1;
+        // targets predictable by induction: next token inside the second copy
+        for (let i = 0; i < n - 1; i++) rep[b * T + s2 + i] = 1;
+        meta.push({ s1, s2, n });
       }
-      return { ids, targets: tg };
+      return { ids, targets: tg, rep, meta };
     },
   },
   copy: {
@@ -341,16 +353,18 @@ function seqTask(rng, B, cfg, reverse) {
 }
 
 // ---------- diagnostics ----------
-/** Induction and previous-token scores per head (layer-major), on repeated sequences [A; A]. */
-export function headScores(attn, B, T, n) {
+/** Induction and previous-token scores per head (layer-major). meta[b] = { s1, s2, n } from TASKS.induction.
+ *  Induction score: mean attention from position s2+i to s1+i+1 (the token after the previous occurrence
+ *  of the current token). Previous-token score: mean attention from t to t−1. */
+export function headScores(attn, meta, T) {
   const L = attn.length, H = attn[0][0].length, ind = [], prev = [];
   for (let l = 0; l < L; l++) for (let h = 0; h < H; h++) {
     let si = 0, sp = 0, ci = 0, cp = 0;
-    for (let b = 0; b < B; b++) {
+    meta.forEach((m, b) => {
       const A = attn[l][b][h];
-      for (let t = n; t < T; t++) { si += A[t * T + (t - n + 1)]; ci++; }
+      for (let i = 0; i < m.n - 1; i++) { const t = m.s2 + i; si += A[t * T + m.s1 + i + 1]; ci++; }
       for (let t = 1; t < T; t++) { sp += A[t * T + t - 1]; cp++; }
-    }
+    });
     ind.push(si / ci); prev.push(sp / cp);
   }
   return { induction: ind, prevToken: prev };
