@@ -48,6 +48,7 @@ const BRAID = '<svg width="30" height="20" viewBox="0 0 30 20" fill="none" strok
 export function header() {
   return el('header', {}, el('nav', { class: 'wrap nav', 'aria-label': 'Primary' }, [
     el('a', { class: 'brand', href: '/', html: BRAID + ' Braidwater <small>NLP Lab</small>' }),
+    el('a', { class: 'l opt', href: '/studio/', text: 'Text Studio' }),
     el('a', { class: 'l opt', href: '/lab/', text: 'All modules' }),
     el('a', { class: 'l opt', href: '/word2vec/', text: 'Word2Vec' }),
     el('a', { class: 'l', href: '/', text: '← Home' }),

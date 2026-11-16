@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evaluating Generated Text — NLP Lab — Braidwater</title>
+<meta name="description" content="BLEU, ROUGE, chrF and an embedding-based BERTScore computed side by side, with constructed cases where overlap metrics and meaning disagree.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.io{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:820px){.io{grid-template-columns:minmax(0,1fr)}}
+textarea{min-height:120px}
+table.data td.best{color:var(--accent-200);font-weight:600}
+table.data tr[aria-selected=true] td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+table.data tbody tr{cursor:pointer}
+table.data td.cand{min-width:220px}
+table.data td.cand small{display:block;color:#d8b66a;font-size:12px}
+.num{font-variant-numeric:tabular-nums;text-align:right}
+.detail{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.mini{font-size:13px}
+#heat{width:100%;height:360px}
+#bars{width:100%;height:320px}
+.kt td,.kt th{text-align:center}
+</style>
+</head>
+<body data-slug="metrics">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Score candidates against references</h2>
+      <p class="sub">Each candidate is scored against every reference line, and multi-reference rules apply (BLEU clips n-gram counts by the maximum over references; the others take the best reference). The example cases are constructed to isolate one failure each. The note under each candidate is the author's reading of its meaning, not a human-evaluation dataset. BLEU (with the default exp smoothing) and chrF were checked against sacreBLEU 2.6.0’s <code>sentence_bleu</code> and <code>sentence_chrf</code> on these cases and agree to two decimals.</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="chips" id="cases" aria-label="Example cases"></div>
+        <p class="callout" id="casenote"></p>
+        <div class="io">
+          <div class="stack"><label class="field-label" for="refs">References (one per line)</label><textarea id="refs" spellcheck="false"></textarea></div>
+          <div class="stack"><label class="field-label" for="cands">Candidates (one per line)</label><textarea id="cands" spellcheck="false"></textarea></div>
+        </div>
+        <div class="row">
+          <label class="row note" for="smooth">BLEU smoothing
+            <select id="smooth"><option value="exp" selected>exp (sacreBLEU sentence default)</option><option value="add1">add-one for n &gt; 1 (Lin &amp; Och 2004)</option><option value="none">none</option></select></label>
+          <label class="row note"><input type="checkbox" id="lower"> lowercase before BLEU / chrF</label>
+          <button class="btn btn-primary" type="button" id="score">Score</button>
+          <button class="btn btn-secondary" type="button" id="bert">Add BERTScore (MiniLM, 23 MB)</button>
+        </div>
+        <div id="load"></div>
+        <div class="scroll-x"><table class="data" id="tbl"><thead><tr>
+          <th>Candidate</th><th class="num">BLEU</th><th class="num">ROUGE-1</th><th class="num">ROUGE-2</th><th class="num">ROUGE-L</th><th class="num">chrF</th><th class="num">BERTScore F</th>
+        </tr></thead><tbody></tbody></table></div>
+        <p class="note">All scores × 100. Best in each column is highlighted. Click a row for the breakdown.</p>
+        <div id="bars" role="img" aria-label="Bar chart of each metric for each candidate"></div>
+      </div>
+
+      <div class="panel pad stack" aria-labelledby="det-h">
+        <h3 id="det-h" class="field-label">Breakdown for the selected candidate</h3>
+        <p id="selcand" class="callout"></p>
+        <div class="detail">
+          <div class="stack"><b>BLEU</b><div class="scroll-x"><table class="data mini" id="bleudet"></table></div><p class="note" id="bleunote"></p></div>
+          <div class="stack"><b>ROUGE (F1 shown in the table)</b><div class="scroll-x"><table class="data mini" id="rougedet"></table></div></div>
+          <div class="stack"><b>chrF (β = 2, character n-grams 1–6)</b><div class="scroll-x"><table class="data mini" id="chrfdet"></table></div></div>
+        </div>
+        <div class="stack"><b>BERTScore token matching (candidate rows × reference columns, cosine similarity; ○ marks each row's greedy match)</b>
+          <div id="heat" role="img" aria-label="Token similarity heatmap"><p class="note" style="padding:16px">Load BERTScore to see token alignments.</p></div>
+          <p class="note" id="bertnote"></p>
+        </div>
+      </div>
+
+      <div class="panel pad stack" aria-labelledby="agree-h">
+        <h3 id="agree-h" class="field-label">How much do the metrics agree with each other?</h3>
+        <p class="note">Kendall’s τ between metrics, over every candidate in every example case (each scored against its own case’s references). This measures agreement between metrics on these constructed examples only; it says nothing about agreement with human judgments.</p>
+        <button class="btn btn-secondary" type="button" id="agreebtn" style="align-self:flex-start">Compute agreement</button>
+        <div class="scroll-x"><table class="data kt" id="agree"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">02 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>BLEU</h3><p>Modified n-gram precision for n = 1…4: each candidate n-gram counts at most as often as it appears in any single reference. The geometric mean is <code>exp(Σ ¼ log pₙ)</code>, times a brevity penalty <code>BP = min(1, e^(1 − r/c))</code> for a candidate of length c and closest reference length r. BLEU was designed for whole test sets. On single sentences, any missing 4-gram makes it 0 without smoothing.</p></div>
+        <div class="panel card"><h3>ROUGE</h3><p>Recall-oriented overlap for summarization. ROUGE-N counts shared n-grams; ROUGE-L uses the longest common subsequence, rewarding in-order matches without requiring them to be adjacent. Here P, R and F1 use lowercased word tokens without stemming, so scores differ slightly from the reference implementation with stemming on.</p></div>
+        <div class="panel card"><h3>chrF</h3><p>Character n-gram F-score (Popović 2015): precision and recall for character n-grams of lengths 1–6 (spaces removed) are averaged across lengths, then combined as <code>F_β</code> with β = 2, weighting recall twice as much as precision. Partial credit for morphology (“postponed” vs “postpone”) makes it more robust than BLEU on single sentences and for morphologically rich languages.</p></div>
+        <div class="panel card"><h3>BERTScore (as computed here)</h3><p>Each token is embedded in context. Precision averages each candidate token’s best cosine match in the reference; recall does the reverse, and F is their harmonic mean (Zhang et al. 2020). <b>This page uses all-MiniLM-L6-v2’s last layer</b> with no IDF weighting and no baseline rescaling. The paper’s recommended setup is roberta-large (layer 17) with rescaling, so these numbers aren’t comparable to published BERTScores. MiniLM’s cosines sit in a narrow high band, so focus on differences between candidates.</p></div>
+        <div class="panel card"><h3>Why the cases fool overlap metrics</h3><p>Overlap metrics reward surface form, not meaning. A paraphrase shares few n-grams with its reference, while one changed word (“week” → “year”) or an inserted “not” keeps almost every n-gram. More references help, because each covers different valid phrasings. Embedding metrics give paraphrases more partial credit than BLEU does, but in these examples they still rank negated and role-swapped candidates above faithful paraphrases.</p></div>
+        <div class="panel card"><h3>What the field does</h3><p>Shared tasks compare metrics with human judgments, and learned metrics (COMET, BLEURT) correlate far better than BLEU with modern MT systems. BLEU is still reported because it is cheap and reproducible. Use sacreBLEU’s signature so numbers are comparable, and report several metrics plus human evaluation for strong systems.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">03 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Papineni, Roukos, Ward &amp; Zhu (2002). <em>BLEU: a Method for Automatic Evaluation of Machine Translation.</em> ACL.</li>
+        <li>Lin (2004). <em>ROUGE: A Package for Automatic Evaluation of Summaries.</em> Text Summarization Branches Out workshop.</li>
+        <li>Lin &amp; Och (2004). <em>ORANGE: a Method for Evaluating Automatic Evaluation Metrics for Machine Translation.</em> COLING. (Add-one smoothed sentence BLEU.)</li>
+        <li>Chen &amp; Cherry (2014). <em>A Systematic Comparison of Smoothing Techniques for Sentence-Level BLEU.</em> WMT.</li>
+        <li>Popović (2015). <em>chrF: character n-gram F-score for automatic MT evaluation.</em> WMT.</li>
+        <li>Post (2018). <em>A Call for Clarity in Reporting BLEU Scores.</em> WMT. (sacreBLEU.)</li>
+        <li>Zhang, Kishore, Wu, Weinberger &amp; Artzi (2020). <em>BERTScore: Evaluating Text Generation with BERT.</em> ICLR.</li>
+        <li>Sellam, Das &amp; Parikh (2020). <em>BLEURT: Learning Robust Metrics for Text Generation.</em> ACL. Rei, Stewart, Farinha &amp; Lavie (2020). <em>COMET: A Neural Framework for MT Evaluation.</em> EMNLP.</li>
+        <li>Mathur, Baldwin &amp; Cohn (2020). <em>Tangled up in BLEU: Reevaluating the Evaluation of Automatic Machine Translation Evaluation Metrics.</em> ACL.</li>
+        <li>Kocmi et al. (2021). <em>To Ship or Not to Ship: An Extensive Evaluation of Automatic Metrics for Machine Translation.</em> WMT.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calibration &amp; Uncertainty — NLP Lab — Braidwater</title>
+<meta name="description" content="Reliability diagrams, ECE, NLL and Brier score, temperature scaling and selective prediction for three sentiment classifiers on 872 held-out SST-2 sentences.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.ctrl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px;align-items:end}
+.ctrl label{display:flex;flex-direction:column;gap:6px}
+.ctrl select{width:100%}
+.plot{width:100%;height:340px}
+.big{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.big div{background:var(--bg);padding:14px 16px}
+.big b{display:block;font:600 30px/1 var(--heading)}
+.big span{font-size:13px;color:var(--faint)}
+td.good{color:#8fbf9a}td.bad{color:#d98c7a}
+tr.sel td{background:color-mix(in srgb,var(--accent) 10%,transparent)}
+</style>
+</head>
+<body data-slug="calibration">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">When a model says 95%, is it right 95% of the time?</h2>
+      <p class="sub">Three sentiment classifiers scored on the 872 labelled sentences of the GLUE SST-2 validation split. DistilBERT’s outputs were precomputed in a headless browser with the exact model and code this page uses (you can re-run it live below); Naive Bayes and logistic regression run here as the page loads.</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="ctrl">
+          <label><span class="field-label">Model</span>
+            <select id="model"><option value="bert">DistilBERT (SST-2 fine-tuned)</option><option value="lr">Logistic regression (movie reviews)</option><option value="nb">Naive Bayes (movie reviews)</option></select></label>
+          <label><span class="field-label">Bins</span>
+            <select id="bins"><option>5</option><option selected>10</option><option>15</option><option>20</option></select></label>
+          <label><span class="field-label">Binning</span>
+            <select id="scheme"><option value="width">Equal width</option><option value="mass">Equal mass (adaptive)</option></select></label>
+          <label><span class="field-label">Target risk for selective prediction</span>
+            <select id="risk"><option value="0.01">1%</option><option value="0.02">2%</option><option value="0.05" selected>5%</option><option value="0.1">10%</option></select></label>
+        </div>
+        <p class="note" id="status" role="status" aria-live="polite"></p>
+      </div>
+      <div class="big" id="big" aria-label="Headline metrics"></div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="rel-h">
+    <div class="wrap stack">
+      <span class="kicker">02 · Reliability</span>
+      <h2 id="rel-h">Reliability diagram, before and after temperature scaling</h2>
+      <p class="sub">Predictions are grouped by confidence (the probability of the predicted class). A calibrated model’s bars sit on the diagonal. Temperature scaling divides the log-odds by a single number <i>T</i> fitted to minimize NLL on half of the data (the <em>calibration</em> split) and is evaluated on the other half (the <em>test</em> split). Accuracy can’t change; only confidence does.</p>
+      <div class="grid2">
+        <div class="panel pad"><div id="rel0" class="plot" role="img" aria-label="Reliability diagram before temperature scaling"></div></div>
+        <div class="panel pad"><div id="rel1" class="plot" role="img" aria-label="Reliability diagram after temperature scaling"></div></div>
+      </div>
+      <div class="panel pad stack">
+        <h3>All three models</h3>
+        <p class="note">Test split (436 sentences). ECE uses the bins chosen above. Lower is better for every column except accuracy.</p>
+        <div class="scroll-x"><table class="data" id="tbl"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="sel-h">
+    <div class="wrap stack">
+      <span class="kicker">03 · Selective prediction</span>
+      <h2 id="sel-h">Knowing when to abstain</h2>
+      <p class="sub">Answer only the most confident fraction of inputs (the <em>coverage</em>) and measure the error rate on what you answer (the <em>risk</em>). A good confidence ranking makes risk fall quickly as coverage shrinks. Temperature scaling doesn’t reorder predictions, so it doesn’t change this curve at all.</p>
+      <div class="panel pad"><div id="rc" class="plot" role="img" aria-label="Risk-coverage curves"></div></div>
+      <div class="panel pad"><div class="scroll-x"><table class="data" id="seltbl"></table></div></div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="live-h">
+    <div class="wrap stack">
+      <span class="kicker">04 · Reproduce</span>
+      <h2 id="live-h">Re-run DistilBERT live</h2>
+      <div class="panel pad stack">
+        <p class="note">Downloads the model (≈67 MB, once) and scores a random subset in your browser, then compares with the precomputed log-odds.</p>
+        <div class="row"><label class="row"><span class="field-label">Sentences</span><select id="liven"><option>20</option><option selected>50</option><option>100</option></select></label><button class="btn btn-primary" id="live" type="button">Run live</button><button class="btn btn-secondary" id="livecancel" type="button" disabled>Cancel</button></div>
+        <div id="liveload"></div>
+        <p class="note" id="liveout" aria-live="polite"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">05 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Calibration</h3><p>A classifier is calibrated if <code>P(Y = ŷ | p̂ = p) = p</code> for all <i>p</i>: among inputs where it reports confidence 0.8, 80% are correct. Accuracy says nothing about this; a model can be accurate and badly overconfident. Guo et al. (2017) showed that modern deep networks are often overconfident, and that much older, smaller networks were better calibrated.</p></div>
+        <div class="panel card"><h3>ECE and MCE</h3><p>Bin predictions by confidence into <i>B<sub>m</sub></i>; <code>ECE = Σ<sub>m</sub> (|B<sub>m</sub>|/n) · |acc(B<sub>m</sub>) − conf(B<sub>m</sub>)|</code> and MCE is the largest gap (Naeini et al. 2015). Both depend on the binning: equal-width bins leave high-confidence bins crowded and others nearly empty; equal-mass bins (Nixon et al. 2019) put the same number of examples in each. ECE is biased with few samples, so compare models with the same scheme.</p></div>
+        <div class="panel card"><h3>Proper scoring rules</h3><p>Negative log-likelihood <code>−(1/n) Σ log p̂(y<sub>i</sub>)</code> and the Brier score <code>(1/n) Σ (p̂<sub>pos</sub> − y<sub>i</sub>)²</code> are minimized in expectation only by the true probabilities, so they reward calibration and sharpness together. NLL punishes confident mistakes without bound; Brier caps each error at 1.</p></div>
+        <div class="panel card"><h3>Temperature scaling</h3><p>Rescale the logits, <code>p̂ = σ(z / T)</code>, with one parameter fitted by minimizing NLL on held-out data (Guo et al. 2017). <i>T</i> &gt; 1 softens overconfident models; <i>T</i> &lt; 1 sharpens underconfident ones. It’s a special case of Platt (1999) scaling, preserves the ranking and hence accuracy, and assumes the test data look like the calibration data. Under distribution shift calibration degrades (Ovadia et al. 2019).</p></div>
+        <div class="panel card"><h3>Domain shift, measured</h3><p>DistilBERT was fine-tuned on SST-2 training data, the same distribution as this test set. Naive Bayes and logistic regression were trained on full-length movie reviews from NLTK (Pang &amp; Lee 2004) and are tested here on short phrase-level sentences. Their lower accuracy and miscalibration show what moving between domains costs, even within “movie sentiment”.</p></div>
+        <div class="panel card"><h3>Selective prediction</h3><p>Sort by confidence <i>κ(x)</i>, answer the top fraction, and plot risk against coverage. The area under that curve (AURC) summarizes the ranking; E-AURC subtracts the area an oracle would get from the same errors (Geifman et al. 2019). Choosing the largest coverage whose empirical risk is below a target is the basic selective classifier of Geifman &amp; El-Yaniv (2017), which also gives finite-sample guarantees not computed here.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">06 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Guo, Pleiss, Sun &amp; Weinberger (2017). On Calibration of Modern Neural Networks. ICML.</li>
+        <li>Naeini, Cooper &amp; Hauskrecht (2015). Obtaining Well Calibrated Probabilities Using Bayesian Binning. AAAI.</li>
+        <li>Platt (1999). Probabilistic Outputs for Support Vector Machines and Comparisons to Regularized Likelihood Methods. Advances in Large Margin Classifiers.</li>
+        <li>Niculescu-Mizil &amp; Caruana (2005). Predicting Good Probabilities with Supervised Learning. ICML.</li>
+        <li>Nixon, Dusenberry, Zhang, Jerfel &amp; Tran (2019). Measuring Calibration in Deep Learning. CVPR Workshops.</li>
+        <li>Ovadia et al. (2019). Can You Trust Your Model’s Uncertainty? Evaluating Predictive Uncertainty Under Dataset Shift. NeurIPS.</li>
+        <li>Desai &amp; Durrett (2020). Calibration of Pre-trained Transformers. EMNLP.</li>
+        <li>Geifman &amp; El-Yaniv (2017). Selective Classification for Deep Neural Networks. NeurIPS.</li>
+        <li>Geifman, Uziel &amp; El-Yaniv (2019). Bias-Reduced Uncertainty Estimation for Deep Neural Classifiers. ICLR.</li>
+        <li>Data: Socher et al. (2013). Recursive Deep Models for Semantic Compositionality Over a Sentiment Treebank. EMNLP; distributed in GLUE, Wang et al. (2018).</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

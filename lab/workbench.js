@@ -31,6 +31,62 @@ function shell({ title, blurb, href, controls, run, cta = 'Run', modelNote }) {
 
 const input = (attrs) => el('input', { type: 'text', class: 'wb-in', spellcheck: 'false', ...attrs });
 
+// ---- Tier 1: tokenizer & counter (shares Text Studio's tokenizer) ---------------
+function tokenizer() {
+  const i = input({ value: 'Dr. Ada isn’t here—she’s at the U.S. Patent Office until 5:30 p.m. #history', 'aria-label': 'Text to tokenize' });
+  return shell({
+    title: 'Tokenizer & word counter', href: '/lab/tokenize/',
+    blurb: 'Splits your text the way the rest of the lab does: contractions into two tokens, abbreviations kept whole, sentences found without being fooled by “Dr.”',
+    controls: [i], cta: 'Tokenize',
+    async run(o) {
+      const { wordTokenize, sentences } = await import('/studio/lib/tokenize.js');
+      const text = i.value, toks = wordTokenize(text), words = toks.filter((x) => x.type === 'word' || x.type === 'clitic');
+      const types = new Set(words.map((x) => x.text.toLowerCase()));
+      o.replaceChildren(
+        el('div', {}, toks.map((x) => el('span', { class: 'tok', title: x.type, 'data-type': x.type, text: x.text }))),
+        el('p', { class: 'note', text: `${toks.length} tokens · ${words.length} words · ${types.size} distinct · ${sentences(text, toks).length} sentence(s). Hover a token to see its type.` }),
+      );
+    },
+  });
+}
+
+// ---- Tier 2: spell checker (noisy-channel model, shared with Text Studio) ---------
+function speller() {
+  const i = input({ value: 'Teh rivr flowd thru the vallley at nite.', 'aria-label': 'Sentence to spell-check' });
+  return shell({
+    title: 'Spell checker', href: '/lab/spell/',
+    blurb: 'Each unknown word gets candidates within two edits, ranked by how common the word is times how likely that typo is.',
+    controls: [i], cta: 'Correct',
+    async run(o) {
+      const { loadSpell } = await import('/studio/lib/spell.js');
+      const sp = await loadSpell();
+      const parts = sp.correctSentence(i.value);
+      const fixes = parts.filter((p) => p.fixed);
+      o.replaceChildren(
+        el('p', { class: 'wb-result' }, parts.map((p) => p.fixed ? el('mark', { class: 'wb-fix', title: 'was: ' + p.orig, text: p.fixed }) : p.nos ? el('span', { class: 'wb-nos', title: 'no candidate within two edits', text: p.orig }) : p.orig)),
+        el('p', { class: 'note', text: fixes.length ? fixes.map((p) => `${p.orig} → ${p.fixed}`).join(' · ') : 'No corrections needed.' }),
+      );
+    },
+  });
+}
+
+// ---- Tier 3: part-of-speech tagger (HMM + Viterbi, shared with Text Studio) --------
+function tagger() {
+  const i = input({ value: 'Time flies like an arrow; fruit flies like a banana.', 'aria-label': 'Sentence to tag' });
+  return shell({
+    title: 'Part-of-speech tagger', href: '/lab/pos/',
+    blurb: 'A hidden Markov model trained on the Penn Treebank picks the most likely tag sequence for the whole sentence with Viterbi decoding.',
+    controls: [i], cta: 'Tag',
+    async run(o) {
+      const { loadPOS, PENN } = await import('/studio/lib/pos.js');
+      const pos = await loadPOS();
+      const { words, tags } = pos.tagSentence(i.value);
+      o.replaceChildren(el('div', { class: 'wb-tags' }, words.map((w, k) => el('span', { class: 'wb-tag', title: PENN[tags[k]] || tags[k] }, [el('span', { text: w }), el('b', { text: tags[k] })]))),
+        el('p', { class: 'note', text: 'Hover a tag for its meaning. The classic trap: a person would tag the halves flies/VBZ like/IN and then flies/NNS like/VBZ. A bigram HMM sees only one tag of context, so it often gives both halves the same reading; the full module shows its trellis.' }));
+    },
+  });
+}
+
 // ---- Tier 4: translation ----------------------------------------------------
 function translator() {
   const i = input({ value: 'The river carries the town’s stories to the sea.', 'aria-label': 'English sentence to translate' });
@@ -119,7 +175,7 @@ function association() {
   });
 }
 
-export const WORKBENCH = { 4: translator, 5: fillMask, 6: association };
+export const WORKBENCH = { 1: tokenizer, 2: speller, 3: tagger, 4: translator, 5: fillMask, 6: association };
 
 export const WORKBENCH_CSS = `
 .wb{margin-bottom:18px}
@@ -134,5 +190,8 @@ export const WORKBENCH_CSS = `
 .wb-meter{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
 .wb-track{position:relative;height:6px;background:linear-gradient(90deg,#d98c7a55,var(--divider) 50%,#7ea3c855)}
 .wb-track i{position:absolute;top:-4px;width:3px;height:14px;background:var(--accent-200);transform:translateX(-50%)}
+.tok[data-type="clitic"]{border-color:var(--accent-500)}.tok[data-type="punct"]{color:var(--faint)}.tok[data-type="url"],.tok[data-type="email"],.tok[data-type="hashtag"],.tok[data-type="mention"]{border-color:#d8b66a;color:#d8b66a}.tok[data-type="number"],.tok[data-type="time"],.tok[data-type="date"]{border-color:#8fbf9a;color:#8fbf9a}
+.wb-fix{background:color-mix(in srgb,#8fbf9a 22%,transparent);color:var(--text);padding:0 3px}.wb-nos{text-decoration:underline wavy #d98c7a}
+.wb-tags{display:flex;flex-wrap:wrap;gap:6px}.wb-tag{display:inline-flex;flex-direction:column;align-items:center;border:1px solid var(--divider);padding:4px 8px;font-size:15px}.wb-tag b{font-size:11px;letter-spacing:.06em;color:var(--accent-300)}
 @media (max-width:560px){.wb-form{flex-wrap:wrap}.wb-form .btn{width:100%}}
 `;

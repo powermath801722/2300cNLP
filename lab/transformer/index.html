@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Transformer from Scratch &amp; Induction Heads — NLP Lab — Braidwater</title>
+<meta name="description" content="Train a tiny transformer in your browser with hand-written backpropagation and watch previous-token and induction heads form.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:14px;align-items:end}
+.controls label{display:flex;flex-direction:column;gap:6px}
+.controls select,.controls input[type=number]{width:100%}
+.checks{display:flex;flex-wrap:wrap;gap:16px;font-size:15px;color:var(--muted)}
+.checks label{display:flex;align-items:center;gap:8px;cursor:pointer}
+.checks input{accent-color:var(--accent);width:18px;height:18px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,130px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.stats div{background:var(--bg);padding:12px 14px}
+.stats b{display:block;font-family:var(--heading);font-weight:600;font-size:26px;line-height:1.05;font-variant-numeric:tabular-nums}
+.stats span{font-size:12px;color:var(--faint)}
+.plot{width:100%;height:320px}
+.heads{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,230px),1fr));gap:14px}
+.head{display:flex;flex-direction:column;gap:6px}
+.head canvas{width:100%;aspect-ratio:1/1;background:var(--bg);border:1px solid var(--divider);image-rendering:pixelated}
+.head .cap{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted)}
+.head .cap b{color:var(--text);font-weight:600}
+.strip{display:flex;flex-wrap:wrap;gap:3px}
+.strip .tok{margin:0;min-width:30px;text-align:center}
+.strip .tok.rep{outline:1px dashed var(--accent-300);outline-offset:1px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--faint);align-items:center}
+.sw{display:inline-block;width:14px;height:14px;vertical-align:middle;margin-right:6px;border:1px solid var(--divider)}
+.ablt td:nth-child(n+2),.ablt th:nth-child(n+2){text-align:right}
+.busy{opacity:.55;pointer-events:none}
+</style>
+</head>
+<body data-slug="transformer">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Train a transformer in this tab</h2>
+      <p class="sub">A complete decoder-only transformer, written from scratch for this page: embeddings, causal multi-head attention, LayerNorm, an optional MLP, cross-entropy and Adam, with every gradient derived by hand. It trains in a background thread on your CPU; the default model has about 11,000 parameters, so this is a toy, but the mechanism it learns is the same one found in large language models.</p>
+      <div class="panel pad stack" id="cfgpanel">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="controls">
+          <label><span class="field-label">Task</span><select id="task">
+            <option value="induction" selected>In-context bigrams (induction)</option>
+            <option value="copy">Copy a sequence</option>
+            <option value="reverse">Reverse a sequence</option></select></label>
+          <label><span class="field-label">Layers</span><select id="layers"><option>1</option><option selected>2</option><option>3</option></select></label>
+          <label><span class="field-label">Heads per layer</span><select id="heads"><option>1</option><option selected>2</option><option>4</option></select></label>
+          <label><span class="field-label">Width d</span><select id="d"><option>16</option><option selected>32</option><option>48</option></select></label>
+          <label><span class="field-label">Learning rate</span><select id="lr"><option value="0.003">0.003</option><option value="0.01" selected>0.01</option><option value="0.02">0.02</option></select></label>
+          <label><span class="field-label">Batch size</span><select id="batch"><option>8</option><option selected>16</option><option>32</option></select></label>
+          <label><span class="field-label">Seed</span><input type="number" id="seed" value="1" min="1" max="9999" step="1"></label>
+          <label><span class="field-label">Train until step</span><input type="number" id="until" value="1500" min="25" max="10000" step="25"></label>
+        </div>
+        <div class="checks">
+          <label><input type="checkbox" id="ln" checked> LayerNorm (pre-norm)</label>
+          <label><input type="checkbox" id="mlp"> MLP blocks</label>
+        </div>
+        <p class="note" id="tasknote"></p>
+        <div class="row">
+          <button class="btn btn-primary" id="train" type="button">Train</button>
+          <button class="btn btn-secondary" id="pause" type="button" disabled>Pause</button>
+          <button class="btn btn-secondary" id="step25" type="button">+25 steps</button>
+          <button class="btn btn-secondary" id="reset" type="button">Reset model</button>
+        </div>
+        <div class="stats" id="stats" aria-live="polite"></div>
+        <div class="load" id="status"><span class="bar-load"><i></i></span><span class="t">Starting the worker…</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="curve-h">
+    <div class="wrap stack">
+      <span class="kicker">02 · The phase change</span>
+      <h2 id="curve-h">Loss and head scores during training</h2>
+      <p class="sub" id="curvesub">Loss on held-out sequences, split into tokens that can be recalled from earlier in the sequence and tokens that can’t. The right-hand chart tracks, for every head, how much attention it pays to the previous token and to the token after an earlier occurrence of the current one.</p>
+      <div class="grid2">
+        <div class="panel pad"><div id="lossplot" class="plot" role="img" aria-label="Loss curves over training steps"></div></div>
+        <div class="panel pad" id="scorepanel"><div id="scoreplot" class="plot" role="img" aria-label="Previous-token and induction scores per head over training steps"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="attn-h">
+    <div class="wrap stack">
+      <span class="kicker">03 · Inside the model</span>
+      <h2 id="attn-h">Attention patterns on one sequence</h2>
+      <p class="sub">Each square is one head: row = the position doing the looking (query), column = the position looked at (key), brighter = more attention. Only the lower triangle can light up because the model is causal. <span id="attnhint"></span></p>
+      <div class="row">
+        <button class="btn btn-secondary" id="newex" type="button">New example sequence</button>
+        <div class="legend" id="attnlegend"></div>
+      </div>
+      <div class="heads" id="heads"></div>
+      <div class="stack">
+        <span class="field-label">The example sequence</span>
+        <p class="note" id="stripnote">Each box is a token id; its colour is the model’s loss when predicting the <em>next</em> token from there (green = confident and right, red = surprised).</p>
+        <div class="strip" id="strip"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="abl-h">
+    <div class="wrap stack">
+      <span class="kicker">04 · Causal test</span>
+      <h2 id="abl-h">Ablate one head at a time</h2>
+      <p class="sub">Attention patterns suggest a mechanism; ablation tests it. Each row switches one head off (its output is zeroed) and re-measures loss on the held-out sequences. If a head implements the copying, removing it should hurt recallable tokens badly.</p>
+      <div class="panel pad stack">
+        <div class="row"><button class="btn btn-secondary" id="ablate" type="button">Run ablations on the current model</button><span class="note" id="ablnote"></span></div>
+        <div class="scroll-x"><table class="data ablt" id="ablt"><thead><tr><th scope="col">Head switched off</th><th scope="col">Loss</th><th scope="col">Change</th></tr></thead><tbody><tr><td colspan="3" class="note">Train for a while, then run the ablations.</td></tr></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">05 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>The block</h3><p>Tokens become vectors x<sub>t</sub> = E[w<sub>t</sub>] + P[t] (learned token and position embeddings). Each layer adds to this <b>residual stream</b>: x ← x + Attn(LN(x)), then optionally x ← x + MLP(LN(x)). A final LayerNorm and unembedding U give logits, and training minimizes next-token cross-entropy with Adam (Kingma &amp; Ba 2015).</p></div>
+        <div class="panel card"><h3>Causal self-attention</h3><p>Per head, with d<sub>h</sub> = d / heads: q = xW<sub>Q</sub>, k = xW<sub>K</sub>, v = xW<sub>V</sub>; A = softmax(qkᵀ / √d<sub>h</sub> + M), where the mask M is −∞ above the diagonal so position t can only see 0…t; the head writes A v W<sub>O</sub> back into the residual stream (Vaswani et al. 2017).</p></div>
+        <div class="panel card"><h3>Hand-written backprop</h3><p>Every operation records a closure on a tape; running the tape backwards applies the chain rule. The softmax backward is ∂s = A ⊙ (∂A − Σ A ∂A). The gradients were checked against central finite differences in float64 for every parameter tensor (relative error below 10⁻⁷; <code>training/transformer_check.mjs</code>).</p></div>
+        <div class="panel card"><h3>The task</h3><p>Each sequence gets its own random successor map π over 24 tokens: the next token is π(current) with probability 0.75, otherwise random. π changes every sequence, so there is nothing to memorize; the only way to do better than chance is to look back for an earlier occurrence of the current token and copy what came next (in-context bigrams, as in Bietti et al. 2023).</p></div>
+        <div class="panel card"><h3>The induction circuit</h3><p>Two heads in two layers. A <b>previous-token head</b> in layer 1 copies information about token t−1 into position t. An <b>induction head</b> in layer 2 then queries with the current token and matches keys that carry “my previous token was this” — that is, it attends to the position <i>after</i> an earlier occurrence — and copies that token to the output. The key depends on the earlier head’s output: K-composition (Elhage et al. 2021).</p></div>
+        <div class="panel card"><h3>Phase change</h3><p>Loss on recallable tokens sits on a plateau, then drops abruptly as both heads appear together; neither helps alone. Olsson et al. (2022) found the same abrupt formation in models up to tens of billions of parameters, coinciding with a jump in in-context learning. Before it, the model only learns which tokens have appeared in the context (an in-context unigram).</p></div>
+        <div class="panel card"><h3>Reading the scores</h3><p>Previous-token score: average attention from t to t−1 (uniform attention gives about 0.1 here). Induction score: attention mass on positions just after earlier occurrences of the current token, rescaled so 0 = what uniform attention would give and 1 = all attention there. Patterns are evidence, not proof: the ablation table tests whether a head actually matters.</p></div>
+        <div class="panel card"><h3>Why the task matters</h3><p>An earlier version of this page repeated a block of tokens at a fixed distance, and the model “solved” it with a single layer by attending to a fixed offset using position embeddings — no induction needed. Randomizing what repeats and where removed that shortcut. Designing tasks so the intended mechanism is the only good solution is a large part of interpretability research.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">06 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł. &amp; Polosukhin, I. (2017). Attention Is All You Need. <i>NeurIPS</i>.</li>
+        <li>Elhage, N., Nanda, N., Olsson, C., et al. (2021). A Mathematical Framework for Transformer Circuits. <i>Transformer Circuits Thread</i>, Anthropic.</li>
+        <li>Olsson, C., Elhage, N., Nanda, N., et al. (2022). In-context Learning and Induction Heads. <i>Transformer Circuits Thread</i>, Anthropic.</li>
+        <li>Bietti, A., Cabannes, V., Bouchacourt, D., Jégou, H. &amp; Bottou, L. (2023). Birth of a Transformer: A Memory Viewpoint. <i>NeurIPS</i>.</li>
+        <li>Ba, J. L., Kiros, J. R. &amp; Hinton, G. E. (2016). Layer Normalization. <i>arXiv:1607.06450</i>.</li>
+        <li>Kingma, D. P. &amp; Ba, J. (2015). Adam: A Method for Stochastic Optimization. <i>ICLR</i>.</li>
+        <li>Jurafsky &amp; Martin, <i>Speech and Language Processing</i> (3rd ed. draft), Chapter 9: The Transformer.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

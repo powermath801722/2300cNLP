@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feature Attribution — NLP Lab — Braidwater</title>
+<meta name="description" content="Leave-one-out occlusion, LIME and KernelSHAP explanations of a sentiment classifier, compared against exact attributions and tested for faithfulness.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.ctrl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px;align-items:end}
+.ctrl label{display:flex;flex-direction:column;gap:6px}
+.ctrl select,.ctrl input{width:100%}
+.heat{display:flex;flex-direction:column;gap:10px}
+.hrow{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;align-items:baseline;border-top:1px solid var(--divider);padding-top:10px}
+.hrow b{font:600 15px var(--heading);letter-spacing:.06em;text-transform:uppercase}
+.hrow small{display:block;font-size:12px;color:var(--faint);font-family:var(--body);text-transform:none;letter-spacing:0;font-weight:400}
+.words{line-height:2.2;font-size:15px;margin:0}
+.words span.w{padding:2px 4px;border-radius:2px}
+@media (max-width:560px){.hrow{grid-template-columns:minmax(0,1fr)}}
+.pred{display:flex;flex-wrap:wrap;gap:8px 24px;align-items:baseline;font-size:15px;color:var(--muted)}
+.pred .lab{font:600 20px var(--heading);letter-spacing:.06em;text-transform:uppercase}
+.lab.pos{color:#8fbf9a}.lab.neg{color:#d98c7a}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--faint)}
+.legend i{display:inline-block;width:12px;height:12px;vertical-align:-2px;margin-right:6px}
+.plot{width:100%;height:320px}
+td.good{color:#8fbf9a}td.bad{color:#d98c7a}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<body data-slug="attribution">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Which words made the model decide?</h2>
+      <p class="sub">Pick a classifier and a sentence. Three model-agnostic methods explain the same prediction by deleting words and watching the model’s log-odds of <em>positive</em> move. For the two linear models the exact answer is known, so you can grade each method.</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <label class="field-label" for="txt">Sentence</label>
+        <textarea id="txt" rows="3" spellcheck="false"></textarea>
+        <div class="chips" id="samples" aria-label="Example sentences"></div>
+        <div class="ctrl">
+          <label><span class="field-label">Model</span>
+            <select id="model">
+              <option value="lr">Logistic regression (instant)</option>
+              <option value="nb">Naive Bayes (instant)</option>
+              <option value="bert">DistilBERT (≈67 MB)</option>
+            </select></label>
+          <label><span class="field-label">LIME / SHAP samples</span>
+            <select id="budget"><option>64</option><option>128</option><option selected>256</option><option>512</option><option>1024</option></select></label>
+          <label><span class="field-label">Random seed</span><input id="seed" type="number" value="1" min="1" max="9999"></label>
+          <div class="row"><button class="btn btn-primary" id="go" type="button">Explain</button><button class="btn btn-secondary" id="cancel" type="button" disabled>Cancel</button></div>
+        </div>
+        <div id="bertload"></div>
+        <p class="note" id="status" role="status" aria-live="polite"></p>
+        <p class="msg" id="msg" hidden></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="res-h" id="results" hidden>
+    <div class="wrap stack">
+      <span class="kicker">02 · Explanations</span>
+      <h2 id="res-h">Three explanations of one prediction</h2>
+      <div class="pred" id="pred"></div>
+      <div class="legend"><span><i style="background:rgba(143,191,154,.6)"></i>pushes toward positive</span><span><i style="background:rgba(217,140,122,.6)"></i>pushes toward negative</span><span>Each row is scaled to its own largest value; hover a word for the number.</span></div>
+      <div class="panel pad heat" id="heat"></div>
+      <div class="grid2">
+        <div class="panel pad stack">
+          <h3>Do the methods agree?</h3>
+          <p class="note">Spearman rank correlation of the attributions (1 = same ranking) and overlap of the top three words by |attribution|.</p>
+          <div class="scroll-x"><table class="data" id="agree"></table></div>
+        </div>
+        <div class="panel pad stack">
+          <h3>Cost</h3>
+          <p class="note">Model evaluations (deduplicated) and wall time for each method on this sentence.</p>
+          <div class="scroll-x"><table class="data" id="cost"></table></div>
+        </div>
+      </div>
+      <div class="panel pad stack">
+        <h3>Faithfulness: delete the “most important” words first</h3>
+        <p class="note">If an explanation is faithful, removing its top-ranked words should drop the predicted-class probability fastest (deletion, lower is better), and adding them back to an empty sentence should restore it fastest (insertion, higher is better). Random orderings are the baseline. AOPC is the average drop over all deletion steps (Samek et al. 2017).</p>
+        <div class="grid2"><div id="pdel" class="plot" role="img" aria-label="Deletion curves"></div><div id="pins" class="plot" role="img" aria-label="Insertion curves"></div></div>
+        <div class="scroll-x"><table class="data" id="faith"></table></div>
+      </div>
+      <div class="panel pad stack">
+        <h3>Sanity checks</h3>
+        <div id="sanity" class="stack"></div>
+      </div>
+      <div class="panel pad stack">
+        <h3>All attributions</h3>
+        <div class="scroll-x"><table class="data" id="tbl"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">03 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>The setup</h3><p>We explain <code>f(x)</code> = log P(pos|x) − log P(neg|x). A sentence has <i>M</i> words; a coalition <code>z ∈ {0,1}<sup>M</sup></code> keeps the words with <code>z<sub>j</sub> = 1</code> and deletes the rest. Every method here only queries <code>f</code> on such perturbed sentences, so it works on any model, at the price of feeding it ungrammatical inputs it never saw in training.</p></div>
+        <div class="panel card"><h3>Occlusion (leave-one-out)</h3><p><code>a<sub>j</sub> = f(x) − f(x<sub>∖j</sub>)</code>: <i>M</i> + 1 queries and fully deterministic. It measures each word’s effect given all the others, so redundant evidence (“good, really good”) gets little credit, because deleting one copy changes nothing.</p></div>
+        <div class="panel card"><h3>LIME</h3><p>Ribeiro et al. (2016) sample random deletions, weight each sample by an exponential kernel on its cosine distance to the original, <code>π(z) = exp(−d(z)²/σ²)</code> with σ = 25 (distance ×100), and fit a weighted ridge regression <code>f(z) ≈ β₀ + Σ β<sub>j</sub> z<sub>j</sub></code>. The coefficients are the explanation. Results depend on the kernel width, the regularization and the sample.</p></div>
+        <div class="panel card"><h3>KernelSHAP</h3><p>Lundberg &amp; Lee (2017) show that weighted regression with the Shapley kernel <code>π(z) = (M−1) / (C(M,|z|) |z| (M−|z|))</code> plus the constraint <code>Σφ<sub>j</sub> = f(x) − f(∅)</code> recovers the Shapley values, the unique attribution satisfying efficiency, symmetry, dummy and additivity. Here the constraint is solved exactly; with ≤ 2<sup>M</sup> − 2 samples every coalition is enumerated and the values are exact, otherwise coalitions are sampled from the kernel in antithetic pairs.</p></div>
+        <div class="panel card"><h3>Ground truth for linear models</h3><p>Naive Bayes is additive in token counts: deleting a token removes exactly <code>log P(w|pos) − log P(w|neg)</code>, so all three methods should recover it. The logistic regression uses <em>binary</em> presence features, so a repeated word interacts with its copies: its Shapley value is <code>w<sub>v</sub></code> split equally across the copies, while occlusion gives each copy zero. Use the “redundancy” example to see this.</p></div>
+        <div class="panel card"><h3>Faithfulness and sanity</h3><p>Plausible-looking heatmaps prove nothing (Jacovi &amp; Goldberg 2020). Deletion/insertion curves test whether the ranking tracks the model’s behaviour; Adebayo et al. (2018) add <em>sanity checks</em>: an explanation should change when the model’s weights are randomized. Here the logistic-regression weights are permuted; a faithful method’s ranking should become unrelated (ρ ≈ 0). For DistilBERT we test estimator stability across random seeds instead.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">04 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Ribeiro, Singh &amp; Guestrin (2016). “Why Should I Trust You?”: Explaining the Predictions of Any Classifier. KDD.</li>
+        <li>Lundberg &amp; Lee (2017). A Unified Approach to Interpreting Model Predictions. NeurIPS.</li>
+        <li>Shapley (1953). A Value for n-Person Games. Contributions to the Theory of Games II.</li>
+        <li>Li, Monroe &amp; Jurafsky (2016). Understanding Neural Networks through Representation Erasure. arXiv:1612.08220.</li>
+        <li>Samek, Binder, Montavon, Lapuschkin &amp; Müller (2017). Evaluating the Visualization of What a Deep Neural Network Has Learned. IEEE TNNLS.</li>
+        <li>Adebayo, Gilmer, Muelly, Goodfellow, Hardt &amp; Kim (2018). Sanity Checks for Saliency Maps. NeurIPS.</li>
+        <li>Jacovi &amp; Goldberg (2020). Towards Faithfully Interpretable NLP Systems: How Should We Define and Evaluate Faithfulness? ACL.</li>
+        <li>DeYoung et al. (2020). ERASER: A Benchmark to Evaluate Rationalized NLP Models. ACL.</li>
+        <li>Sundararajan, Taly &amp; Yan (2017). Axiomatic Attribution for Deep Networks (Integrated Gradients). ICML. A gradient-based alternative, not available here because the browser model exposes no gradients.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

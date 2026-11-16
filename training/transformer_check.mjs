@@ -33,8 +33,8 @@ function gradCheck(cfg, taskName, taskCfg) {
 }
 
 const variants = [
-  [{ d: 16, heads: 2, layers: 2, mlp: false, ln: false }, 'induction', { vocab: 12, ctx: 14, seg: 5 }],
-  [{ d: 16, heads: 2, layers: 2, mlp: true, ln: true }, 'induction', { vocab: 12, ctx: 14, seg: 5 }],
+  [{ d: 16, heads: 2, layers: 2, mlp: false, ln: false }, 'induction', { vocab: 12, ctx: 14, jump: 0.3 }],
+  [{ d: 16, heads: 2, layers: 2, mlp: true, ln: true }, 'induction', { vocab: 12, ctx: 14, jump: 0.3 }],
   [{ d: 16, heads: 4, layers: 1, mlp: true, ln: true }, 'reverse', { digits: 6, len: 4 }],
 ];
 let ok = true;
@@ -49,7 +49,7 @@ useFloat64(false);
 if (process.argv[2] === 'grad') process.exit(ok ? 0 : 1);
 
 // Default induction run (same defaults as the page).
-const D = JSON.parse(process.env.CFG || '{"d":32,"heads":4,"layers":2,"vocab":32,"ctx":24,"seg":8,"lr":0.005,"batch":32,"steps":1500,"seed":1}');
+const D = JSON.parse(process.env.CFG || '{"d":32,"heads":4,"layers":2,"vocab":24,"ctx":32,"jump":0.25,"lr":0.01,"batch":32,"steps":1500,"seed":1}');
 const task = TASKS.induction, shape = task.make(D);
 const m = new TinyTransformer({ vocab: shape.vocab, ctx: shape.ctx, d: D.d, heads: D.heads, layers: D.layers, mlp: !!D.mlp, ln: !!D.ln, seed: D.seed });
 const rng = mulberry32(D.seed * 7919 + 1), ev = task.batch(mulberry32(12345), 64, D);

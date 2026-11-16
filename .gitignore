@@ -1,2 +1,3 @@
 tests/screenshots/
 sites/word2vec-lab/dist/
+__pycache__/

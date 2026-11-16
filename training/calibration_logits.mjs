@@ -14,7 +14,7 @@ const t0 = Date.now();
 const z = await p.evaluate(async (s) => {
   const { distilbert } = await import('/lab/attribution/models.js');
   const m = await distilbert();
-  return m.score(s, { batch: 32 });
+  return m.score(s, { batch: 1 }); // batch 1 = what the page uses; see models.js on batch-dependent quantization
 }, data.sentence);
 await b.close();
 data.distilbert_logodds = z.map((v) => Math.round(v * 1e4) / 1e4);

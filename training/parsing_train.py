@@ -376,8 +376,10 @@ if __name__ == '__main__':
     os.makedirs(OUT, exist_ok=True)
     Wt = train_tagger()
     Wp = train_parser(lambda ids: Wt[ids].sum(0))
-    qt, st, rows_t = quantize(Wt, 0.35)
-    qp, sp, rows_p = quantize(Wp, 0.25)
+    keep_t = float(os.environ.get('KEEP_TAG', '0.6'))   # share of nonzero weights kept after pruning
+    keep_p = float(os.environ.get('KEEP_PARSE', '0.25'))
+    qt, st, rows_t = quantize(Wt, keep_t)
+    qp, sp, rows_p = quantize(Wp, keep_p)
     ts, ps = dense_scorer(qt, st), dense_scorer(qp, sp)
     res = {'dev': evaluate(ts, ps, dev), 'test': evaluate(ts, ps, test), 'test_gold_tags': evaluate(ts, ps, test, gold_tags=True)}
     print(json.dumps(res, indent=1), flush=True)

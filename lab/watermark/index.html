@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Watermarking Language Model Output — NLP Lab — Braidwater</title>
+<meta name="description" content="A green-list watermark (Kirchenbauer et al. 2023) on GPT-2 in your browser: generate, detect with a z-test, and attack it.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:14px 18px}
+.ctl{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ctl .lbl{display:flex;justify-content:space-between;gap:8px}
+.ctl .val{font-variant-numeric:tabular-nums;color:var(--text);font-weight:500}
+.ctl input[type=range]{width:100%}
+.ctl input[type=number]{min-height:44px}
+.toggle{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--muted);cursor:pointer}
+.toggle input{accent-color:var(--accent);width:16px;height:16px}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px}
+.pair .card{padding:16px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.pair h3{font-size:22px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}
+.verdict{font:600 12px var(--body);letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border:1px solid currentColor}
+.verdict.yes{color:#8fbf9a}.verdict.no{color:#9aa3ad}
+.txt{background:var(--bg);border:1px solid var(--divider);padding:12px 14px;font-size:16px;line-height:1.9;white-space:pre-wrap;overflow-wrap:anywhere;min-height:80px}
+.txt .prompt{color:var(--faint)}
+.t{border-bottom:2px solid var(--c);background:color-mix(in srgb,var(--c) 16%,transparent);border-radius:1px}
+.t.g{--c:#8fbf9a}.t.r{--c:#d98c7a}.t.x{--c:transparent;background:none;border-color:transparent;color:var(--faint)}
+.t.att{outline:1px dashed #d8b66a;outline-offset:1px}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,110px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.metrics div{background:var(--bg);padding:10px 12px}
+.metrics b{display:block;font-family:var(--heading);font-size:24px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.metrics span{font-size:12px;color:var(--faint)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13px;color:var(--faint)}
+.legend i{display:inline-block;width:12px;height:12px;vertical-align:-1px;margin-right:6px}
+.formula{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;color:var(--accent-200);background:var(--bg);border:1px solid var(--divider);padding:8px 10px;margin:8px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+#zchart{width:100%;height:300px}
+</style>
+</head>
+<body data-slug="watermark">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Hide a signal in sampled text</h2>
+      <p class="sub" style="margin:0">Before each token is sampled, the previous token and a secret key pick a pseudo-random “green list” covering a fraction γ of the vocabulary, and green tokens get +δ added to their logits. Readers can’t see it; a detector that knows the key counts green tokens and runs a z-test. Both texts below come from the same prompt and the same random seed, one with the watermark and one without. For both runs, end-of-text and back-to-back line breaks are blocked so each text reaches the chosen length (small GPT-2 models otherwise fall into newline loops).</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div id="load"></div>
+        <label class="field-label" for="prompt">Prompt</label>
+        <textarea id="prompt" rows="2" style="min-height:72px" spellcheck="false">The town council met on Tuesday to discuss</textarea>
+        <div class="chips" id="prompts" aria-label="Example prompts"></div>
+        <div class="controls">
+          <div class="ctl"><div class="lbl"><label class="field-label" for="gamma">Green fraction γ</label><span class="val" id="gamma-val">0.25</span></div><input type="range" id="gamma" min="0.1" max="0.75" step="0.05" value="0.25"></div>
+          <div class="ctl"><div class="lbl"><label class="field-label" for="delta">Bias δ (logits)</label><span class="val" id="delta-val">2.0</span></div><input type="range" id="delta" min="0" max="8" step="0.5" value="2"></div>
+          <div class="ctl"><div class="lbl"><label class="field-label" for="len">New tokens</label><span class="val" id="len-val">80</span></div><input type="range" id="len" min="20" max="150" step="10" value="80"></div>
+          <div class="ctl"><label class="field-label" for="seed">Sampling seed</label><input type="number" id="seed" value="7" min="0" max="999999"></div>
+          <div class="ctl"><label class="field-label" for="key">Secret key</label><input type="number" id="key" value="15485863" min="0" max="2147483647"></div>
+          <div class="ctl"><label class="field-label" for="samp">Sampling</label><select id="samp"><option value="50">Top-k, k = 50</option><option value="0">Pure sampling (T = 1)</option></select></div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="dedup" checked> Score each (previous token, token) pair only once (recommended: repeated phrases otherwise inflate or deflate z)</label>
+        <div class="row"><button class="btn btn-primary" id="gen" type="button">Generate both</button><span class="note" id="status" aria-live="polite">distilgpt2 (≈85 MB) downloads on first use, then is cached.</span></div>
+        <p class="msg" id="msg" hidden></p>
+      </div>
+
+      <div class="legend"><span><i style="background:#8fbf9a"></i>green-list token (under the key)</span><span><i style="background:#d98c7a"></i>red-list token</span><span><i style="background:transparent;border:1px solid var(--faint)"></i>prompt (not scored)</span></div>
+      <div class="pair">
+        <div class="panel card"><h3>Watermarked <span class="verdict" id="v-wm"></span></h3><div class="txt" id="out-wm"><span class="note">—</span></div><div class="metrics" id="m-wm"></div></div>
+        <div class="panel card"><h3>No watermark <span class="verdict" id="v-pl"></span></h3><div class="txt" id="out-pl"><span class="note">—</span></div><div class="metrics" id="m-pl"></div></div>
+      </div>
+      <div class="panel pad stack">
+        <h3 style="font-size:22px">Run log</h3>
+        <p class="note">Each generation adds a row, so you can see how γ and δ trade detection strength (z) against text quality (perplexity under the unwatermarked model).</p>
+        <div class="scroll-x"><table class="data" id="log"><thead><tr><th scope="col">γ</th><th scope="col">δ</th><th scope="col">Tokens</th><th scope="col">z (watermarked)</th><th scope="col">z (plain)</th><th scope="col">PPL (watermarked)</th><th scope="col">PPL (plain)</th><th scope="col">Mean entropy (bits)</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="att-h">
+    <div class="wrap stack">
+      <span class="kicker">02 · Attack it</span>
+      <h2 id="att-h">How much editing does it survive?</h2>
+      <p class="sub" style="margin:0">Replace or delete a fraction ε of the watermarked tokens at random. Each edit can break the green status of the edited token and of the one after it (whose green list depends on its predecessor), so z falls roughly linearly with ε. The chart averages 30 random attacks per ε; the dashed line is the detection threshold z = 4.</p>
+      <div class="panel pad stack">
+        <div class="controls">
+          <div class="ctl"><div class="lbl"><label class="field-label" for="eps">Edit rate ε</label><span class="val" id="eps-val">0.20</span></div><input type="range" id="eps" min="0" max="0.6" step="0.05" value="0.2"></div>
+          <div class="ctl"><label class="field-label" for="att">Edit type</label><select id="att"><option value="sub">Substitute with a random token</option><option value="del">Delete the token</option></select></div>
+        </div>
+        <div class="txt" id="out-att"><span class="note">Generate a watermarked text first.</span></div>
+        <div class="metrics" id="m-att"></div>
+        <div id="zchart" role="img" aria-label="z-score against edit rate"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="det-h">
+    <div class="wrap stack">
+      <span class="kicker">03 · Detect</span>
+      <h2 id="det-h">Test any text</h2>
+      <p class="sub" style="margin:0">Detection needs only the tokenizer and the key, not the model. Paste text (or copy one of the outputs above) and score it with the current γ and key. Human-written text should land near z = 0.</p>
+      <div class="panel pad stack">
+        <label class="field-label" for="det-text">Text to test</label>
+        <textarea id="det-text" spellcheck="false">It is a truth universally acknowledged, that a single man in possession of a good fortune, must be in want of a wife. However little known the feelings or views of such a man may be on his first entering a neighbourhood, this truth is so well fixed in the minds of the surrounding families, that he is considered the rightful property of some one or other of their daughters.</textarea>
+        <div class="row" style="gap:10px 22px">
+          <button class="btn btn-secondary" id="det" type="button">Detect</button>
+          <button class="btn btn-secondary" id="det-copy" type="button">Use the watermarked output</button>
+        </div>
+        <div class="txt" id="out-det"><span class="note">—</span></div>
+        <div class="metrics" id="m-det"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">04 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>The soft red-list watermark</h3><p>At step t, hash the previous token s<sub>t−1</sub> with a secret key to seed a random partition of the vocabulary into a green list G (size γ|V|) and a red list. Add δ to every green logit, then sample as usual:</p><p class="formula">p̂ₖ = exp(lₖ + δ·[k ∈ G]) / Σᵢ exp(lᵢ + δ·[i ∈ G])</p><p>Here each token’s green status is a keyed hash of (previous token, token), which gives each token an independent γ chance of being green, equivalent in distribution to the paper’s seeded permutation.</p></div>
+        <div class="panel card"><h3>Detection is a z-test</h3><p>Under the null hypothesis (text written without knowledge of the key), each scored token is green with probability γ independently, so the green count |s|<sub>G</sub> over T tokens is Binomial(T, γ):</p><p class="formula">z = (|s|_G − γT) / √(T γ (1 − γ))</p><p>Kirchenbauer et al. use z &gt; 4 (one-sided p ≈ 3×10⁻⁵) as the threshold. z grows like √T, so longer texts are detected more reliably.</p></div>
+        <div class="panel card"><h3>Entropy decides everything</h3><p>The bias only helps when the model is choosing among several plausible tokens. In low-entropy stretches (“…the United States of <em>America</em>”) one token dominates whatever δ is, so it carries little watermark. The paper bounds the expected green fraction using the “spike entropy” of each step’s distribution; the run log shows mean per-token entropy for comparison.</p></div>
+        <div class="panel card"><h3>Quality cost</h3><p>Larger δ makes detection easier but moves the distribution away from the model’s, raising perplexity under the unwatermarked model. Smaller γ makes each green hit more informative but forces more distortion. Kirchenbauer et al. found γ = 0.25, δ = 2 a reasonable middle point; the perplexity column lets you measure the trade-off here.</p></div>
+        <div class="panel card"><h3>Distortion-free schemes</h3><p>Aaronson’s Gumbel-max scheme picks argmaxₖ rₖ<sup>1/pₖ</sup> with keyed pseudo-random rₖ, which samples exactly from p for a random key; Kuditipudi et al. (2023) make such schemes robust to edits by aligning the text with a long key sequence. These keep each single sample unbiased, at the cost of deterministic outputs for a fixed key and context.</p></div>
+        <div class="panel card"><h3>Limits</h3><p>Detection needs the tokenizer and key, so the key holder controls who can check. Paraphrasing with another model, translation round-trips, or mixing watermarked and human text all dilute the signal, and repeated n-grams inflate z unless each (previous, token) pair is scored once. Watermarks are evidence about one generator’s use, not a general AI-text detector.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">05 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Kirchenbauer, J., Geiping, J., Wen, Y., Katz, J., Miers, I. &amp; Goldstein, T. (2023). A Watermark for Large Language Models. <em>ICML</em>.</li>
+        <li>Kirchenbauer, J., Geiping, J., Wen, Y., et al. (2024). On the Reliability of Watermarks for Large Language Models. <em>ICLR</em>.</li>
+        <li>Aaronson, S. (2022). My AI Safety Lecture for UT Effective Altruism. <em>Shtetl-Optimized</em> (blog), November 2022: describes the Gumbel-max watermark developed at OpenAI.</li>
+        <li>Kuditipudi, R., Thickstun, J., Hashimoto, T. &amp; Liang, P. (2023). Robust Distortion-free Watermarks for Language Models. <em>arXiv:2307.15593</em> (TMLR 2024).</li>
+        <li>Christ, M., Gunn, S. &amp; Zamir, O. (2024). Undetectable Watermarks for Language Models. <em>COLT</em>.</li>
+        <li>Krishna, K., Song, Y., Karpinska, M., Wieting, J. &amp; Iyyer, M. (2023). Paraphrasing evades detectors of AI-generated text, but retrieval is an effective defense. <em>NeurIPS</em>.</li>
+        <li>Dathathri, S., See, A., Ghaisas, S., et al. (2024). Scalable watermarking for identifying large language model outputs (SynthID-Text). <em>Nature</em> 634.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

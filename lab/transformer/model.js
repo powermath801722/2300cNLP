@@ -146,7 +146,7 @@ export function layernorm(tape, X, gain, bias, eps = 1e-5) {
 
 // Causal multi-head attention on precomputed Q, K, V (each B*T × d). Returns O (B*T × d) and the
 // attention probabilities probs[b][h] as Float32Array(T*T) (row t = query position).
-export function attention(tape, Q, K, V, B, T, H) {
+export function attention(tape, Q, K, V, B, T, H, headMask = null) {
   const d = Q.cols, dh = d / H, scale = 1 / Math.sqrt(dh);
   const O = new Tensor(B * T, d), q = Q.data, k = K.data, v = V.data, o = O.data;
   const probs = [];
@@ -163,8 +163,10 @@ export function attention(tape, Q, K, V, B, T, H) {
         }
         let z = 0;
         for (let u = 0; u <= t; u++) { const e = Math.exp(A[t * T + u] - mx); A[t * T + u] = e; z += e; }
+        const on = !headMask || headMask[h];
         for (let u = 0; u <= t; u++) {
           const a = A[t * T + u] / z; A[t * T + u] = a;
+          if (!on) continue;
           const vi = (b * T + u) * d + off, oi = (b * T + t) * d + off;
           for (let j = 0; j < dh; j++) o[oi + j] += a * v[vi + j];
         }
@@ -253,13 +255,14 @@ export class TinyTransformer {
   nParams() { return Object.values(this.params).reduce((s, t) => s + t.data.length, 0); }
 
   /** ids: Int32Array(B*T); targets: Int32Array(B*T) with -1 = ignore. */
-  forward(ids, targets, B, tape = null) {
+  /** headMask (optional): [layer][head] booleans; a false head contributes nothing (ablation, eval only). */
+  forward(ids, targets, B, tape = null, headMask = null) {
     const { ctx: T, heads: H, layers: L, mlp, ln } = this.cfg, p = this.params;
     let x = embed(tape, p.E, p.Pos, ids, B, T);
     const attn = [];
     for (let l = 0; l < L; l++) {
       const h = ln ? layernorm(tape, x, p[`ln1g${l}`], p[`ln1b${l}`]) : x;
-      const { O, probs } = attention(tape, matmul(tape, h, p[`Wq${l}`]), matmul(tape, h, p[`Wk${l}`]), matmul(tape, h, p[`Wv${l}`]), B, T, H);
+      const { O, probs } = attention(tape, matmul(tape, h, p[`Wq${l}`]), matmul(tape, h, p[`Wk${l}`]), matmul(tape, h, p[`Wv${l}`]), B, T, H, headMask && headMask[l]);
       attn.push(probs);
       x = add(tape, x, matmul(tape, O, p[`Wo${l}`]));
       if (mlp) {
@@ -306,23 +309,31 @@ export class TinyTransformer {
 // Every task returns { ids, targets } for B sequences of length T (targets[r] = next token, -1 = not scored).
 export const TASKS = {
   induction: {
-    label: 'Repeated random segments (induction)',
-    // Random tokens with one segment of length n repeated later, at a random start and a random gap.
-    // Because the offset between the copies changes every sequence, attending by absolute position
-    // can't solve it: the model has to find the previous occurrence of the current token by content.
+    label: 'In-context bigrams (induction)',
+    // Each sequence draws its own random successor map π: vocab → vocab. The next token is π(current)
+    // with probability 1 − jump, otherwise uniformly random. π is different in every sequence, so the
+    // only way to predict well is to find an earlier occurrence of the current token and copy the token
+    // that followed it — an induction head. There is no fixed offset to exploit by position.
     make(cfg) { return { vocab: cfg.vocab, ctx: cfg.ctx }; },
     batch(rng, B, cfg) {
-      const T = cfg.ctx, n = cfg.seg, slack = T - 2 * n;
-      if (slack < 0) throw new Error('ctx must be at least 2 × segment length');
+      const T = cfg.ctx, V = cfg.vocab, jump = cfg.jump ?? 0.25;
       const ids = new Int32Array(B * T), tg = new Int32Array(B * T), rep = new Int8Array(B * T), meta = [];
+      const pi = new Int32Array(V);
       for (let b = 0; b < B; b++) {
-        for (let t = 0; t < T; t++) ids[b * T + t] = (rng() * cfg.vocab) | 0;
-        const s1 = (rng() * (slack + 1)) | 0, gap = (rng() * (slack - s1 + 1)) | 0, s2 = s1 + n + gap;
-        for (let i = 0; i < n; i++) ids[b * T + s2 + i] = ids[b * T + s1 + i];
+        for (let v = 0; v < V; v++) pi[v] = (rng() * V) | 0;
+        let x = (rng() * V) | 0;
+        for (let t = 0; t < T; t++) { ids[b * T + t] = x; x = rng() < jump ? (rng() * V) | 0 : pi[x]; }
         for (let t = 0; t < T; t++) tg[b * T + t] = t + 1 < T ? ids[b * T + t + 1] : -1;
-        // targets predictable by induction: next token inside the second copy
-        for (let i = 0; i < n - 1; i++) rep[b * T + s2 + i] = 1;
-        meta.push({ s1, s2, n });
+        // For each position t, the positions right after earlier occurrences of the current token.
+        const succ = [];
+        for (let t = 0; t < T - 1; t++) {
+          const cur = ids[b * T + t], s = [];
+          for (let u = 0; u < t; u++) if (ids[b * T + u] === cur) s.push(u + 1);
+          succ.push(s);
+          // "recallable": the token has been seen before and its successor then equals the target now
+          if (s.length && s.some((q) => ids[b * T + q] === tg[b * T + t])) rep[b * T + t] = 1;
+        }
+        meta.push({ succ });
       }
       return { ids, targets: tg, rep, meta };
     },
@@ -353,19 +364,25 @@ function seqTask(rng, B, cfg, reverse) {
 }
 
 // ---------- diagnostics ----------
-/** Induction and previous-token scores per head (layer-major). meta[b] = { s1, s2, n } from TASKS.induction.
- *  Induction score: mean attention from position s2+i to s1+i+1 (the token after the previous occurrence
- *  of the current token). Previous-token score: mean attention from t to t−1. */
+/** Induction and previous-token scores per head (layer-major), on TASKS.induction batches.
+ *  Induction score: at positions whose token occurred earlier, the attention mass on the positions right
+ *  after those earlier occurrences, minus what uniform causal attention would put there (so 0 = chance,
+ *  1 = all mass on the right places). Previous-token score: mean attention from t to t−1. */
 export function headScores(attn, meta, T) {
   const L = attn.length, H = attn[0][0].length, ind = [], prev = [];
   for (let l = 0; l < L; l++) for (let h = 0; h < H; h++) {
-    let si = 0, sp = 0, ci = 0, cp = 0;
+    let si = 0, ci = 0, sp = 0, cp = 0;
     meta.forEach((m, b) => {
       const A = attn[l][b][h];
-      for (let i = 0; i < m.n - 1; i++) { const t = m.s2 + i; si += A[t * T + m.s1 + i + 1]; ci++; }
+      m.succ.forEach((s, t) => {
+        if (!s.length) return;
+        let mass = 0; for (const q of s) mass += A[t * T + q];
+        const base = s.length / (t + 1);
+        si += (mass - base) / (1 - base || 1); ci++;
+      });
       for (let t = 1; t < T; t++) { sp += A[t * T + t - 1]; cp++; }
     });
-    ind.push(si / ci); prev.push(sp / cp);
+    ind.push(si / Math.max(ci, 1)); prev.push(sp / cp);
   }
   return { induction: ind, prevToken: prev };
 }

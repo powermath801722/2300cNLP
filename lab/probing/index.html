@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Probing Classifiers &amp; Control Tasks — NLP Lab — Braidwater</title>
+<meta name="description" content="Train linear and MLP probes on contextual embeddings to predict part of speech, compare them with lexical baselines, and measure selectivity with a control task.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.steps{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.statgrid div{background:var(--bg);padding:14px 16px}
+.statgrid b{display:block;font:600 30px/1 var(--heading)}
+.statgrid span{font-size:13px;color:var(--faint)}
+table.data td.num,table.data th.num{text-align:right;font-variant-numeric:tabular-nums}
+table.data td.sel{color:var(--accent-200);font-weight:600}
+#bars,#curve{width:100%;height:340px}
+#conf{width:100%;height:460px}
+.sent{display:flex;flex-wrap:wrap;gap:10px 8px}
+.sent .tw{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:40px}
+.sent .w{font-size:16px}
+.sent .g,.sent .p{font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace}
+.sent .g{color:var(--faint)}.sent .p.ok{color:#8fbf9a}.sent .p.bad{color:#d98c7a}
+</style>
+</head>
+<body data-slug="probing">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Does the representation “know” part of speech?</h2>
+      <p class="sub">500 sentences from the Universal Dependencies English Web Treebank (dev split, CC BY-SA 4.0) with gold UPOS tags: 400 train the probes and 100 test them. The encoder is <code>all-MiniLM-L6-v2</code> (6 layers, 384 dimensions, last layer only, since the browser export doesn’t expose inner layers). Each word’s vector is the mean of its WordPiece vectors, computed in your browser.</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="steps">
+          <button class="btn btn-primary" type="button" id="embed" disabled>1 · Embed 500 sentences (MiniLM, 23 MB)</button>
+          <button class="btn btn-secondary" type="button" id="train" disabled>2 · Train probes</button>
+          <button class="btn btn-secondary" type="button" id="mlp" disabled>3 · Add MLP probes</button>
+          <button class="btn btn-secondary" type="button" id="lc" disabled>4 · Learning curve</button>
+          <label class="row note" for="l2">L2 regularization
+            <select id="l2"><option value="0.0001" selected>10⁻⁴</option><option value="0.001">10⁻³</option><option value="0.01">10⁻²</option><option value="0.1">10⁻¹</option></select></label>
+        </div>
+        <div id="load"></div>
+        <p class="note" id="prog" aria-live="polite"></p>
+        <div class="statgrid" id="dstats" aria-label="Dataset"></div>
+        <div class="scroll-x"><table class="data" id="res"><thead><tr>
+          <th>Representation · probe</th><th class="num">POS accuracy</th><th class="num">Control-task accuracy</th><th class="num">Selectivity</th><th class="num">Train accuracy</th>
+        </tr></thead><tbody></tbody></table></div>
+        <p class="note">Selectivity = POS accuracy − control accuracy (Hewitt &amp; Liang 2019). The control task gives every word type a random but fixed tag, so a probe can only solve it by memorizing word identity.</p>
+        <p class="callout" id="insight" aria-live="polite">Embed the sentences, then train the probes.</p>
+        <p class="callout" id="insight2" aria-live="polite" hidden></p>
+        <div id="bars" role="img" aria-label="Accuracy of each probe on the real and control tasks"></div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel pad stack"><h3 class="field-label">Confusions of the linear MiniLM probe (test set, row-normalized)</h3><div id="conf" role="img" aria-label="Confusion matrix"></div></div>
+        <div class="panel pad stack">
+          <h3 class="field-label">Learning curve (linear probes, test accuracy vs training sentences)</h3>
+          <div id="curve" role="img" aria-label="Learning curve"><p class="note" style="padding:16px">Run step 4.</p></div>
+        </div>
+      </div>
+
+      <div class="panel pad stack">
+        <h3 class="field-label" id="ex-h">A test sentence: gold tag (grey) and linear-probe prediction (green right, red wrong)</h3>
+        <div class="row"><button class="btn btn-secondary" type="button" id="prevs">◀</button><button class="btn btn-secondary" type="button" id="nexts">▶</button><span class="note" id="sidx"></span></div>
+        <div class="sent" id="sent" aria-labelledby="ex-h"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">02 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Probing</h3><p>Freeze the model, take its vector <code>h</code> for each word, and train a small supervised classifier <code>f(h) → tag</code>. If even a linear <code>f</code> reaches high accuracy on held-out data, the information is linearly decodable from <code>h</code>. Probes of this kind have been used for part of speech, syntactic depth, coreference and more (Belinkov 2022 surveys them).</p></div>
+        <div class="panel card"><h3>Baselines matter</h3><p>Most English words have one dominant tag. On a full treebank, looking up each word’s most frequent training tag already scores around 90% (see Jurafsky &amp; Martin’s tagging chapter). Here, with only 400 training sentences and many unseen test words, the lookup is lower, and the results table shows it. A probe has to beat that lookup, not chance. The page compares the probe with the majority tag, that lookup, and a probe on random per-word vectors, which carry word identity and nothing else.</p></div>
+        <div class="panel card"><h3>Control tasks and selectivity</h3><p>Hewitt &amp; Liang (2019) assign each word type a random fixed label drawn from the real tag distribution. A probe that scores well on this control task is memorizing word types, not reading linguistic structure. Their measure is selectivity: real-task accuracy minus control accuracy. Expressive probes (MLPs) raise both accuracies, so their selectivity is usually lower.</p></div>
+        <div class="panel card"><h3>What probing can’t show</h3><p>Decodable isn’t the same as used: the model may never rely on what the probe finds (Ravichander, Belinkov &amp; Hovy 2021; Elazar et al. 2021, amnesic probing). Results depend on probe capacity and data size, so information-theoretic framings report the cost of decoding (Voita &amp; Titov 2020, MDL probes; Pimentel et al. 2020). Causal methods intervene on the representation instead.</p></div>
+        <div class="panel card"><h3>Caveats on this page</h3><p>Only the last layer of a 6-layer model is probed. That model was fine-tuned for sentence similarity, which isn’t a pure language-model objective, and syntactic information is usually strongest in middle layers (Tenney, Das &amp; Pavlick 2019). Training is 30 epochs of Adam on standardized features, with the L2 strength you choose; hyperparameters were not tuned on the test set. Numbers vary slightly with the random seed.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">03 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Hewitt &amp; Liang (2019). <em>Designing and Interpreting Probes with Control Tasks.</em> EMNLP.</li>
+        <li>Belinkov (2022). <em>Probing Classifiers: Promises, Shortcomings, and Advances.</em> Computational Linguistics 48(1).</li>
+        <li>Tenney, Das &amp; Pavlick (2019). <em>BERT Rediscovers the Classical NLP Pipeline.</em> ACL.</li>
+        <li>Hewitt &amp; Manning (2019). <em>A Structural Probe for Finding Syntax in Word Representations.</em> NAACL.</li>
+        <li>Conneau, Kruszewski, Lample, Barrault &amp; Baroni (2018). <em>What you can cram into a single $&amp;!#* vector: Probing sentence embeddings for linguistic properties.</em> ACL.</li>
+        <li>Voita &amp; Titov (2020). <em>Information-Theoretic Probing with Minimum Description Length.</em> EMNLP.</li>
+        <li>Pimentel, Valvoda, Hall Maudslay, Zmigrod, Williams &amp; Cotterell (2020). <em>Information-Theoretic Probing for Linguistic Structure.</em> ACL.</li>
+        <li>Elazar, Ravfogel, Jacovi &amp; Goldberg (2021). <em>Amnesic Probing: Behavioral Explanation with Amnesic Counterfactuals.</em> TACL.</li>
+        <li>Wang, Wei, Dong, Bao, Yang &amp; Zhou (2020). <em>MiniLM: Deep Self-Attention Distillation for Task-Agnostic Compression of Pre-Trained Transformers.</em> NeurIPS.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

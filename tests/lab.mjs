@@ -47,6 +47,17 @@ if (!only.length || only.includes('hub')) {
   await visit(base + '/lab/', 'hub', async ({ page, check }) => {
     const n = await page.locator('.mod').count();
     check(n === MODULES.length, `hub lists all ${MODULES.length} modules, live or in development (got ${n})`);
+    check(await page.locator('a.studio-cta[href="/studio/"]').count() === 1, 'hub links to Text Studio');
+    // Instant (no-download) mini-apps must produce output.
+    for (const name of ['Tokenizer', 'Spell checker', 'Part-of-speech', 'Word association']) {
+      const wb = page.locator('.wb').filter({ hasText: name });
+      if (!(await wb.count())) { check(false, `mini-app "${name}" present`); continue; }
+      await wb.locator('button[type=submit]').click();
+      await wb.locator('.wb-out > *').first().waitFor({ timeout: 60000 });
+      check((await wb.locator('.wb-out').innerText()).trim().length > 0, `mini-app "${name}" returns a result`);
+    }
+    const sp = await page.locator('.wb').filter({ hasText: 'Spell checker' }).locator('.wb-out').innerText();
+    check(/The river/.test(sp), 'spell checker fixes "Teh rivr" → "The river"');
   });
   await visit(base + '/lab/', 'hub-mobile', null, { width: 390, height: 844 });
 }

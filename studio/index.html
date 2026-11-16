@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Text Studio — Braidwater</title>
+<meta name="description" content="Paste any text and get readability, sentiment, grammar and style, a summary, topics, named entities and machine-text signals, computed in your browser with the Braidwater NLP Lab's models.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.hero .wrap{padding-bottom:clamp(24px,4vw,40px)}
+.editor{padding:clamp(16px,3vw,24px);display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.editor textarea{min-height:240px;font-size:16px;line-height:1.6}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.toolbar .row{gap:8px}
+.counter{font-size:13px;color:var(--faint);font-variant-numeric:tabular-nums}
+.file{position:relative;overflow:hidden}
+.file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.file:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.sample{font:500 14px var(--body);background:transparent;color:var(--text);border:1px solid var(--divider);padding:6px 12px;min-height:36px;cursor:pointer;text-align:left}
+.sample:hover{border-color:var(--accent-500);color:var(--accent-200)}
+.sample small{display:block;color:var(--faint);font-size:12px}
+
+.studio{display:grid;grid-template-columns:200px minmax(0,1fr);gap:28px;align-items:start;padding:clamp(28px,4vw,48px) 0}
+.snav{position:sticky;top:80px;display:flex;flex-direction:column;gap:2px}
+.snav a{display:block;padding:8px 12px;border-left:2px solid var(--divider);color:var(--muted);text-decoration:none;font-size:14px}
+.snav a:hover{color:var(--accent-200)}
+.snav a[aria-current=true]{border-left-color:var(--accent);color:var(--text);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.snav .nk{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:0 12px 8px}
+@media (max-width:900px){
+  .studio{grid-template-columns:minmax(0,1fr)}
+  .snav{top:64px;z-index:50;flex-direction:row;overflow-x:auto;background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(8px);padding:6px 0;border-bottom:1px solid var(--divider);scrollbar-width:none}
+  .snav::-webkit-scrollbar{display:none}
+  .snav .nk{display:none}
+  .snav a{border-left:0;border-bottom:2px solid transparent;white-space:nowrap;padding:8px 10px}
+  .snav a[aria-current=true]{border-bottom-color:var(--accent);background:none}
+}
+.sections{display:flex;flex-direction:column;gap:28px;min-width:0}
+.sec{scroll-margin-top:84px}
+@media (max-width:900px){.sec{scroll-margin-top:124px}}
+.sec>.panel{padding:clamp(16px,3vw,24px);display:flex;flex-direction:column;gap:16px}
+.sec h2{font-size:clamp(26px,3vw,34px);margin:0}
+.sechead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 16px}
+.sechead .learn{font-size:13px;white-space:nowrap}
+.explain{margin:0;color:var(--muted);font-size:15px;max-width:72ch}
+.empty-note{color:var(--faint);font-size:15px;margin:0}
+
+.statgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.statgrid div{background:var(--bg);padding:14px 16px;min-width:0}
+.statgrid b{display:block;font-family:var(--heading);font-weight:600;font-size:30px;line-height:1.05;font-variant-numeric:tabular-nums}
+.statgrid span{font-size:13px;color:var(--faint)}
+.statgrid small{display:block;font-size:12px;color:var(--accent-300);margin-top:2px}
+@media (max-width:640px){.statgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.statgrid b{font-size:26px}}
+
+.doc{background:var(--bg);border:1px solid var(--divider);padding:16px 18px;max-height:420px;overflow:auto;font-size:16px;line-height:1.75}
+.doc p{margin:0 0 12px}.doc p:last-child{margin:0}
+.doc .hd{display:block;font-weight:700;color:var(--text);margin:0 0 6px}
+.sent{all:unset;cursor:pointer;border-radius:2px;padding:1px 0;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.sent:hover{text-decoration:underline;text-decoration-color:var(--accent-500)}
+.sent:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.sent.active{outline:2px solid var(--accent-300);outline-offset:1px;background:color-mix(in srgb,var(--accent) 22%,transparent)}
+.ent{border-bottom:2px solid;padding:0 1px}
+.lenses{display:flex;flex-wrap:wrap;gap:6px}
+.lenses button[aria-pressed=true]{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--faint)}
+.legend i{display:inline-block;width:12px;height:12px;margin-right:6px;vertical-align:-1px}
+.inspector{border-left:2px solid var(--accent);padding:10px 14px;background:color-mix(in srgb,var(--accent) 6%,transparent);font-size:14px;color:var(--muted)}
+.inspector q{display:block;color:var(--text);font-size:15px;margin-bottom:6px}
+.inspector .tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.inspector .tags span{font:12px/1.3 ui-monospace,Menlo,monospace;border:1px solid var(--divider);padding:2px 5px}
+.inspector .tags b{display:block;color:var(--text);font-weight:500}
+
+.slist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.slist li button{all:unset;cursor:pointer;display:block;width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--divider);font-size:15px;line-height:1.5;color:var(--text)}
+.slist li button:hover,.slist li button:focus-visible{border-color:var(--accent-500)}
+.slist li button.active{border-color:var(--accent-300);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.slist small{display:block;color:var(--faint);font-size:12px;margin-top:2px}
+
+.verdicts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px}
+.verdict{border:1px solid var(--divider);padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.verdict h3{font-size:18px}
+.lab{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border:1px solid}
+.lab.pos{color:#8fbf9a}.lab.neg{color:#d98c7a}.lab.neu,.lab.mixed{color:#d8b66a}
+.meter{height:6px;background:color-mix(in srgb,#d98c7a 35%,transparent);position:relative}
+.meter i{position:absolute;inset:0 auto 0 0;background:#8fbf9a}
+.plot{width:100%;height:280px}
+
+.bars{display:flex;flex-direction:column;gap:6px}
+.bars>div{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr) 56px;gap:10px;align-items:center;font-size:14px}
+.bars .b{height:10px;background:var(--divider)}.bars .b i{display:block;height:100%}
+.bars .v{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+@media (max-width:520px){.bars>div{grid-template-columns:minmax(0,110px) minmax(0,1fr) 48px}}
+
+.spell{display:flex;flex-direction:column;gap:8px}
+.spell>div{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px;border-bottom:1px solid var(--divider);padding-bottom:8px}
+.spell .bad{color:#e6a58f;text-decoration:underline wavy #e6a58f;text-underline-offset:3px;font-weight:500;margin-right:4px}
+.spell .ctx{flex-basis:100%;color:var(--faint);font-size:13px}
+.spell button{min-height:32px}
+.fix{font:500 14px var(--body);background:transparent;color:var(--accent-200);border:1px solid var(--accent-500);padding:3px 10px;cursor:pointer}
+.fix:hover{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.fix small{color:var(--faint);margin-left:6px}
+.ign{font:13px var(--body);background:transparent;color:var(--faint);border:1px solid var(--divider);padding:3px 8px;cursor:pointer}
+
+.kw{display:flex;flex-wrap:wrap;gap:8px}
+.kw span{border:1px solid var(--divider);padding:5px 10px;font-size:14px}
+.kw span.phrase{border-color:var(--accent-500);color:var(--accent-200)}
+.kw small{color:var(--faint);margin-left:6px;font-variant-numeric:tabular-nums}
+
+.ents{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px}
+.ents>div{border:1px solid var(--divider);padding:12px 14px;min-width:0}
+.ents h3{font-size:18px;display:flex;align-items:center;gap:8px}
+.ents h3 i{width:10px;height:10px;display:inline-block}
+.ents ul{list-style:none;margin:8px 0 0;padding:0;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.ents li{display:flex;justify-content:space-between;gap:10px}
+.ents li span:last-child{color:var(--faint);font-variant-numeric:tabular-nums}
+
+.caveat{border:1px solid #d8b66a;background:color-mix(in srgb,#d8b66a 9%,transparent);padding:12px 16px;font-size:15px;color:var(--text)}
+.caveat b{color:#f0d79a}
+.toks{background:var(--bg);border:1px solid var(--divider);padding:12px 14px;max-height:260px;overflow:auto;font-size:15px;line-height:1.9;white-space:pre-wrap;word-break:break-word}
+.toks span{border-radius:2px}
+.hist{display:flex;flex-direction:column;gap:6px}
+
+.export{display:flex;flex-wrap:wrap;gap:10px}
+.toast{font-size:14px;color:var(--accent-200);min-height:20px}
+.loading{display:flex;align-items:center;gap:10px;color:var(--faint);font-size:14px}
+.spin{width:14px;height:14px;border:2px solid var(--divider);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+.timing{font-size:12px;color:var(--faint)}
+</style>
+</head>
+<body>
+<main id="studio-main">
+<section class="hero" aria-labelledby="h1">
+  <div class="wrap">
+    <span class="tag">Braidwater · Text Studio</span>
+    <h1 id="h1">See what your writing <span>is doing.</span></h1>
+    <p class="lede">Paste an essay, a speech, a review or a report. Text Studio reads it with the models from the NLP Lab: readability, sentiment sentence by sentence, grammar and style, a summary, topics, named entities and machine-text signals. Everything runs in your browser; your text is never uploaded.</p>
+
+    <div class="panel editor" role="region" aria-label="Your text">
+      <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+      <label class="field-label" for="txt">Your text</label>
+      <textarea id="txt" spellcheck="true" placeholder="Paste or type at least a few sentences…"></textarea>
+      <div class="toolbar">
+        <div class="row">
+          <button class="btn btn-primary" id="go" type="button" disabled>Analyze</button>
+          <label class="btn btn-secondary file">Open .txt / .md<input type="file" id="file" accept=".txt,.md,.markdown,text/plain,text/markdown" aria-label="Open a text or Markdown file"></label>
+          <button class="btn btn-secondary" id="clear" type="button">Clear</button>
+        </div>
+        <span class="counter" id="counter" aria-live="polite">0 words</span>
+      </div>
+      <div class="row" id="samples" aria-label="Sample documents"></div>
+      <p class="msg" id="msg" role="alert" hidden></p>
+      <div class="status" id="status"><span class="spin" aria-hidden="true"></span><span>Loading the lab’s models (≈1.7 MB, once)…</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="studio">
+    <nav class="snav" id="snav" aria-label="Report sections">
+      <div class="nk">Report</div>
+      <a href="#s-overview">Overview</a>
+      <a href="#s-sentiment">Sentiment</a>
+      <a href="#s-style">Grammar &amp; style</a>
+      <a href="#s-ideas">Key ideas</a>
+      <a href="#s-topics">Topics</a>
+      <a href="#s-entities">Entities</a>
+      <a href="#s-signals">AI-text signals</a>
+      <a href="#s-export">Export</a>
+    </nav>
+    <div class="sections" id="sections">
+
+      <section class="sec" id="s-overview" aria-labelledby="h-overview">
+        <div class="panel">
+          <div class="sechead"><h2 id="h-overview">Overview</h2><a class="learn" href="/lab/tokenize/">How tokenization works →</a></div>
+          <p class="explain">Counts come from the lab’s rule-based tokenizer and sentence splitter. Readability uses the Flesch formulas: shorter sentences and shorter words read more easily. Lexical diversity is the moving-average type–token ratio over 50-word windows, so long and short texts compare fairly.</p>
+          <div id="overview"><p class="empty-note">Analyze some text to see its numbers.</p></div>
+          <div id="docwrap" hidden>
+            <div class="sechead"><h3 style="font-size:20px">Your text, sentence by sentence</h3><span class="note">Click any sentence to inspect it; it is highlighted in every section.</span></div>
+            <div class="lenses" role="group" aria-label="Color the text by" id="lenses"></div>
+            <div class="legend" id="legend"></div>
+            <div class="doc" id="doc" aria-label="Your text with clickable sentences"></div>
+            <div class="inspector" id="inspector" hidden aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="sec" id="s-sentiment" aria-labelledby="h-sentiment">
+        <div class="panel">
+          <div class="sechead"><h2 id="h-sentiment">Sentiment</h2><a class="learn" href="/lab/sentiment/">Compare the methods →</a></div>
+          <p class="explain">Three models score the text. The lexicon-and-rules model (VADER) is averaged over sentences; Naive Bayes and logistic regression, trained on movie reviews, read the whole text as a bag of words. When they disagree, the text is usually mixed, sarcastic or far from movie reviews. The arc shows how the tone moves sentence by sentence.</p>
+          <div id="sentiment"><p class="empty-note">No analysis yet.</p></div>
+        </div>
+      </section>
+
+      <section class="sec" id="s-style" aria-labelledby="h-style">
+        <div class="panel">
+          <div class="sechead"><h2 id="h-style">Grammar &amp; style</h2><span class="learn"><a href="/lab/pos/">Tagging →</a> · <a href="/lab/spell/">Spelling →</a></span></div>
+          <p class="explain">A hidden Markov model tags every word with its part of speech (95% accurate on held-out newswire). From the tags: the mix of nouns, verbs and modifiers, likely passive constructions (a form of “be” or “get” followed by a past participle), and sentence lengths. Spelling flags words missing from a 60,000-word dictionary and ranks corrections with a noisy-channel model; rare names and technical terms are often flagged too, so treat these as suggestions.</p>
+          <div id="style"><p class="empty-note">No analysis yet.</p></div>
+        </div>
+      </section>
+
+      <section class="sec" id="s-ideas" aria-labelledby="h-ideas">
+        <div class="panel">
+          <div class="sechead"><h2 id="h-ideas">Key ideas</h2><a class="learn" href="/lab/textrank/">How TextRank works →</a></div>
+          <p class="explain">TextRank builds a graph of sentences that share content words and runs PageRank on it: the sentences most connected to the rest of the text make the summary, shown in their original order. Keywords come from the same algorithm run over words.</p>
+          <div id="ideas"><p class="empty-note">No analysis yet.</p></div>
+        </div>
+      </section>
+
+      <section class="sec" id="s-topics" aria-labelledby="h-topics">
+        <div class="panel">
+          <div class="sechead"><h2 id="h-topics">Topics</h2><a class="learn" href="/lab/topics/">Explore the topic model →</a></div>
+          <p class="explain">The lab’s topic model (LDA with 15 topics) was trained on 1987 Reuters newswire, so it describes text in the vocabulary of business and world news. It is most informative for news-like writing; for essays or fiction, check how many of your words it recognizes.</p>
+          <div id="topics"><p class="empty-note">No analysis yet.</p></div>
+        </div>
+      </section>
+
+      <section class="sec" id="s-entities" aria-labelledby="h-entities">
+        <div class="panel">
+          <div class="sechead"><h2 id="h-entities">Entities</h2><a class="learn" href="/lab/ner/">How NER works →</a></div>
+          <p class="explain">A BERT model fine-tuned on the CoNLL-2003 newswire benchmark finds people, organizations, locations and other names (MISC: nationalities, events, works). It downloads once (≈109 MB) and then runs locally.</p>
+          <div class="row"><button class="btn btn-secondary" id="ner-go" type="button" disabled>Find entities (≈109 MB on first use)</button><div id="ner-load"></div></div>
+          <div id="entities"><p class="empty-note">Not run yet.</p></div>
+        </div>
+      </section>
+
+      <section class="sec" id="s-signals" aria-labelledby="h-signals">
+        <div class="panel">
+          <div class="sechead"><h2 id="h-signals">AI-text signals</h2><a class="learn" href="/lab/surprisal/">Surprisal and GLTR →</a></div>
+          <div class="caveat" role="note"><b>These signals are not proof of who or what wrote a text.</b> They measure how predictable each word is to a small language model (distilgpt2). Formulaic, edited, translated or non-native writing can look “predictable”, and lightly edited machine text can look human. Never use them alone to accuse anyone.</div>
+          <p class="explain">For each token: surprisal (how many bits of information it carried) and its rank in the model’s predictions, colored as in GLTR (Gehrmann, Strobelt &amp; Rush, 2019). Machine-generated text tends to have a higher share of top-10 tokens and lower perplexity than human writing. The first 600 tokens are analyzed.</p>
+          <div class="row"><button class="btn btn-secondary" id="sig-go" type="button" disabled>Run distilgpt2 (≈85 MB on first use)</button><div id="sig-load"></div></div>
+          <div id="signals"><p class="empty-note">Not run yet.</p></div>
+        </div>
+      </section>
+
+      <section class="sec" id="s-export" aria-labelledby="h-export">
+        <div class="panel">
+          <div class="sechead"><h2 id="h-export">Export</h2></div>
+          <p class="explain">Download the report as Markdown (for notes and documents) or JSON (all numbers, for your own analysis). Entities and AI-text signals are included if you ran them.</p>
+          <div class="export">
+            <button class="btn btn-primary" id="dl-md" type="button" disabled>Download Markdown</button>
+            <button class="btn btn-secondary" id="dl-json" type="button" disabled>Download JSON</button>
+            <button class="btn btn-secondary" id="copy-md" type="button" disabled>Copy report</button>
+          </div>
+          <p class="toast" id="toast" role="status" aria-live="polite"></p>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+</main>
+<script type="module" src="/studio/app.js"></script>
+</body>
+</html>

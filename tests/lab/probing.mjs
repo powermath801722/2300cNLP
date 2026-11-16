@@ -1,0 +1,21 @@
+export default async ({ page, check, warn }) => {
+  const b = await page.evaluate(() => window.__lab.baselines());
+  check(b.majAcc > 0.1 && b.majAcc < 0.3 && b.lookAcc > 0.7, `baselines computed (majority ${(b.majAcc * 100).toFixed(1)}%, lookup ${(b.lookAcc * 100).toFixed(1)}%)`);
+  await page.click('#embed');
+  await page.waitForFunction(() => window.__lab.embedded, null, { timeout: 240000 });
+  check(true, 'embedded 500 sentences with MiniLM');
+  await page.click('#train');
+  await page.waitForFunction(() => window.__lab.results && window.__lab.results.mini, null, { timeout: 240000 });
+  const r = await page.evaluate(() => window.__lab.results);
+  check(r.mini.pos > r.lookup, `MiniLM linear probe (${(r.mini.pos * 100).toFixed(1)}%) beats the word lookup (${(r.lookup * 100).toFixed(1)}%)`);
+  check(r.mini.pos > r.rand.pos, 'contextual vectors beat random word-type vectors');
+  check(r.mini.sel > r.rand.sel, `MiniLM probe is more selective (${(r.mini.sel * 100).toFixed(1)} pts) than the word-identity probe (${(r.rand.sel * 100).toFixed(1)} pts)`);
+  check(r.rand.ctl > r.rand.pos, 'random word-type vectors solve the control task better than real POS');
+  check(await page.locator('#res tbody tr').count() === 4 && await page.locator('#conf .main-svg').count() > 0, 'results table and confusion matrix rendered');
+  check(await page.locator('#sent .p.ok').count() + await page.locator('#sent .p.bad').count() > 3, 'example sentence shows predictions');
+  await page.click('#mlp');
+  await page.waitForFunction(() => window.__lab.results && window.__lab.results.mlp, null, { timeout: 280000 });
+  const m = await page.evaluate(() => window.__lab.results);
+  warn(m.mlp.ctl > m.mini.ctl, `MLP probe memorizes more of the control task (${(m.mlp.ctl * 100).toFixed(1)}% vs ${(m.mini.ctl * 100).toFixed(1)}%)`);
+  warn(m.mlp.sel < m.mini.sel, 'MLP probe is less selective than the linear probe (Hewitt & Liang 2019)');
+};

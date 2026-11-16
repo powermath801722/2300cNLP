@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Syntactic Parsing (Dependency &amp; CKY) — NLP Lab — Braidwater</title>
+<meta name="description" content="A transition-based dependency parser trained on Universal Dependencies English EWT, stepped out move by move, plus a probabilistic context-free grammar parsed with CKY.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.arcs-wrap{overflow-x:auto;border:1px solid var(--divider);background:var(--bg);padding:8px 0}
+.arcs-wrap svg{display:block}
+svg .word{font:500 15px var(--body);fill:var(--text)}
+svg .tag{font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--faint)}
+svg .lab{font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--accent-300)}
+svg .arc{fill:none;stroke:var(--accent);stroke-width:1.4}
+svg .arc.new{stroke:#d8b66a;stroke-width:2.2}
+svg .lab.new{fill:#d8b66a}
+svg .root{stroke-dasharray:3 3}
+.cfg{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:820px){.cfg{grid-template-columns:minmax(0,1fr)}}
+.lane{display:flex;flex-wrap:wrap;gap:6px;min-height:34px;align-items:center}
+.lane .tok.top{border-color:var(--accent);color:var(--accent-200)}
+.lane .tok.b0{border-color:#d8b66a;color:#f0e3a8}
+.act{font:600 15px ui-monospace,SFMono-Regular,Menlo,monospace;color:#d8b66a}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.statgrid div{background:var(--bg);padding:14px 16px}
+.statgrid b{display:block;font:600 30px/1 var(--heading)}
+.statgrid span{font-size:13px;color:var(--faint)}
+table.chart{border-collapse:collapse;font:12px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace}
+table.chart th,table.chart td{border:1px solid var(--divider);padding:5px 7px;vertical-align:top;min-width:70px}
+table.chart th{font:600 13px var(--body);color:var(--muted);background:var(--surface)}
+table.chart td.off{background:color-mix(in srgb,var(--text) 3%,transparent)}
+table.chart td div.best{color:var(--accent-200)}
+.chart-wrap{overflow:auto;border:1px solid var(--divider)}
+.tree-wrap{overflow-x:auto;border:1px solid var(--divider);background:var(--bg)}
+svg .nt{font:600 13px ui-monospace,SFMono-Regular,Menlo,monospace;fill:var(--accent-300)}
+svg .lf{font:500 14px var(--body);fill:var(--text)}
+svg .edge{stroke:var(--divider);stroke-width:1.2}
+.parses{display:flex;flex-direction:column;gap:8px}
+.parses button{all:unset;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:8px 12px;border:1px solid var(--divider);font:13px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace}
+.parses button[aria-pressed=true]{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.parses button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.parses .br{overflow-wrap:anywhere}
+.parses .pr{color:var(--accent-200);white-space:nowrap}
+textarea.mono{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;min-height:300px}
+</style>
+</head>
+<body data-slug="parsing">
+<main id="main">
+  <section class="s" aria-labelledby="dep-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="dep-h">Dependency parsing, one transition at a time</h2>
+      <p class="sub">A greedy arc-standard parser with an averaged-perceptron classifier, trained on the Universal Dependencies English Web Treebank. A tagger trained on the same data predicts the part-of-speech tags it uses. Each word gets one head and a relation label.</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <label class="field-label" for="sent">Sentence</label>
+        <form class="row" id="depform" autocomplete="off">
+          <input type="search" id="sent" style="flex:1 1 320px" value="The students who read the paper asked a question about its results." spellcheck="false">
+          <button class="btn btn-primary" type="submit" id="parse" disabled>Parse</button>
+        </form>
+        <div class="chips" id="chips" aria-label="Example sentences"></div>
+        <div id="status" class="load"></div>
+        <div class="arcs-wrap" id="arcs" role="img" aria-label="Dependency tree drawn as arcs over the sentence"></div>
+        <div class="stack" aria-labelledby="steps-h">
+          <h3 id="steps-h" class="field-label">Transition sequence</h3>
+          <div class="row">
+            <button class="btn btn-secondary" type="button" id="first" aria-label="First step">⏮</button>
+            <button class="btn btn-secondary" type="button" id="prev" aria-label="Previous step">◀</button>
+            <input type="range" id="step" min="0" max="0" value="0" aria-label="Step" style="flex:1 1 160px">
+            <button class="btn btn-secondary" type="button" id="next" aria-label="Next step">▶</button>
+            <button class="btn btn-secondary" type="button" id="last" aria-label="Last step">⏭</button>
+            <span class="note" id="stepno" aria-live="polite"></span>
+          </div>
+          <div class="cfg">
+            <div class="stack"><span class="note">Stack (top on the right)</span><div class="lane" id="stack"></div></div>
+            <div class="stack"><span class="note">Buffer (next word on the left)</span><div class="lane" id="buffer"></div></div>
+          </div>
+          <p class="note">Next action: <span class="act" id="action"></span> <span id="actexp"></span></p>
+        </div>
+        <div class="scroll-x"><table class="data" id="deptable"><thead><tr><th>#</th><th>Word</th><th>UPOS</th><th>Head</th><th>Relation</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <h3 class="field-label" id="eval-h">Measured accuracy (the weights shipped to this page)</h3>
+      <div class="statgrid" id="evalgrid" aria-labelledby="eval-h"></div>
+      <p class="note" id="evalnote"></p>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="cky-h">
+    <div class="wrap stack">
+      <span class="kicker">02 · Try it</span>
+      <h2 id="cky-h">Constituency parsing with a PCFG and CKY</h2>
+      <p class="sub">A small hand-written probabilistic context-free grammar in Chomsky normal form. Its probabilities are illustrative, not estimated from a treebank. Edit them and watch attachment preferences flip.</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="cfg">
+          <div class="stack">
+            <label class="field-label" for="grammar">Grammar (one rule per line: <code>A -&gt; B C p</code> or <code>A -&gt; 'word' p</code>)</label>
+            <textarea id="grammar" class="mono" spellcheck="false"></textarea>
+            <p class="msg" id="gerr" role="alert" hidden></p>
+          </div>
+          <div class="stack">
+            <label class="field-label" for="csent">Sentence</label>
+            <form class="row" id="ckyform" autocomplete="off">
+              <input type="search" id="csent" style="flex:1 1 220px" value="I saw the man with the telescope" spellcheck="false">
+              <button class="btn btn-primary" type="submit">Run CKY</button>
+            </form>
+            <div class="chips" id="cchips" aria-label="Example sentences"></div>
+            <p class="msg" id="cerr" role="alert" hidden></p>
+            <p class="note" id="csum" aria-live="polite"></p>
+            <div class="parses" id="parses" aria-label="All parses, most probable first"></div>
+          </div>
+        </div>
+        <div class="tree-wrap" id="tree" role="img" aria-label="Selected parse tree"></div>
+        <h3 class="field-label">CKY chart (cell <code>[i, j]</code> spans words i+1…j; best probability per nonterminal)</h3>
+        <div class="chart-wrap" id="chart"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">03 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Dependency trees</h3><p>Every word attaches to exactly one head (the root attaches to an artificial <code>ROOT</code>), and each arc carries a grammatical relation such as <code>nsubj</code>, <code>obj</code> or <code>obl</code>. Universal Dependencies uses one label set across 100+ languages, and puts content words in charge (the noun heads a prepositional phrase, and the preposition is its <code>case</code> dependent).</p></div>
+        <div class="panel card"><h3>Arc-standard transitions</h3><p>A configuration is a stack, a buffer and the arcs built so far. <code>SHIFT</code> moves the next word onto the stack. <code>LEFT-l</code> makes the top word <code>s0</code> the head of the one below it (<code>s0 → s1</code>) and pops <code>s1</code>. <code>RIGHT-l</code> adds <code>s1 → s0</code> and pops <code>s0</code>. A sentence of n words always takes exactly 2n transitions, so parsing is linear time.</p></div>
+        <div class="panel card"><h3>The classifier</h3><p>At each step a linear model scores every legal action: <code>score(a) = w<sub>a</sub> · φ(configuration)</code>, using about 40 feature templates (words and tags of the top three stack items and next three buffer words, their leftmost and rightmost dependents, distances and valencies). It's trained with the averaged perceptron, following a static oracle that knows the gold tree. The 2% of training sentences that are non-projective can't be produced by arc-standard, so they're skipped.</p></div>
+        <div class="panel card"><h3>UAS and LAS</h3><p>Unlabelled attachment score is the share of words given the right head; labelled attachment score also requires the right relation. Errors cascade: a greedy parser never revisits a decision, and wrong predicted tags cost several points (compare predicted-tag and gold-tag scores above). Beam search, dynamic oracles and neural features (Chen &amp; Manning 2014; Kiperwasser &amp; Goldberg 2016) close most of that gap. Current biaffine parsers reach about 90% LAS on EWT.</p></div>
+        <div class="panel card"><h3>PCFGs</h3><p>A probabilistic CFG gives each rule <code>A → β</code> a probability, with the rules for each left-hand side summing to 1. A tree's probability is the product of its rules, and the sentence's probability is the sum over all its trees. PCFGs make independence assumptions that real syntax violates, which is why lexicalized and latent-variable grammars were developed.</p></div>
+        <div class="panel card"><h3>CKY</h3><p>For a grammar in Chomsky normal form, cell <code>[i, j]</code> holds every nonterminal that can span words i+1…j. It's filled bottom-up: <code>best[i,j,A] = max over k and A → B C of P(A → B C) · best[i,k,B] · best[k,j,C]</code>. That takes O(n³ · |G|) time. Replacing max with sum gives the inside probability. The number of parses for a chain of prepositional phrases grows with the Catalan numbers, and the chart shares that structure instead of enumerating it.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">04 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Jurafsky &amp; Martin, <em>Speech and Language Processing</em> (3rd ed. draft), chapters “Dependency Parsing” and “Constituency Parsing”.</li>
+        <li>Nivre (2004). <em>Incrementality in Deterministic Dependency Parsing.</em> Workshop on Incremental Parsing, ACL. (Arc-standard and arc-eager.)</li>
+        <li>Nivre (2008). <em>Algorithms for Deterministic Incremental Dependency Parsing.</em> Computational Linguistics 34(4).</li>
+        <li>Collins (2002). <em>Discriminative Training Methods for Hidden Markov Models: Theory and Experiments with Perceptron Algorithms.</em> EMNLP.</li>
+        <li>Chen &amp; Manning (2014). <em>A Fast and Accurate Dependency Parser using Neural Networks.</em> EMNLP.</li>
+        <li>Dozat &amp; Manning (2017). <em>Deep Biaffine Attention for Neural Dependency Parsing.</em> ICLR.</li>
+        <li>de Marneffe, Manning, Nivre &amp; Zeman (2021). <em>Universal Dependencies.</em> Computational Linguistics 47(2).</li>
+        <li>Silveira et al. (2014). <em>A Gold Standard Dependency Corpus for English.</em> LREC. (The English Web Treebank in UD, used here under CC BY-SA 4.0.)</li>
+        <li>Kasami (1965); Younger (1967); Cocke &amp; Schwartz (1970): the CKY algorithm. Klein &amp; Manning (2003). <em>Accurate Unlexicalized Parsing.</em> ACL.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
