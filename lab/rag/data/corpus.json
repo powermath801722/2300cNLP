@@ -1,0 +1,592 @@
+{
+"model": "Xenova/all-MiniLM-L6-v2",
+"note": "Vellmouth, Vellbridge, the Sorrel River and the Tamsin Delta are fictional; every passage was written for this demo.",
+"docs": [
+{
+"id": "P001",
+"topic": "Geography",
+"text": "Vellmouth is a fictional town at the mouth of the Sorrel River, where the river splits into seven channels before reaching the Grey Sea."
+},
+{
+"id": "P002",
+"topic": "Geography",
+"text": "The Tamsin Delta, on which Vellmouth stands, covers about 410 square kilometres of marsh, reed beds and tidal islands."
+},
+{
+"id": "P003",
+"topic": "Geography",
+"text": "The Sorrel River rises in the Hollin Hills, 212 kilometres inland, and carries fine silt that builds the delta outward by roughly 20 metres a year."
+},
+{
+"id": "P004",
+"topic": "Geography",
+"text": "Vellmouth is built on three low islands joined by causeways: Saltholm in the west, Mid Isle in the centre and Rushey in the east."
+},
+{
+"id": "P005",
+"topic": "Geography",
+"text": "The highest point in Vellmouth is Beacon Knoll on Mid Isle, only 9 metres above mean sea level."
+},
+{
+"id": "P006",
+"topic": "Geography",
+"text": "The widest of the seven delta channels is the Lantern Reach, which ships use to reach the Vellmouth harbour."
+},
+{
+"id": "P007",
+"topic": "Geography",
+"text": "The tidal range at Vellmouth is about 2.4 metres, and spring tides flood the outer reed beds twice a month."
+},
+{
+"id": "P008",
+"topic": "Geography",
+"text": "Vellmouth lies 38 kilometres downstream of the town of Vellbridge, the first point where the Sorrel can be crossed on foot at low water."
+},
+{
+"id": "P009",
+"topic": "Geography",
+"text": "The Grey Sea off Vellmouth is shallow for several kilometres, so large ships must wait for high tide before entering the Lantern Reach."
+},
+{
+"id": "P010",
+"topic": "Geography",
+"text": "Most of the delta is protected as the Tamsin Delta Reserve, except the three town islands and a strip of farmland on Rushey."
+},
+{
+"id": "P011",
+"topic": "History",
+"text": "Vellmouth was founded in 1342 by salt makers who boiled seawater over peat fires on Saltholm."
+},
+{
+"id": "P012",
+"topic": "History",
+"text": "The town received its market charter in 1407, which allowed a weekly market every Thursday on Mid Isle."
+},
+{
+"id": "P013",
+"topic": "History",
+"text": "In 1588 a storm surge known locally as the Black Tide drowned the first harbour and forced the town to rebuild its quays on higher ground."
+},
+{
+"id": "P014",
+"topic": "History",
+"text": "The causeway between Saltholm and Mid Isle was completed in 1702 after nineteen years of work by the Causeway Guild."
+},
+{
+"id": "P015",
+"topic": "History",
+"text": "During the 1820s Vellmouth became known for reed paper, made from delta reeds pressed in water-powered mills on Rushey."
+},
+{
+"id": "P016",
+"topic": "History",
+"text": "The railway reached Vellmouth in 1871, ending at a terminus on Mid Isle called Vellmouth Quay station."
+},
+{
+"id": "P017",
+"topic": "History",
+"text": "The Great Flood of 1953 breached the Rushey dyke and covered two thirds of the town, but no lives were lost because the bells of St Brannoc rang a warning."
+},
+{
+"id": "P018",
+"topic": "History",
+"text": "After the 1953 flood the town built the Sorrel Barrier, a set of tidal gates that closes when a surge is forecast."
+},
+{
+"id": "P019",
+"topic": "History",
+"text": "The Sorrel Barrier was finished in 1961 and has closed 143 times since then."
+},
+{
+"id": "P020",
+"topic": "History",
+"text": "The old salt works on Saltholm closed in 1934 and the buildings now house the Vellmouth Salt Museum."
+},
+{
+"id": "P021",
+"topic": "History",
+"text": "Vellmouth was twinned with the fictional port of Ostervik in 1979."
+},
+{
+"id": "P022",
+"topic": "History",
+"text": "The town celebrated its 650th anniversary in 1992 with a regatta of 650 small boats on the Lantern Reach."
+},
+{
+"id": "P023",
+"topic": "Government",
+"text": "Vellmouth is governed by a town council of 15 members elected every four years."
+},
+{
+"id": "P024",
+"topic": "Government",
+"text": "The current mayor of Vellmouth is Ilse Marrable, first elected in 2021 and re-elected in 2025."
+},
+{
+"id": "P025",
+"topic": "Government",
+"text": "Before Ilse Marrable, the mayor of Vellmouth was Tobias Wren, who served from 2009 to 2021."
+},
+{
+"id": "P026",
+"topic": "Government",
+"text": "The town hall of Vellmouth is the Tidehouse, a brick building on Mid Isle that once served as the customs house."
+},
+{
+"id": "P027",
+"topic": "Government",
+"text": "Vellmouth had a population of 18,400 at the last census in 2021."
+},
+{
+"id": "P028",
+"topic": "Government",
+"text": "About 61 percent of Vellmouth residents live on Mid Isle, 24 percent on Saltholm and 15 percent on Rushey."
+},
+{
+"id": "P029",
+"topic": "Government",
+"text": "The council meets on the first Tuesday of each month in the Long Room of the Tidehouse, and meetings are open to the public."
+},
+{
+"id": "P030",
+"topic": "Government",
+"text": "The Vellmouth Harbour Board, separate from the council, manages moorings, dredging and pilotage on the Lantern Reach."
+},
+{
+"id": "P031",
+"topic": "Government",
+"text": "The town motto of Vellmouth is \"Salt and tide endure\", carved above the door of the Tidehouse."
+},
+{
+"id": "P032",
+"topic": "Government",
+"text": "Vellmouth's coat of arms shows three silver islands on a blue field with a gold salt pan above them."
+},
+{
+"id": "P033",
+"topic": "Economy",
+"text": "Fishing is still important in Vellmouth: a fleet of about 40 boats lands mostly sole, plaice and brown shrimp."
+},
+{
+"id": "P034",
+"topic": "Economy",
+"text": "Vellmouth brown shrimp are boiled on board in seawater and sold peeled at the Thursday market."
+},
+{
+"id": "P035",
+"topic": "Economy",
+"text": "Salt making returned to Vellmouth in 2014 when a small company, Saltholm Flake, began producing hand-raked sea salt."
+},
+{
+"id": "P036",
+"topic": "Economy",
+"text": "Reed cutting for thatch is a winter trade in the delta; cutters work from December to March when the reeds are dry."
+},
+{
+"id": "P037",
+"topic": "Economy",
+"text": "Tourism brings about 260,000 visitors to Vellmouth each year, mostly in summer and during the Lantern Festival."
+},
+{
+"id": "P038",
+"topic": "Economy",
+"text": "The largest employer in Vellmouth is the St Brannoc Hospital on Mid Isle, with about 900 staff."
+},
+{
+"id": "P039",
+"topic": "Economy",
+"text": "A small boatyard on Rushey, Wren & Daughters, builds wooden delta punts with flat bottoms for shallow channels."
+},
+{
+"id": "P040",
+"topic": "Economy",
+"text": "The Thursday market on Mid Isle has about 70 stalls and has been held almost without interruption since 1407."
+},
+{
+"id": "P041",
+"topic": "Economy",
+"text": "Vellmouth harbour handles around 300 cargo ships a year, mainly grain and timber."
+},
+{
+"id": "P042",
+"topic": "Economy",
+"text": "Unemployment in Vellmouth was 4.1 percent in 2024, slightly below the regional average."
+},
+{
+"id": "P043",
+"topic": "Transport",
+"text": "Three bridges cross the delta channels inside Vellmouth: the Causeway Bridge, the Rushey Swing Bridge and the footbridge known as the Needle."
+},
+{
+"id": "P044",
+"topic": "Transport",
+"text": "The Rushey Swing Bridge opens for ships about eight times a day, stopping road traffic for roughly ten minutes each time."
+},
+{
+"id": "P045",
+"topic": "Transport",
+"text": "The Needle is a pedestrian bridge opened in 2008 between Mid Isle and Rushey; it is 140 metres long."
+},
+{
+"id": "P046",
+"topic": "Transport",
+"text": "A passenger ferry, the Little Heron, runs every 30 minutes between Saltholm and the reserve visitor centre on Gull Island."
+},
+{
+"id": "P047",
+"topic": "Transport",
+"text": "The last Little Heron ferry leaves Gull Island at 18:30 in summer and 16:00 in winter."
+},
+{
+"id": "P048",
+"topic": "Transport",
+"text": "Trains run hourly from Vellmouth Quay station to Vellbridge and onward to the regional capital; the trip to Vellbridge takes 34 minutes."
+},
+{
+"id": "P049",
+"topic": "Transport",
+"text": "Cars are banned from the old streets of Saltholm; residents use bicycles and hand carts."
+},
+{
+"id": "P050",
+"topic": "Transport",
+"text": "Vellmouth has no airport; the nearest is 95 kilometres away."
+},
+{
+"id": "P051",
+"topic": "Transport",
+"text": "A bus route called the Island Loop connects all three islands every 15 minutes during the day."
+},
+{
+"id": "P052",
+"topic": "Transport",
+"text": "Bicycle hire is available at Vellmouth Quay station and at the Gull Island visitor centre."
+},
+{
+"id": "P053",
+"topic": "Culture",
+"text": "The Lantern Festival is held in Vellmouth on the last Saturday of October, when hundreds of paper lanterns are floated down the Lantern Reach."
+},
+{
+"id": "P054",
+"topic": "Culture",
+"text": "Lanterns for the festival are traditionally made from Vellmouth reed paper and lit with beeswax candles."
+},
+{
+"id": "P055",
+"topic": "Culture",
+"text": "The Lantern Festival commemorates the night of the 1588 Black Tide, when survivors used lanterns to find each other on the water."
+},
+{
+"id": "P056",
+"topic": "Culture",
+"text": "Vellmouth's signature dish is shrimp kedge, brown shrimp cooked with rice, butter, nutmeg and samphire."
+},
+{
+"id": "P057",
+"topic": "Culture",
+"text": "Samphire, a salty marsh plant, is gathered on the delta flats in July and August and pickled for winter."
+},
+{
+"id": "P058",
+"topic": "Culture",
+"text": "The Vellmouth Brass Band was founded in 1889 and plays on the quay every Sunday afternoon in summer."
+},
+{
+"id": "P059",
+"topic": "Culture",
+"text": "St Brannoc's Church on Mid Isle has a bell tower 41 metres tall, the tallest structure in the town."
+},
+{
+"id": "P060",
+"topic": "Culture",
+"text": "The Salt Museum on Saltholm displays boiling pans, peat cutting tools and a reconstructed salt maker's hut."
+},
+{
+"id": "P061",
+"topic": "Culture",
+"text": "Every June the town holds the Punt Race, in which crews pole flat-bottomed punts 3 kilometres along the Needle Channel."
+},
+{
+"id": "P062",
+"topic": "Culture",
+"text": "The record time for the Punt Race is 11 minutes 52 seconds, set in 2019 by a crew from Rushey."
+},
+{
+"id": "P063",
+"topic": "Culture",
+"text": "Vellmouth's local newspaper is the Delta Courier, published every Friday since 1858."
+},
+{
+"id": "P064",
+"topic": "Culture",
+"text": "A traditional Vellmouth greeting between boat crews is \"fair tide\", answered with \"and a soft keel\"."
+},
+{
+"id": "P065",
+"topic": "Education",
+"text": "Vellmouth has four primary schools and one secondary school, Sorrel Academy, which has about 1,100 pupils."
+},
+{
+"id": "P066",
+"topic": "Education",
+"text": "The Delta Observatory on Beacon Knoll was founded in 1896 to record tides and weather; it still publishes daily tide tables."
+},
+{
+"id": "P067",
+"topic": "Education",
+"text": "The Delta Observatory has kept an unbroken daily tide record since 1 January 1897."
+},
+{
+"id": "P068",
+"topic": "Education",
+"text": "The Vellmouth Library in the Tidehouse holds the town archive, including the 1407 market charter."
+},
+{
+"id": "P069",
+"topic": "Education",
+"text": "The Tamsin Delta Field Station, run by a university, studies silt deposition and marsh birds; it opened in 1974."
+},
+{
+"id": "P070",
+"topic": "Education",
+"text": "Researchers at the field station measured that the delta front advanced 1.9 kilometres between 1900 and 2000."
+},
+{
+"id": "P071",
+"topic": "Education",
+"text": "Sorrel Academy runs a sailing programme in which every pupil learns to handle a dinghy before age 14."
+},
+{
+"id": "P072",
+"topic": "Education",
+"text": "The Vellmouth Night School offers evening classes in reed thatching, net mending and the local dialect."
+},
+{
+"id": "P073",
+"topic": "Wildlife",
+"text": "The Tamsin Delta Reserve is a breeding site for about 1,200 pairs of avocets, the reserve's emblem bird."
+},
+{
+"id": "P074",
+"topic": "Wildlife",
+"text": "Grey seals haul out on the sandbanks off Gull Island, where up to 600 can be counted in winter."
+},
+{
+"id": "P075",
+"topic": "Wildlife",
+"text": "The bittern, a secretive heron, returned to breed in the delta reed beds in 2003 after an absence of 60 years."
+},
+{
+"id": "P076",
+"topic": "Wildlife",
+"text": "Every autumn about 40,000 brent geese arrive from the Arctic to feed on eelgrass in the delta."
+},
+{
+"id": "P077",
+"topic": "Wildlife",
+"text": "Otters are found in all seven delta channels and are most often seen at dawn near the Needle."
+},
+{
+"id": "P078",
+"topic": "Wildlife",
+"text": "The reserve visitor centre on Gull Island has hides overlooking the main avocet colony."
+},
+{
+"id": "P079",
+"topic": "Wildlife",
+"text": "Fishing is banned in the reserve's inner lagoons between April and July to protect nesting birds."
+},
+{
+"id": "P080",
+"topic": "Wildlife",
+"text": "European eels migrate through the delta; a fish pass was added to the Sorrel Barrier in 2016 to help them."
+},
+{
+"id": "P081",
+"topic": "Wildlife",
+"text": "The marsh fritillary butterfly survives on the dry grassland of Beacon Knoll."
+},
+{
+"id": "P082",
+"topic": "Wildlife",
+"text": "Wardens count the avocet colony every May; the 2024 count was 1,214 pairs."
+},
+{
+"id": "P083",
+"topic": "Climate",
+"text": "Vellmouth has a mild maritime climate; the average July temperature is 18 degrees Celsius and the average January temperature is 4 degrees."
+},
+{
+"id": "P084",
+"topic": "Climate",
+"text": "Annual rainfall in Vellmouth averages 640 millimetres, with the wettest month usually November."
+},
+{
+"id": "P085",
+"topic": "Climate",
+"text": "Sea fog, locally called the haar, rolls in from the Grey Sea on spring mornings and often lifts by noon."
+},
+{
+"id": "P086",
+"topic": "Climate",
+"text": "Sea level at Vellmouth has risen about 21 centimetres since the Delta Observatory began recording in 1897."
+},
+{
+"id": "P087",
+"topic": "Climate",
+"text": "The town's Climate Plan of 2022 commits to raising the Rushey dyke by 60 centimetres by 2035."
+},
+{
+"id": "P088",
+"topic": "Climate",
+"text": "The Sorrel Barrier closed a record 11 times during the winter of 2023 to 2024."
+},
+{
+"id": "P089",
+"topic": "Climate",
+"text": "Snow is rare in Vellmouth; the Delta Observatory records an average of three days with snow cover a year."
+},
+{
+"id": "P090",
+"topic": "Climate",
+"text": "Prevailing winds at Vellmouth blow from the south-west, and the strongest gales usually arrive between November and February."
+},
+{
+"id": "P091",
+"topic": "Vellbridge (distractor)",
+"text": "Vellbridge is a fictional market town 38 kilometres upstream of Vellmouth, at the first ford across the Sorrel River."
+},
+{
+"id": "P092",
+"topic": "Vellbridge (distractor)",
+"text": "Vellbridge was founded in 1290, about fifty years before Vellmouth, around a wooden bridge that gave the town its name."
+},
+{
+"id": "P093",
+"topic": "Vellbridge (distractor)",
+"text": "The mayor of Vellbridge is Corin Hask, elected in 2023."
+},
+{
+"id": "P094",
+"topic": "Vellbridge (distractor)",
+"text": "Vellbridge had a population of 26,900 at the 2021 census, making it larger than Vellmouth."
+},
+{
+"id": "P095",
+"topic": "Vellbridge (distractor)",
+"text": "Vellbridge holds a market every Saturday in the square in front of its stone bridge."
+},
+{
+"id": "P096",
+"topic": "Vellbridge (distractor)",
+"text": "The Vellbridge Lantern Walk takes place in early December and is unrelated to the Lantern Festival downstream."
+},
+{
+"id": "P097",
+"topic": "Vellbridge (distractor)",
+"text": "Vellbridge's signature dish is river trout baked in clay, quite different from the shrimp dishes of the coast."
+},
+{
+"id": "P098",
+"topic": "Vellbridge (distractor)",
+"text": "The railway reached Vellbridge in 1863, eight years before the line was extended to the coast."
+},
+{
+"id": "P099",
+"topic": "Vellbridge (distractor)",
+"text": "Vellbridge is home to the Sorrel Paper Mill, which has made paper from wood pulp since 1910."
+},
+{
+"id": "P100",
+"topic": "Vellbridge (distractor)",
+"text": "The town hall of Vellbridge is the Bridgehouse, built in 1756 beside the river crossing."
+}
+],
+"queries": [
+{
+"q": "Who is the mayor of Vellmouth?",
+"answer": "Ilse Marrable",
+"gold": [
+"P024"
+]
+},
+{
+"q": "When was Vellmouth founded?",
+"answer": "1342",
+"gold": [
+"P011"
+]
+},
+{
+"q": "What is floated down the Lantern Reach during the Lantern Festival?",
+"answer": "paper lanterns",
+"gold": [
+"P053"
+]
+},
+{
+"q": "How long does the train from Vellmouth to Vellbridge take?",
+"answer": "34 minutes",
+"gold": [
+"P048"
+]
+},
+{
+"q": "What warned people during the Great Flood of 1953?",
+"answer": "the bells of St Brannoc",
+"gold": [
+"P017"
+]
+},
+{
+"q": "What is the emblem bird of the Tamsin Delta Reserve?",
+"answer": "the avocet",
+"gold": [
+"P073"
+]
+},
+{
+"q": "What was the population of Vellmouth in 2021?",
+"answer": "18,400",
+"gold": [
+"P027"
+]
+},
+{
+"q": "What is shrimp kedge made of?",
+"answer": "brown shrimp, rice, butter, nutmeg and samphire",
+"gold": [
+"P056"
+]
+},
+{
+"q": "When does the last Little Heron ferry leave Gull Island in winter?",
+"answer": "16:00",
+"gold": [
+"P047"
+]
+},
+{
+"q": "How many times has the Sorrel Barrier closed since 1961?",
+"answer": "143",
+"gold": [
+"P019"
+]
+},
+{
+"q": "What is the town motto of Vellmouth?",
+"answer": "Salt and tide endure",
+"gold": [
+"P031"
+]
+},
+{
+"q": "What is the record time for the Punt Race?",
+"answer": "11 minutes 52 seconds",
+"gold": [
+"P062"
+]
+}
+]
+}
