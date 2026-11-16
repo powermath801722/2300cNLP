@@ -132,6 +132,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px}
 .tier{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border:1px solid currentColor}
 .tier[data-tier="1"]{color:#8fbf9a}.tier[data-tier="2"]{color:#6cc3c3}.tier[data-tier="3"]{color:#7ea3c8}
 .tier[data-tier="4"]{color:#b49bd6}.tier[data-tier="5"]{color:#d8b66a}.tier[data-tier="6"]{color:#d98c7a}
+.tier[data-tier="7"]{color:#e6a3c4}.tier[data-tier="8"]{color:#f0e3a8}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:20px;align-items:start}
 .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:16px}
 .pad{padding:clamp(16px,3vw,28px)}
