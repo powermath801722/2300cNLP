@@ -43,6 +43,10 @@ a.mod .foot{margin-top:auto;display:flex;justify-content:space-between;gap:8px;f
 </main>
 <script type="module">
 import { MODULES, TIERS, hrefOf, el, LIVE } from '/lab/shared/lab.js';
+import { WORKBENCH, WORKBENCH_CSS } from '/lab/workbench.js';
+document.head.append(el('style', { text: WORKBENCH_CSS }));
+const benches = {}; // one live app per tier, created once so filtering keeps its state
+const bench = (n) => WORKBENCH[n] ? (benches[n] ||= WORKBENCH[n]()) : null;
 const counts = { classic: MODULES.filter(m => m.kind === 'classic').length, transformer: MODULES.filter(m => m.kind === 'transformer').length };
 const stats = [[MODULES.length, 'interactive modules'], [TIERS.length, 'difficulty tiers'], [counts.classic, 'classic methods, no download'], [counts.transformer, 'pretrained transformer demos'], ['0', 'servers or API keys']];
 document.getElementById('stats').append(...stats.map(([n, l]) => el('div', {}, [el('b', { text: String(n) }), el('span', { text: l })])));
@@ -59,6 +63,7 @@ var render = function () {
     if (!mods.length) continue;
     host.append(el('section', { class: 'tierblock', 'aria-labelledby': 'tier' + t.n }, el('div', { class: 'wrap' }, [
       el('div', { class: 'tierhead' }, [el('span', { class: 'tier', 'data-tier': t.n, text: 'Tier ' + t.n }), el('h2', { id: 'tier' + t.n, text: t.name }), el('p', { text: t.blurb })]),
+      bench(t.n),
       el('div', { class: 'mods' }, mods.map(m => el('a', { class: 'panel mod', href: hrefOf(m), 'data-slug': m.slug }, [
         el('h3', { text: m.title }), el('p', { text: m.summary }),
         el('div', { class: 'foot' }, [el('span', { class: 'num', text: String(MODULES.indexOf(m) + 1).padStart(2, '0') }), el('span', { text: m.kind === 'transformer' ? 'Transformer · model download' : 'Instant · runs locally' })]),

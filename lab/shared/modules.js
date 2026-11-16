@@ -1,14 +1,14 @@
 // Registry of NLP Lab modules. The hub (/lab/) and every module header read from this file.
 // tier: 1 Beginner · 2 Intermediate · 3 Advanced · 4 Expert · 5 Graduate · 6 Research · 7 Seminar · 8 Frontier
 export const TIERS = [
-  { n: 1, name: 'Beginner', blurb: 'What text looks like to a computer: tokens, counts, word forms, and the first language models.' },
-  { n: 2, name: 'Intermediate', blurb: 'Classic pipelines that still power real products: spelling, search, sentiment, summaries.' },
-  { n: 3, name: 'Advanced', blurb: 'Sequence models, latent structure and learned representations.' },
-  { n: 4, name: 'Expert', blurb: 'Pretrained transformers in your browser: subwords, semantic search, reading comprehension, zero-shot.' },
-  { n: 5, name: 'Graduate', blurb: 'How contextual models represent meaning and how decoding shapes what they say.' },
-  { n: 6, name: 'Research', blurb: 'Measurement tools from the literature: bias, surprisal, calibration and robustness of trained models.' },
-  { n: 7, name: 'Seminar', blurb: 'Graduate-seminar topics, built small enough to run here: transformers trained from scratch, retrieval-augmented generation, preference learning.' },
-  { n: 8, name: 'Frontier', blurb: 'Current research on large language models, reproduced at toy scale or computed from published results: watermarking, speculative decoding, scaling laws.' },
+  { n: 1, name: 'Beginner', blurb: 'Before any model, a computer has to decide what a word is. Here you split real text into tokens, watch Zipf’s law appear, cut words down to stems, and build a language model out of nothing but counts.' },
+  { n: 2, name: 'Intermediate', blurb: 'The tools behind the spell checker, the search box and the review score. Each one here works on real data: 60,000 word frequencies, every U.S. inaugural address, and 2,000 labelled movie reviews.' },
+  { n: 3, name: 'Advanced', blurb: 'Models that find structure nobody labelled for them: grammatical roles from an HMM, themes in Reuters news from LDA, word meaning as geometry, and names of people and places pulled out of text.' },
+  { n: 4, name: 'Expert', blurb: 'Pretrained transformers doing real jobs in your browser: translating, answering questions from a passage, sorting text into labels they never trained on, and searching by meaning instead of keywords.' },
+  { n: 5, name: 'Graduate', blurb: 'What happens inside the models you used one tier up: the same word getting different vectors in different sentences, and how the choice of decoding strategy changes what a language model writes.' },
+  { n: 6, name: 'Research', blurb: 'Instruments researchers use to check models: whether word vectors carry human biases, how surprised GPT-2 is by each word, whether a classifier’s confidence can be trusted, and how easily it is fooled.' },
+  { n: 7, name: 'Seminar', blurb: 'Topics from a graduate seminar, built small enough to run here: a transformer you train yourself, retrieval that keeps a generator honest, and learning from human preferences.' },
+  { n: 8, name: 'Frontier', blurb: 'Open questions about large language models, reproduced at toy scale or computed from published results: marking machine text, generating faster without changing the output, and how loss falls with compute.' },
 ];
 
 // kind: 'classic' runs pure JS on shipped data; 'transformer' downloads a pretrained model from Hugging Face on first use.
