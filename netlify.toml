@@ -1,6 +1,8 @@
 [build]
   publish = "."
   command = ""
+  # Skip deploys for pushes that only touch the standalone site, tests, training scripts or docs.
+  ignore = "test \"$CACHED_COMMIT_REF\" != \"$COMMIT_REF\" && git diff --quiet \"$CACHED_COMMIT_REF\" \"$COMMIT_REF\" -- . ':!sites' ':!tests' ':!training' ':!README.md'"
 
 [[headers]]
   for = "/assets/*"

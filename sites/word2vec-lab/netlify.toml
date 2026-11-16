@@ -3,6 +3,8 @@
 [build]
   command = "bash build.sh"
   publish = "dist"
+  # Only rebuild when something this site ships changes (paths are relative to this base directory).
+  ignore = "test \"$CACHED_COMMIT_REF\" != \"$COMMIT_REF\" && git diff --quiet \"$CACHED_COMMIT_REF\" \"$COMMIT_REF\" -- . ../../word2vec ../../favicon.svg ../../assets/fonts ../../assets/vendor/plotly-2.35.2.min.js"
 
 [[headers]]
   for = "/assets/*"

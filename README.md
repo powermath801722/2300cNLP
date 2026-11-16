@@ -24,8 +24,12 @@ This repo holds two Netlify projects. Create each one in Netlify with **Add new 
 
 | Project | Base directory | Build command / publish dir | What it serves |
 |---|---|---|---|
-| Braidwater site | *(leave empty)* | from `netlify.toml`: none / `.` | Landing page at `/`, Word2Vec Lab at `/word2vec/`, Netlify Forms |
-| Word2Vec Lab (standalone) | `sites/word2vec-lab` | from `sites/word2vec-lab/netlify.toml`: `bash build.sh` / `dist` | The lab on its own, at `/` |
+| Braidwater site — https://2300c-braidwater.netlify.app | *(leave empty)* | from `netlify.toml`: none / `.` | Landing page at `/`, Word2Vec Lab at `/word2vec/`, Netlify Forms |
+| Word2Vec Lab (standalone) — https://2300c-word2vec-lab.netlify.app | `sites/word2vec-lab` | from `sites/word2vec-lab/netlify.toml`: `bash build.sh` / `dist` | The lab on its own, at `/` |
+
+The two sites link to each other: the main site's Word2Vec page and footer link to the standalone site, and the standalone build (`sites/word2vec-lab/build.sh`) rewrites its NLP Lab, Home and footer links to the main site (override with `MAIN_SITE_URL`).
+
+Both `netlify.toml` files have an `ignore` rule so a push only deploys the sites it affects (the Free plan has limited deploy credits): the main site skips pushes that only touch `sites/`, `tests/`, `training/` or `README.md`; the standalone site rebuilds only when `word2vec/`, its fonts/Plotly/favicon or `sites/word2vec-lab/` change.
 
 ### Netlify Forms
 
