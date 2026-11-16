@@ -51,7 +51,7 @@ export function gold(c) { return GOLD.h * c.h + GOLD.overLen * Math.max(0, c.wor
 
 // Simulated annotators: Bradley–Terry on a score that values helpfulness but is also swayed by length
 // and flattery. P(a ≻ b) = σ((s_a − s_b) / τ).
-export const ANNOT = { h: 4, len: 0.012, flat: 1.2 };
+export const ANNOT = { h: 4, len: 0.02, flat: 1.5 };
 export function annotScore(c, a = ANNOT) { return a.h * c.h + a.len * c.words + a.flat * c.flat; }
 
 // Reward-model features (no access to h directly would be unrealistic; a real RM sees text — here it sees
@@ -106,6 +106,17 @@ export function pairAccuracy(scoreFn, pairs, labelFn = (q) => q.y) {
 
 export const uniformRef = () => PROMPTS.map((P) => P.c.map(() => 1 / P.c.length));
 
+// Reference (SFT) policy: a supervised model already leans toward correct, concise, unflattering answers,
+// so long flattering rambles are rare before RL: π_ref(y) ∝ exp(h − 0.02·words − flat).
+export const REF = { h: 1, words: -0.02, flat: -1 };
+export function sftRef(r = REF) {
+  return PROMPTS.map((P) => {
+    const lg = P.c.map((c) => r.h * c.h + r.words * c.words + r.flat * c.flat);
+    const m = Math.max(...lg), e = lg.map((x) => Math.exp(x - m)), z = e.reduce((a, b) => a + b, 0);
+    return e.map((x) => x / z);
+  });
+}
+
 /** Closed-form optimum of E_π[r] − β KL(π‖π_ref): π*(y) ∝ π_ref(y) exp(r(y)/β). */
 export function optimalPolicy(ref, rewardFn, beta) {
   return PROMPTS.map((P, p) => {
@@ -157,6 +168,18 @@ export function dpoStep(theta, ref, pairs, beta, lr) {
   }
   theta.forEach((row, p) => row.forEach((_, i) => { row[i] -= lr * grad[p][i] / pairs.length * PROMPTS.length; }));
   return { loss: loss / pairs.length };
+}
+
+/** Tabular Bradley–Terry reward (one free score per response, per prompt), fit by gradient ascent on the
+ *  same pairs DPO sees. DPO's optimum is exactly π_ref·exp(r_tab/β): this is the equivalence it rests on. */
+export function tabularBTStep(r, pairs, lr = 1) {
+  const g = r.map((row) => row.map(() => 0)); let nll = 0;
+  for (const q of pairs) {
+    const w = q.y ? q.a : q.b, l = q.y ? q.b : q.a, z = r[q.p][w] - r[q.p][l];
+    nll -= logsig(z); const c = 1 - sigmoid(z); g[q.p][w] += c; g[q.p][l] -= c;
+  }
+  r.forEach((row, p) => row.forEach((_, i) => { row[i] += lr * g[p][i] / pairs.length * PROMPTS.length; }));
+  return nll / pairs.length;
 }
 
 /** KL(a‖b) averaged over prompts, between two policies. */

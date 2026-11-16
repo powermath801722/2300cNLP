@@ -14,7 +14,7 @@ console.log('held-out accuracy vs annotator labels:', C.pairAccuracy(rm, test).t
   '| Bayes-optimal (true annotator score):', C.pairAccuracy((c) => C.annotScore(c), test).toFixed(3),
   '| agreement with gold ranking:', C.pairAccuracy(rm, test, (q) => (C.gold(C.PROMPTS[q.p].c[q.a]) > C.gold(C.PROMPTS[q.p].c[q.b]) ? 1 : 0)).toFixed(3));
 
-const ref = C.uniformRef();
+const ref = C.sftRef();
 console.log('\nbeta   KL     sqrtKL  proxy(RM)  gold');
 for (const beta of [100, 10, 5, 3, 2, 1.5, 1, 0.7, 0.5, 0.3, 0.2, 0.1, 0.05, 0.02]) {
   const pi = C.optimalPolicy(ref, rm, beta);
@@ -27,7 +27,7 @@ const th = ref.map((r) => r.map((x) => Math.log(x)));
 for (let i = 0; i < 2000; i++) C.rlhfStep(th, ref, rm, beta, 1);
 console.log('\nRLHF (exact policy gradient, β=1) KL(π_RL ‖ π*_RM) =', C.klBetween(C.softmaxRows(th), target).toExponential(2));
 const td = ref.map((r) => r.map((x) => Math.log(x)));
-let dl; for (let i = 0; i < 4000; i++) dl = C.dpoStep(td, ref, train, beta, 2).loss;
+let dl; for (let i = 1; i <= 20000; i++) { dl = C.dpoStep(td, ref, train, beta, 2).loss; if ([500, 2000, 5000, 20000].includes(i)) { const rt = C.PROMPTS.map((P) => P.c.map(() => 0)); for (let k = 0; k < i; k++) C.tabularBTStep(rt, train, 2); console.log(`  DPO iter ${i}: loss ${dl.toFixed(4)}, KL to π*(tabular BT, same iterations) ${C.klBetween(C.softmaxRows(td), C.optimalPolicy(ref, (c) => 0, beta).map((row, p) => { const lg = row.map((x, j) => Math.log(ref[p][j]) + rt[p][j] / beta); const m = Math.max(...lg), e = lg.map((x) => Math.exp(x - m)), z = e.reduce((a, b) => a + b, 0); return e.map((x) => x / z); })).toExponential(2)}`); } }
 const pDPO = C.softmaxRows(td);
 const pAnn = C.optimalPolicy(ref, (c) => C.annotScore(c) / tau, beta);
 console.log('DPO (β=1) loss', dl.toFixed(3), '| KL(π_DPO ‖ π*_RM) =', C.klBetween(pDPO, target).toExponential(2), '| KL(π_DPO ‖ π*_annotator) =', C.klBetween(pDPO, pAnn).toExponential(2));

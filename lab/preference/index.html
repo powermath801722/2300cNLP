@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preference Learning: Reward Models, RLHF &amp; DPO — NLP Lab — Braidwater</title>
+<meta name="description" content="A toy alignment lab: fit a Bradley–Terry reward model to simulated preferences, watch KL-regularized optimization over-optimize it, and compare RLHF with DPO exactly.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:14px;align-items:end}
+.controls label{display:flex;flex-direction:column;gap:6px}
+.controls select,.controls input[type=number]{width:100%}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.stats div{background:var(--bg);padding:12px 14px}
+.stats b{display:block;font-family:var(--heading);font-weight:600;font-size:26px;line-height:1.05;font-variant-numeric:tabular-nums}
+.stats span{font-size:12px;color:var(--faint)}
+.plot{width:100%;height:340px}
+.cands td:nth-child(n+2),.cands th:nth-child(n+2){text-align:right;white-space:nowrap}
+.cands td:first-child{min-width:240px;font-size:14px;color:var(--muted)}
+.flag{font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid currentColor;padding:1px 5px;margin-left:6px;color:#d8b66a}
+.eq{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;color:var(--accent-200);background:var(--bg);border:1px solid var(--divider);padding:10px 12px;overflow-x:auto;white-space:nowrap}
+input[type=range]{width:100%}
+.betarow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center}
+.betarow output{font-family:var(--heading);font-weight:600;font-size:24px;min-width:88px;text-align:right}
+.busy{opacity:.55;pointer-events:none}
+</style>
+</head>
+<body data-slug="preference">
+<main id="main">
+  <section class="s" aria-labelledby="data-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Preference data</span>
+      <h2 id="data-h">Simulated annotators with a known bias</h2>
+      <p class="sub">Four prompts, six candidate answers each, written for this page. Every answer has three features: helpfulness (0–1, judged by the author), length in words, and whether it opens with flattery. Simulated annotators compare random pairs and pick a winner with a Bradley–Terry model. They mostly reward helpfulness, but like everyone, they are swayed by long and flattering answers. That bias is what the rest of the page is about. Everything here is toy-scale and exact; real RLHF uses neural reward models and sampled responses.</p>
+      <div class="panel pad stack" id="datapanel">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="eq" aria-label="Annotator model">P(a ≻ b) = σ((s(a) − s(b)) / τ),  s = 4·helpful + 0.02·words + 1.5·flattery      gold utility u = 4·helpful − 0.012·max(0, words − 80) − 0.6·flattery</div>
+        <div class="controls">
+          <label><span class="field-label">Comparisons per prompt</span><select id="npairs"><option>50</option><option>100</option><option selected>400</option><option>1000</option></select></label>
+          <label><span class="field-label">Annotator noise τ</span><select id="tau"><option value="0.5">0.5 (consistent)</option><option value="1" selected>1</option><option value="2">2 (noisy)</option></select></label>
+          <label><span class="field-label">Seed</span><input type="number" id="seed" value="1" min="1" max="9999"></label>
+          <label><span class="field-label">Show prompt</span><select id="prompt"></select></label>
+        </div>
+        <div class="row"><button class="btn btn-primary" id="collect" type="button">Collect preferences</button></div>
+        <div class="stats" id="datastats" aria-live="polite"></div>
+        <div class="scroll-x"><table class="data cands" id="cands"><thead><tr><th scope="col">Candidate answer</th><th scope="col">Helpful</th><th scope="col">Words</th><th scope="col">Gold u</th><th scope="col">Annotator s</th><th scope="col">Reward model</th><th scope="col">π<sub>ref</sub></th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="rm-h">
+    <div class="wrap stack">
+      <span class="kicker">02 · Reward model</span>
+      <h2 id="rm-h">Fit a Bradley–Terry reward model</h2>
+      <p class="sub">A linear reward r(y) = w·φ(y) on the three features, trained by minimizing −log σ(r(y<sub>w</sub>) − r(y<sub>l</sub>)) over the training pairs (20% held out). It learns what the annotators reward — including their bias.</p>
+      <div class="panel pad stack" id="rmpanel">
+        <div class="row"><button class="btn btn-primary" id="fitrm" type="button" disabled>Train reward model</button><button class="btn btn-secondary" id="pausebtn" type="button" disabled>Pause</button><div class="load" id="rmstatus"><span class="bar-load"><i></i></span><span class="t">Collect preferences first.</span></div></div>
+        <div class="grid2">
+          <div><div id="rmplot" class="plot" role="img" aria-label="Reward model training and held-out loss"></div></div>
+          <div class="stack">
+            <div class="stats" id="rmstats"></div>
+            <div class="scroll-x"><table class="data" id="wtable"><thead><tr><th scope="col">Weight on</th><th scope="col">Learned</th><th scope="col">Annotators</th><th scope="col">Gold</th></tr></thead><tbody></tbody></table></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="oo-h">
+    <div class="wrap stack">
+      <span class="kicker">03 · Over-optimization</span>
+      <h2 id="oo-h">Optimize the reward model, watch the gold utility</h2>
+      <p class="sub">RLHF maximizes E<sub>π</sub>[r(y)] − β·KL(π ‖ π<sub>ref</sub>). For a fixed set of answers its optimum is exact: π*(y) ∝ π<sub>ref</sub>(y)·exp(r(y)/β). Lowering β lets the policy move further from the reference model. The reward model’s score keeps rising; the true (gold) utility rises, peaks, then falls as the policy exploits the length and flattery the reward model learned from annotators.</p>
+      <div class="panel pad stack" id="oopanel">
+        <div class="betarow"><label for="beta"><span class="field-label">KL coefficient β (log scale)</span><input type="range" id="beta" min="-2" max="2" step="0.02" value="0.18" disabled></label><output id="betaout" for="beta">β = 1.5</output></div>
+        <div class="stats" id="oostats" aria-live="polite"></div>
+        <div class="grid2">
+          <div><div id="ooplot" class="plot" role="img" aria-label="Proxy reward and gold utility versus square root of KL divergence"></div></div>
+          <div><div id="polplot" class="plot" role="img" aria-label="Reference and optimized policy for the selected prompt"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="al-h">
+    <div class="wrap stack">
+      <span class="kicker">04 · RLHF vs DPO</span>
+      <h2 id="al-h">Two routes to the same objective</h2>
+      <p class="sub"><b>RLHF</b> optimizes the policy against the trained reward model (here with exact policy gradients; real systems sample and use PPO). <b>DPO</b> skips the reward model: it fits the policy straight to the preference pairs with −log σ(β·[log π(y<sub>w</sub>)/π<sub>ref</sub>(y<sub>w</sub>) − log π(y<sub>l</sub>)/π<sub>ref</sub>(y<sub>l</sub>)]). Both use the β above.</p>
+      <div class="panel pad stack" id="alpanel">
+        <div class="row"><button class="btn btn-primary" id="align" type="button" disabled>Run RLHF and DPO</button><label class="row" style="gap:8px"><span class="field-label">Iterations</span><select id="iters"><option>500</option><option selected>2000</option><option>5000</option></select></label><div class="load" id="alstatus"><span class="bar-load"><i></i></span><span class="t">Train the reward model first.</span></div></div>
+        <div class="stats" id="alstats" aria-live="polite"></div>
+        <div class="grid2">
+          <div><div id="alplot" class="plot" role="img" aria-label="Distance of RLHF and DPO policies to their closed-form targets over iterations"></div></div>
+          <div><div id="albars" class="plot" role="img" aria-label="Final policies for the selected prompt"></div></div>
+        </div>
+        <p class="note" id="alnote"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">05 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Bradley–Terry</h3><p>Each item has a latent score; P(a beats b) = σ(s<sub>a</sub> − s<sub>b</sub>) (Bradley &amp; Terry 1952). Fitting scores to observed wins is logistic regression on score differences. A reward model is a Bradley–Terry model whose scores come from a network reading the prompt and response (Christiano et al. 2017; Ouyang et al. 2022).</p></div>
+        <div class="panel card"><h3>KL-regularized RL</h3><p>max<sub>π</sub> E<sub>y∼π</sub>[r(y)] − β·KL(π ‖ π<sub>ref</sub>). The KL term keeps the policy near the supervised model, both to keep text fluent and because the reward model is only trustworthy near the data it was trained on. Its optimum is the Gibbs distribution π* ∝ π<sub>ref</sub>·exp(r/β).</p></div>
+        <div class="panel card"><h3>Goodhart and over-optimization</h3><p>The reward model is a proxy. Pushed hard, a policy finds what the proxy over-rewards. Gao, Schulman &amp; Hilton (2023) measured this with a large “gold” reward model standing in for humans: gold reward rises then falls as KL from the initial policy grows, while proxy reward keeps rising. Here the gold utility is a formula, so the effect is exact.</p></div>
+        <div class="panel card"><h3>DPO</h3><p>Substitute r = β·log(π/π<sub>ref</sub>) + const (the inverse of the closed-form optimum) into the Bradley–Terry likelihood and the reward model disappears: the policy is trained directly on preferences (Rafailov et al. 2023). With a tabular policy, DPO’s implicit reward follows a per-answer Bradley–Terry fit exactly, which this page checks iteration by iteration.</p></div>
+        <div class="panel card"><h3>Why the policies differ</h3><p>RLHF here uses a feature-based reward model that shares strength across all four prompts; DPO with one free logit per answer only learns from comparisons involving that answer. When one answer wins almost every comparison, its tabular score keeps growing — a known DPO failure mode with near-deterministic preferences. Both inherit the annotators’ bias.</p></div>
+        <div class="panel card"><h3>What toy scale hides</h3><p>Real policies generate text token by token, so optimization explores responses no one labelled; reward models are neural and can be fooled off-distribution; RLHF uses sampled PPO updates with variance; DPO runs on fixed offline pairs. The core trade-offs — proxy vs gold, KL budget, implicit vs explicit reward — are the same.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">06 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Bradley, R. A. &amp; Terry, M. E. (1952). Rank Analysis of Incomplete Block Designs: I. The Method of Paired Comparisons. <i>Biometrika</i> 39(3/4).</li>
+        <li>Christiano, P., Leike, J., Brown, T. B., Martic, M., Legg, S. &amp; Amodei, D. (2017). Deep Reinforcement Learning from Human Preferences. <i>NeurIPS</i>.</li>
+        <li>Stiennon, N., Ouyang, L., Wu, J., et al. (2020). Learning to Summarize from Human Feedback. <i>NeurIPS</i>.</li>
+        <li>Ouyang, L., Wu, J., Jiang, X., et al. (2022). Training Language Models to Follow Instructions with Human Feedback. <i>NeurIPS</i>.</li>
+        <li>Bai, Y., Jones, A., Ndousse, K., et al. (2022). Training a Helpful and Harmless Assistant with Reinforcement Learning from Human Feedback. <i>arXiv:2204.05862</i>.</li>
+        <li>Gao, L., Schulman, J. &amp; Hilton, J. (2023). Scaling Laws for Reward Model Overoptimization. <i>ICML</i>.</li>
+        <li>Rafailov, R., Sharma, A., Mitchell, E., Ermon, S., Manning, C. D. &amp; Finn, C. (2023). Direct Preference Optimization: Your Language Model is Secretly a Reward Model. <i>NeurIPS</i>.</li>
+        <li>Schulman, J., Wolski, F., Dhariwal, P., Radford, A. &amp; Klimov, O. (2017). Proximal Policy Optimization Algorithms. <i>arXiv:1707.06347</i>.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
