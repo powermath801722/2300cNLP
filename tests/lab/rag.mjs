@@ -2,8 +2,12 @@
 export default async ({ page, check, warn }) => {
   const top = await page.evaluate(() => window.__lab.retrieve('Who is the mayor of Vellmouth?', 'dense', 3));
   check(top.includes('P024'), `dense retrieval puts the mayor passage P024 in the top 3 (got ${top.join(', ')})`);
-  const bm = await page.evaluate(() => window.__lab.retrieve('What is the town motto of Vellmouth?', 'bm25', 1));
-  check(bm[0] === 'P032', `BM25 top-1 for the motto question is P032 (got ${bm[0]})`);
+  const { bm, gold } = await page.evaluate(async () => {
+    const c = await (await fetch('/lab/rag/data/corpus.json')).json();
+    const item = c.queries.find((x) => /motto/.test(x.q));
+    return { bm: await window.__lab.retrieve(item.q, 'bm25', 1), gold: item.gold[0] };
+  });
+  check(bm[0] === gold, `BM25 top-1 for the motto question is the gold passage ${gold} (got ${bm[0]})`);
   await page.fill('#q', 'Who is the mayor of Vellmouth?');
   await page.evaluate(() => { window.__lab.last = null; });
   await page.click('#run');

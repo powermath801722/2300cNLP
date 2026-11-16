@@ -24,7 +24,7 @@ export const MODULES = [
   { slug: 'textrank', tier: 2, kind: 'classic', title: 'Extractive Summarization (TextRank)', summary: 'Build a sentence-similarity graph, run PageRank on it and pick the summary sentences.' },
   // Tier 3
   { slug: 'pos', tier: 3, kind: 'classic', title: 'HMM Part-of-Speech Tagging', summary: 'A hidden Markov model trained on the Penn Treebank sample, decoded with Viterbi; inspect the trellis.' },
-  { slug: 'parsing', tier: 3, kind: 'classic', wip: true, title: 'Syntactic Parsing (Dependency & CKY)', summary: 'A transition-based dependency parser trained on Universal Dependencies, with its arc-standard stack and buffer stepped out, plus a PCFG parsed by CKY.' },
+  { slug: 'parsing', tier: 3, kind: 'classic', title: 'Syntactic Parsing (Dependency & CKY)', summary: 'A transition-based dependency parser trained on Universal Dependencies, with its arc-standard stack and buffer stepped out, plus a PCFG parsed by CKY.' },
   { slug: 'topics', tier: 3, kind: 'classic', title: 'Topic Modeling (LDA)', summary: 'Latent Dirichlet Allocation topics learned from a news corpus, and topic inference for your own text.' },
   { slug: 'word2vec', tier: 3, kind: 'classic', title: 'Word2Vec Embeddings', summary: 'Skip-gram vectors trained on 17M words of Wikipedia: nearest neighbors, analogies, 2D and 3D PCA.', href: '/word2vec/' },
   { slug: 'ner', tier: 3, kind: 'transformer', title: 'Named Entity Recognition', summary: 'A BERT token classifier finds people, places and organizations; see BIO tags and per-token confidence.' },
@@ -34,11 +34,11 @@ export const MODULES = [
   { slug: 'qa', tier: 4, kind: 'transformer', title: 'Extractive Question Answering', summary: 'A SQuAD-trained model highlights the answer span in a passage, with start/end scores.' },
   { slug: 'zero-shot', tier: 4, kind: 'transformer', title: 'Zero-shot Classification (NLI)', summary: 'Classify text into labels the model never trained on by recasting it as natural language inference.' },
   { slug: 'translation', tier: 4, kind: 'transformer', title: 'Neural Machine Translation', summary: 'An encoder–decoder MarianMT model translates English to French, German or Spanish in the browser.' },
-  { slug: 'metrics', tier: 4, kind: 'transformer', wip: true, title: 'Evaluating Generated Text', summary: 'BLEU, ROUGE, chrF and BERTScore computed side by side, with the cases where n-gram overlap and human judgment disagree.' },
+  { slug: 'metrics', tier: 4, kind: 'transformer', title: 'Evaluating Generated Text', summary: 'BLEU, ROUGE, chrF and BERTScore computed side by side, with the cases where n-gram overlap and human judgment disagree.' },
   // Tier 5
   { slug: 'contextual', tier: 5, kind: 'transformer', title: 'Contextual Embeddings & Masked LM', summary: 'BERT fills in [MASK]s, and the same word gets different vectors in different sentences, unlike Word2Vec.' },
   { slug: 'generation', tier: 5, kind: 'transformer', title: 'Decoding Strategies for Text Generation', summary: 'Greedy, beam, temperature, top-k and nucleus sampling on GPT-2, with the probability of every step.' },
-  { slug: 'probing', tier: 5, kind: 'transformer', wip: true, title: 'Probing Classifiers & Control Tasks', summary: 'Train linear probes on contextual embeddings to read out part of speech, then test whether the probe or the representation did the work.' },
+  { slug: 'probing', tier: 5, kind: 'transformer', title: 'Probing Classifiers & Control Tasks', summary: 'Train linear probes on contextual embeddings to read out part of speech, then test whether the probe or the representation did the work.' },
   { slug: 'attribution', tier: 5, kind: 'transformer', title: 'Feature Attribution (Occlusion, LIME, SHAP)', summary: 'Which words made the classifier decide? Three model-agnostic explanation methods on DistilBERT, compared and sanity-checked.' },
   // Tier 6
   { slug: 'bias', tier: 6, kind: 'classic', title: 'Measuring Bias in Embeddings (WEAT)', summary: 'Word Embedding Association Tests with effect sizes and permutation p-values, plus bias-direction projections.' },
