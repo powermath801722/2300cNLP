@@ -94,7 +94,9 @@ function claimsOf(answer, q) {
   const a = answer.trim();
   if (!a) return [];
   if (IDK.test(a)) return [{ text: a, idk: true }];
-  const sents = a.split(/(?<=[.!?])\s+(?=[A-Z0-9"“])/).map((s) => s.trim()).filter(Boolean);
+  const parts = a.split(/(?<=[.!?])\s+(?=[A-Z0-9"“])/).map((s) => s.trim()).filter(Boolean);
+  const sents = []; // re-join splits after initials or abbreviations ("John F. Kennedy", "St. Brannoc")
+  for (const s of parts) { const prev = sents.at(-1); if (prev && /(\b[A-Z]|\bSt|\bMr|\bMrs|\bDr|\bNo)\.$/.test(prev)) sents[sents.length - 1] = prev + ' ' + s; else sents.push(s); }
   return sents.map((s) => {
     // Very short answers ("1342", "Ilse Marrable") are not sentences; NLI needs a proposition, so prefix the question.
     const words = s.split(/\s+/).length;
