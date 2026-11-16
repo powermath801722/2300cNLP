@@ -174,8 +174,9 @@ function drawArcs(host, words, tags, arcs, newest) {
     const isNew = newest && newest[0] === h && newest[1] === d;
     const p = svgEl('path', { d: `M${x1} ${baseY - 16} C ${x1} ${y}, ${x2} ${y}, ${x2} ${baseY - 18}`, class: 'arc' + (isNew ? ' new' : '') + (h === 0 ? ' root' : ''), 'marker-end': `url(#${isNew ? 'ahn' : 'ah'})` });
     svg.append(p);
-    const lx = (x1 + x2) / 2, ly = y + span * 0.6 + 8;
-    const t = svgEl('text', { x: lx, y: Math.max(ly, 12), 'text-anchor': 'middle', class: 'lab' + (isNew ? ' new' : '') }, r);
+    // a cubic with both control points at y peaks 3/4 of the way from the endpoints to y
+    const lx = (x1 + x2) / 2, apex = (baseY - 17) * 0.25 + y * 0.75;
+    const t = svgEl('text', { x: lx, y: Math.max(apex - 4, 12), 'text-anchor': 'middle', class: 'lab' + (isNew ? ' new' : '') }, r);
     svg.append(t);
   }
   host.replaceChildren(svg);

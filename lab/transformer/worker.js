@@ -96,6 +96,11 @@ function ablate() {
     const mask = Array.from({ length: L }, (_, i) => Array.from({ length: H }, (_, j) => !(i === l && j === h)));
     rows.push({ layer: l, head: h, loss: lossOf(mask) });
   }
+  // whole layers: shows redundancy when two heads do the same job
+  if (H > 1) for (let l = 0; l < L; l++) {
+    const mask = Array.from({ length: L }, (_, i) => Array.from({ length: H }, () => i !== l));
+    rows.push({ layer: l, head: -1, loss: lossOf(mask) });
+  }
   post('ablation', { full, rows, step });
 }
 

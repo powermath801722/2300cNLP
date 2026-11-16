@@ -3,7 +3,7 @@ export default async ({ page, check, warn }) => {
   await page.waitForFunction(() => window.__lab.last && window.__lab.last.step === 0, null, { timeout: 30000 });
   const cfg = await page.evaluate(() => window.__lab.cfg());
   check(cfg.task === 'induction' && cfg.layers === 2 && cfg.heads === 2, 'defaults: induction task, 2 layers × 2 heads');
-  check(await page.locator('#heads canvas').count() === 4, 'one attention heatmap per head (4)');
+  check(await page.locator('#headgrid canvas').count() === 4, 'one attention heatmap per head (4)');
 
   const t0 = Date.now();
   const done = await page.evaluate(() => window.__lab.trainUntil(1000), null);
@@ -25,11 +25,13 @@ export default async ({ page, check, warn }) => {
   check(early > 2.0, `recall loss was still on the plateau at step 300 (${early.toFixed(2)})`);
 
   const abl = await page.evaluate(() => window.__lab.ablate());
-  const k = ind.indexOf(bestInd2), row = abl.rows.find((r) => r.layer * H + r.head === k);
-  check(row.loss - abl.full > 0.4, `ablating the strongest induction head (L${row.layer + 1}H${row.head + 1}) raises recall loss by ${(row.loss - abl.full).toFixed(2)} nats`);
-  const kp = prev.indexOf(bestPrev1), rowp = abl.rows.find((r) => r.layer * H + r.head === kp);
+  const k = ind.indexOf(bestInd2), row = abl.rows.find((r) => r.head >= 0 && r.layer * H + r.head === k);
+  const layer2 = abl.rows.find((r) => r.head < 0 && r.layer === 1);
+  check(layer2.loss - abl.full > 1.5, `ablating both layer-2 heads destroys recall (+${(layer2.loss - abl.full).toFixed(2)} nats)`);
+  check(row.loss - abl.full > 0.2, `ablating the strongest induction head (L${row.layer + 1}H${row.head + 1}) raises recall loss by ${(row.loss - abl.full).toFixed(2)} nats`);
+  const kp = prev.indexOf(bestPrev1), rowp = abl.rows.find((r) => r.head >= 0 && r.layer * H + r.head === kp);
   warn(rowp.loss - abl.full > 0.2, `ablating the previous-token head (L${rowp.layer + 1}H${rowp.head + 1}) also hurts (+${(rowp.loss - abl.full).toFixed(2)})`);
-  check(await page.locator('#ablt tbody tr').count() === 5, 'ablation table lists the full model and all 4 heads');
+  check(await page.locator('#ablt tbody tr').count() === 7, 'ablation table lists the full model, all 4 heads and both layers');
   check(await page.locator('#strip .tok').count() === 32, 'example sequence strip shows 32 tokens');
 
   // reversal task trains quickly to full accuracy

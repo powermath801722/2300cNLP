@@ -94,7 +94,7 @@
         <button class="btn btn-secondary" id="newex" type="button">New example sequence</button>
         <div class="legend" id="attnlegend"></div>
       </div>
-      <div class="heads" id="heads"></div>
+      <div class="heads" id="headgrid"></div>
       <div class="stack">
         <span class="field-label">The example sequence</span>
         <p class="note" id="stripnote">Each box is a token id; its colour is the model’s loss when predicting the <em>next</em> token from there (green = confident and right, red = surprised).</p>
@@ -107,7 +107,7 @@
     <div class="wrap stack">
       <span class="kicker">04 · Causal test</span>
       <h2 id="abl-h">Ablate one head at a time</h2>
-      <p class="sub">Attention patterns suggest a mechanism; ablation tests it. Each row switches one head off (its output is zeroed) and re-measures loss on the held-out sequences. If a head implements the copying, removing it should hurt recallable tokens badly.</p>
+      <p class="sub">Attention patterns suggest a mechanism; ablation tests it. Each row switches one head off (its output is zeroed) and re-measures loss on the held-out sequences. If a head implements the copying, removing it should hurt recallable tokens badly. The last rows switch off a whole layer at once: when two heads do the same job, removing one may barely matter while removing both is fatal.</p>
       <div class="panel pad stack">
         <div class="row"><button class="btn btn-secondary" id="ablate" type="button">Run ablations on the current model</button><span class="note" id="ablnote"></span></div>
         <div class="scroll-x"><table class="data ablt" id="ablt"><thead><tr><th scope="col">Head switched off</th><th scope="col">Loss</th><th scope="col">Change</th></tr></thead><tbody><tr><td colspan="3" class="note">Train for a while, then run the ablations.</td></tr></tbody></table></div>

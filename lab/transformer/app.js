@@ -158,7 +158,7 @@ function colorFor(a) {
 
 function renderHeads() {
   if (!last) return;
-  const ex = last.example, T = ex.ids.length, host = $('#heads');
+  const ex = last.example, T = ex.ids.length, host = $('#headgrid');
   const L = ex.attn.length, H = ex.attn[0].length;
   if (host.children.length !== L * H) {
     host.innerHTML = '';
@@ -216,7 +216,7 @@ function renderAblation(m) {
   const rows = m.rows.slice().sort((a, b) => b.loss - a.loss);
   for (const r of rows) {
     const dlt = r.loss - m.full;
-    tb.append(el('tr', {}, [el('td', { text: `Layer ${r.layer + 1} · head ${r.head + 1}` }), el('td', { text: fmt(r.loss) }), el('td', { text: (dlt >= 0 ? '+' : '') + fmt(dlt), style: { color: dlt > 0.3 ? '#d98c7a' : 'inherit' } })]));
+    tb.append(el('tr', {}, [el('td', { text: r.head < 0 ? `Layer ${r.layer + 1} · all heads` : `Layer ${r.layer + 1} · head ${r.head + 1}` }), el('td', { text: fmt(r.loss) }), el('td', { text: (dlt >= 0 ? '+' : '') + fmt(dlt), style: { color: dlt > 0.3 ? '#d98c7a' : 'inherit' } })]));
   }
   $('#ablnote').textContent = `Measured at step ${m.step} on ${cfg.task === 'induction' ? 'recallable tokens of 32 held-out sequences' : 'the scored tokens of 32 held-out sequences'}.`;
 }
