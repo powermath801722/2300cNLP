@@ -46,13 +46,13 @@ export const MODULES = [
   { slug: 'calibration', tier: 6, kind: 'transformer', title: 'Calibration & Uncertainty', summary: 'Reliability diagrams, expected calibration error, temperature scaling and selective prediction on a real classifier and held-out data.' },
   { slug: 'adversarial', tier: 6, kind: 'transformer', title: 'Adversarial Robustness & Behavioral Testing', summary: 'Word-substitution attacks that flip a classifier, and CheckList-style tests for negation, vocabulary and invariance.' },
   // Tier 7
-  { slug: 'transformer', tier: 7, kind: 'classic', wip: true, title: 'A Transformer from Scratch & Induction Heads', summary: 'Train a tiny attention-only transformer in your browser and watch induction heads form, the circuit behind in-context copying.' },
+  { slug: 'transformer', tier: 7, kind: 'classic', title: 'A Transformer from Scratch & Induction Heads', summary: 'Train a tiny attention-only transformer in your browser and watch induction heads form, the circuit behind in-context copying.' },
   { slug: 'rag', tier: 7, kind: 'transformer', title: 'Retrieval-Augmented Generation', summary: 'Retrieve passages, generate an answer from them, and check every claim against its sources with an entailment model.' },
-  { slug: 'preference', tier: 7, kind: 'classic', wip: true, title: 'Preference Learning: Reward Models, RLHF & DPO', summary: 'Fit a Bradley–Terry reward model to pairwise preferences, then optimize a policy with KL-regularized RL and with DPO, at toy scale.' },
+  { slug: 'preference', tier: 7, kind: 'classic', title: 'Preference Learning: Reward Models, RLHF & DPO', summary: 'Fit a Bradley–Terry reward model to pairwise preferences, then optimize a policy with KL-regularized RL and with DPO, at toy scale.' },
   // Tier 8
   { slug: 'watermark', tier: 8, kind: 'transformer', title: 'Watermarking Language Model Output', summary: 'Generate with a green-list watermark on GPT-2, detect it with a z-test, and see how edits and paraphrase wear it down.' },
   { slug: 'speculative', tier: 8, kind: 'transformer', title: 'Speculative Decoding', summary: 'A small draft model proposes tokens and a larger model verifies them in one pass, giving the same output distribution with fewer large-model calls.' },
-  { slug: 'scaling', tier: 8, kind: 'classic', wip: true, title: 'Neural Scaling Laws', summary: 'Published loss-versus-compute laws made interactive: compute-optimal model and data sizes, and how the Kaplan and Chinchilla fits differ.' },
+  { slug: 'scaling', tier: 8, kind: 'classic', title: 'Neural Scaling Laws', summary: 'Published loss-versus-compute laws made interactive: compute-optimal model and data sizes, and how the Kaplan and Chinchilla fits differ.' },
 ];
 
 // Modules that have passed tests and are linked from the hub and pagers. Others show as "In development"

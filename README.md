@@ -11,7 +11,8 @@ Static landing page for Braidwater ("Clearer Minds for the Planetary Transition"
 - `word2vec/` — Word2Vec Lab page (`index.html`, `app.js`) and the exported model in `word2vec/model/`
 - `training/train_word2vec.py` — script that trains the model and exports it for the browser
 - `tests/e2e.mjs` — Playwright end-to-end check for the landing page and Word2Vec Lab
-- `lab/` — NLP Lab: hub and 19 module pages (see below)
+- `lab/` — NLP Lab: hub and module pages (see below)
+- `studio/` — Text Studio application (see below)
 - `tests/lab.mjs`, `tests/lab/` — NLP Lab tests
 - `assets/vendor/plotly-2.35.2.min.js` — Plotly, used for the 2D/3D plots
 - `netlify.toml` — Netlify config for the main site (no build step; publishes repo root)
@@ -55,22 +56,33 @@ Then open http://localhost:8080.
 
 ## NLP Lab (`/lab/`)
 
-Twenty interactive NLP modules in six tiers, linked from the landing page nav, menu, footer and section 09. Everything runs in the browser: classic modules use data shipped in `lab/<slug>/data/`; transformer modules download a quantized model from Hugging Face on first use (sizes are shown on each page) and cache it.
+Thirty-two interactive NLP modules in eight tiers, linked from the landing page nav, menu, footer and section 09. Each tier on the hub also has a small working tool you can use in place (tokenizer, spell checker, POS tagger, translator, fill-in-the-blank, word association meter, reward over-optimization explorer, compute-optimal model calculator). Everything runs in the browser: classic modules use data shipped in `lab/<slug>/data/`; transformer modules download a quantized model from Hugging Face on first use (sizes are shown on each page) and cache it.
 
 | Tier | Modules |
 |---|---|
 | 1 Beginner | tokenize, stemming, ngram |
 | 2 Intermediate | spell, search, sentiment, textrank |
-| 3 Advanced | pos, topics, word2vec, ner |
-| 4 Expert | tokenizers, semantic-search, qa, zero-shot, translation |
-| 5 Graduate | contextual, generation |
-| 6 Research | bias, surprisal |
+| 3 Advanced | pos, parsing, topics, word2vec, ner |
+| 4 Expert | tokenizers, semantic-search, qa, zero-shot, translation, metrics |
+| 5 Graduate | contextual, generation, probing, attribution |
+| 6 Research | bias, surprisal, calibration, adversarial |
+| 7 Seminar | transformer (trained from scratch, induction heads), rag, preference (reward models, RLHF, DPO) |
+| 8 Frontier | watermark, speculative (decoding), scaling (laws) |
 
-- `lab/shared/modules.js`: module registry (titles, tiers) and the `LIVE` list that controls which modules the hub links.
-- `lab/shared/lab.js`, `lab.css`: shared header/hero/pager/footer and styles. `lab/shared/hf.js`: transformers.js loader (self-hosted v3.8.1 in `assets/vendor/transformers-3.8.1/`).
+Tier 7–8 modules run at toy scale or compute from published fits, and each page says which.
+
+- `lab/shared/modules.js`: module registry (titles, tiers) and the `LIVE` list (modules marked `wip: true` show as "In development").
+- `lab/shared/lab.js`, `lab.css`: shared header/hero/pager/footer and styles. `lab/shared/hf.js`: transformers.js loader (self-hosted v3.8.1 in `assets/vendor/transformers-3.8.1/`; causal LMs load the merged decoder).
+- `lab/workbench.js`: the per-tier tools on the hub.
 - `lab/_template/index.html`: starting point for a new module.
-- `training/`: scripts that build each module's shipped data (NLTK corpora, text8, gensim LDA, scikit-style NB/LR, HMM, embeddings).
-- Tests: `node tests/lab.mjs [baseUrl] [slug ...]` runs every module (or the named ones) at 1440px and 390px, plus `tests/lab/<slug>.mjs` checks. Transformer tests download models, so a full run takes several minutes.
+- `training/`: scripts that build each module's shipped data and check results (gradient checks, preference-learning numbers).
+- Tests: `node tests/lab.mjs [baseUrl] [slug ...]` runs every module (or the named ones) at 1440px and 390px, plus `tests/lab/<slug>.mjs`. Transformer tests download models, so a full run takes a while.
+
+## Text Studio (`/studio/`)
+
+A complete text-analysis application built from the lab's models: readability (Flesch, Flesch–Kincaid), sentiment per sentence (VADER, Naive Bayes, logistic regression, optional DistilBERT), POS profile, passive voice and spelling suggestions you can apply, TextRank summary and keywords, LDA topics, named entities and GPT-2 AI-text signals (on demand), and Markdown/JSON export. Analysis runs in a Worker; a service worker caches the app for offline use of the classic parts. Reusable pure-function libraries are in `studio/lib/` (the hub tools use them too).
+
+- Test: `node tests/studio.mjs [baseUrl]` (`SKIP_MODELS=1` skips the model downloads).
 
 ## Word2Vec Lab (`/word2vec/`)
 

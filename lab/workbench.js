@@ -175,7 +175,50 @@ function association() {
   });
 }
 
-export const WORKBENCH = { 1: tokenizer, 2: speller, 3: tagger, 4: translator, 5: fillMask, 6: association };
+// ---- Tier 7: reward over-optimization (exact, from the preference module's core) ---
+function overoptimization() {
+  const i = el('input', { type: 'number', class: 'wb-in', value: '1.5', min: '0.05', max: '20', step: '0.05', 'aria-label': 'KL penalty β' });
+  return shell({
+    title: 'Reward over-optimization explorer', href: '/lab/preference/',
+    blurb: 'Annotators who favour long, flattering answers produce a biased reward. Optimize a policy against it with KL penalty β (π* ∝ π_ref·exp(r/β)) and compare the reward it chases with the true quality it delivers. Try β = 20, 1.5 and 0.1.',
+    controls: [el('label', { class: 'note', for: 'wb-beta', text: 'β' }), Object.assign(i, { id: 'wb-beta' })], cta: 'Optimize',
+    async run(o) {
+      const C = await import('/lab/preference/core.js');
+      const beta = Math.max(0.05, +i.value || 1.5);
+      const ref = C.sftRef(), proxy = (c) => C.annotScore(c);
+      const pi = C.optimalPolicy(ref, proxy, beta);
+      const row = (label, a, b) => el('tr', {}, [el('td', { text: label }), el('td', { text: a.toFixed(2) }), el('td', { text: b.toFixed(2) })]);
+      const top = C.PROMPTS[0].c[pi[0].indexOf(Math.max(...pi[0]))];
+      o.replaceChildren(
+        el('table', { class: 'data' }, [el('thead', {}, el('tr', {}, [el('th', { text: '' }), el('th', { text: 'reference policy' }), el('th', { text: `optimized, β = ${beta}` })])),
+          el('tbody', {}, [row('proxy reward it chases', C.expect(ref, proxy), C.expect(pi, proxy)), row('true quality (gold)', C.expect(ref, C.gold), C.expect(pi, C.gold)), row('KL from reference (nats)', 0, C.kl(pi, ref))])]),
+        el('p', { class: 'note', text: `Most likely answer to “${C.PROMPTS[0].q}”: “${top.t.slice(0, 120)}${top.t.length > 120 ? '…' : ''}”` }),
+        note('Exact at this toy scale: 4 prompts × 6 written answers, simulated annotators. The full module fits the reward model from preferences and runs RLHF and DPO.'),
+      );
+    },
+  });
+}
+
+// ---- Tier 8: compute-optimal model size from published scaling-law fits ------------
+function chinchilla() {
+  const i = el('input', { type: 'text', class: 'wb-in', value: '5.76e23', 'aria-label': 'Training compute in FLOPs' });
+  return shell({
+    title: 'Compute-optimal model calculator', href: '/lab/scaling/',
+    blurb: 'Enter a training budget in FLOPs. Using L(N, D) = E + A/N^α + B/D^β and C ≈ 6ND, this returns the parameter and token counts that minimize predicted loss. 5.76e23 is about what Chinchilla used.',
+    controls: [i], cta: 'Allocate',
+    async run(o) {
+      const { FITS, optimal } = await import('/lab/scaling/laws.js');
+      const C = Number(i.value.replace(/[, ]/g, ''));
+      if (!(C > 1e15 && C < 1e32)) throw new Error('Enter a budget between 1e15 and 1e32 FLOPs, e.g. 5.76e23.');
+      const fmt = (x) => x >= 1e12 ? (x / 1e12).toFixed(2) + ' T' : x >= 1e9 ? (x / 1e9).toFixed(1) + ' B' : (x / 1e6).toFixed(0) + ' M';
+      const rows = Object.values(FITS).map((f) => { const r = optimal(f, C); return el('tr', {}, [el('td', { text: f.label }), el('td', { text: fmt(r.N) }), el('td', { text: fmt(r.D) }), el('td', { text: r.ratio.toFixed(1) }), el('td', { text: r.L.toFixed(3) })]); });
+      o.replaceChildren(el('div', { class: 'scroll-x' }, el('table', { class: 'data' }, [el('thead', {}, el('tr', {}, ['fit', 'parameters N*', 'tokens D*', 'tokens / param', 'predicted loss'].map((h) => el('th', { text: h })))), el('tbody', {}, rows)])),
+        note('The two fits disagree: the replication (Besiroglu et al. 2024) puts the optimum near 20 tokens per parameter, the original Approach 3 fit much higher. Loss is in nats per token on the paper’s data, so it isn’t comparable across datasets.'));
+    },
+  });
+}
+
+export const WORKBENCH = { 1: tokenizer, 2: speller, 3: tagger, 4: translator, 5: fillMask, 6: association, 7: overoptimization, 8: chinchilla };
 
 export const WORKBENCH_CSS = `
 .wb{margin-bottom:18px}
