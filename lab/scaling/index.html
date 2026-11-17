@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neural Scaling Laws — NLP Lab — Braidwater</title>
+<meta name="description" content="Interactive Chinchilla and Kaplan scaling laws: compute-optimal model and data sizes, iso-loss contours, and well-known models placed on the map.">
+<meta name="theme-color" content="#121820">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/lab/shared/lab.css">
+<style>
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:14px;align-items:end}
+.controls label{display:flex;flex-direction:column;gap:6px}
+.controls select,.controls input[type=number]{width:100%}
+.crow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center}
+.crow output{font-family:var(--heading);font-weight:600;font-size:26px;min-width:150px;text-align:right;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%}
+.plot{width:100%;height:440px}
+.plot.short{height:340px}
+.eq{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px;color:var(--accent-200);background:var(--bg);border:1px solid var(--divider);padding:10px 12px;overflow-x:auto;white-space:nowrap}
+table.data td:nth-child(n+2),table.data th:nth-child(n+2){text-align:right;white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:1px;background:var(--divider);border:1px solid var(--divider)}
+.stats div{background:var(--bg);padding:12px 14px}
+.stats b{display:block;font-family:var(--heading);font-weight:600;font-size:24px;line-height:1.05;font-variant-numeric:tabular-nums}
+.stats span{font-size:12px;color:var(--faint)}
+</style>
+</head>
+<body data-slug="scaling">
+<main id="main">
+  <section class="s" aria-labelledby="try-h">
+    <div class="wrap stack">
+      <span class="kicker">01 · Try it</span>
+      <h2 id="try-h">Spend a compute budget</h2>
+      <p class="sub">Nothing is trained on this page. It evaluates loss curves that the papers fit to hundreds of real training runs, so you can ask their central question: for a fixed amount of training compute, how big should the model be and how many tokens should it see? Training compute is approximated as C ≈ 6·N·D FLOPs (N parameters, D tokens).</p>
+      <div class="panel pad stack">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="eq" aria-label="Parametric loss">L(N, D) = E + A / N^α + B / D^β        N*(C) = G·(C/6)^(β/(α+β)),  D*(C) = (C/6)/N*,  G = (αA / βB)^(1/(α+β))</div>
+        <div class="crow"><label for="logc"><span class="field-label">Training compute C (FLOPs, log scale)</span><input type="range" id="logc" min="18" max="27" step="0.05" value="23.70"></label><output id="cout" for="logc"></output></div>
+        <p class="note" id="cnote"></p>
+        <div class="scroll-x"><table class="data" id="opttable"><thead><tr><th scope="col">Allocation</th><th scope="col">Parameters N</th><th scope="col">Tokens D</th><th scope="col">Tokens / param</th><th scope="col">Loss (Hoffmann fit)</th><th scope="col">Loss (Besiroglu fit)</th></tr></thead><tbody></tbody></table></div>
+        <p class="note">Loss is cross-entropy in nats per token on the fits’ training distribution (DeepMind’s MassiveText, SentencePiece tokens). E is the irreducible part: the entropy of text that no model size or data budget removes in these fits.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="map-h">
+    <div class="wrap stack">
+      <span class="kicker">02 · The map</span>
+      <h2 id="map-h">Iso-loss contours, iso-FLOP lines and real models</h2>
+      <p class="sub">Each contour is a set of (N, D) with the same predicted loss. The dashed diagonal is every allocation of the chosen compute budget; the compute-optimal point is where it touches the lowest contour. Dots are well-known models placed by their reported parameter and token counts.</p>
+      <div class="panel pad stack">
+        <div class="controls">
+          <label><span class="field-label">Contours from</span><select id="fit"><option value="hoffmann">Hoffmann et al. 2022 fit</option><option value="besiroglu" selected>Besiroglu et al. 2024 refit</option></select></label>
+        </div>
+        <div id="map" class="plot" role="img" aria-label="Contour plot of predicted loss over model size and training tokens"></div>
+        <p class="note">Model positions use publicly reported N and D. Their “predicted loss” on hover is what the fit predicts for that N and D on MassiveText, not the model’s measured loss: they were trained on different data with different tokenizers.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="lc-h">
+    <div class="wrap stack">
+      <span class="kicker">03 · Returns to compute</span>
+      <h2 id="lc-h">Best achievable loss as compute grows</h2>
+      <div class="grid2">
+        <div class="panel pad"><div id="lossc" class="plot short" role="img" aria-label="Compute-optimal loss versus compute"></div></div>
+        <div class="panel pad"><div id="ratio" class="plot short" role="img" aria-label="Optimal tokens per parameter versus compute"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="calc-h">
+    <div class="wrap stack">
+      <span class="kicker">04 · Your model</span>
+      <h2 id="calc-h">Check an allocation</h2>
+      <div class="panel pad stack">
+        <div class="controls">
+          <label><span class="field-label">Parameters N (billions)</span><input type="number" id="nB" value="7" min="0.01" max="5000" step="any"></label>
+          <label><span class="field-label">Training tokens D (billions)</span><input type="number" id="dB" value="2000" min="0.1" max="100000" step="any"></label>
+          <label><span class="field-label">Fit</span><select id="calcfit"><option value="hoffmann">Hoffmann et al. 2022</option><option value="besiroglu" selected>Besiroglu et al. 2024</option></select></label>
+          <label><span class="field-label">Target loss (nats/token)</span><input type="number" id="target" value="2.0" min="1" max="5" step="0.01"></label>
+        </div>
+        <div class="stats" id="calcstats" aria-live="polite"></div>
+        <p class="note" id="calcnote"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="kap-h">
+    <div class="wrap stack">
+      <span class="kicker">05 · The earlier laws</span>
+      <h2 id="kap-h">Kaplan et al. (2020)</h2>
+      <p class="sub">The first systematic scaling laws for transformer language models fit single-variable power laws, each holding when the other factors are not the bottleneck, plus a joint law. Their losses are in nats per token on WebText2 with GPT-2’s tokenizer, so the numbers can’t be compared directly with the Chinchilla fits above, only the shapes.</p>
+      <div class="panel pad stack">
+        <div class="eq">L(N) = (8.8×10¹³ / N)^0.076   ·   L(D) = (5.4×10¹³ / D)^0.095   ·   L(C) = (3.1×10⁸ PF-days / C)^0.050   ·   L(N, D) = [(N_c/N)^(α_N/α_D) + D_c/D]^α_D</div>
+        <div class="scroll-x"><table class="data" id="kaptable"><thead><tr><th scope="col">Quantity at the budget above</th><th scope="col">Value</th></tr></thead><tbody></tbody></table></div>
+        <p class="note">Kaplan et al. concluded that compute-efficient training should grow N ∝ C^0.73, putting most extra compute into parameters. Hoffmann et al. found N ∝ C^≈0.5, scaling parameters and tokens equally. The table in 01 shows an allocation that follows the 0.73 exponent, drawn through GPT-3’s 175B parameters and 300B tokens (a model of that era), evaluated with the newer fits.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="how-h">
+    <div class="wrap">
+      <span class="kicker">06 · Concepts</span>
+      <h2 id="how-h">How it works</h2>
+      <div class="concepts">
+        <div class="panel card"><h3>Power laws</h3><p>Over many orders of magnitude, test loss falls as a power of model size, data and compute, L ∝ X<sup>−α</sup>, which is a straight line on log–log axes. The small exponents (0.05–0.37) mean each constant improvement costs a multiplicative increase in resources.</p></div>
+        <div class="panel card"><h3>Counting compute</h3><p>A forward pass costs about 2N FLOPs per token and the backward pass about twice that, so training costs C ≈ 6ND (Kaplan et al. 2020, Table 1; attention adds a term that is small for large models).</p></div>
+        <div class="panel card"><h3>Three approaches</h3><p>Hoffmann et al. estimated the optimum three ways: (1) the lower envelope of training curves, (2) IsoFLOP profiles — train many sizes at fixed compute and find the minimum, (3) fit the parametric L(N, D) above to all runs. Approaches 1 and 2 gave N ∝ C<sup>~0.5</sup> and about 20 tokens per parameter, the rule behind Chinchilla (70B parameters, 1.4T tokens).</p></div>
+        <div class="panel card"><h3>The replication</h3><p>Besiroglu et al. (2024) reconstructed the Approach 3 data from the paper’s figures and refit it. They found the published fit inconsistent with Approaches 1 and 2 and its confidence intervals implausibly narrow; their refit implies roughly 20 tokens per parameter, in line with the other two approaches. Both fits are shown here.</p></div>
+        <div class="panel card"><h3>Why Kaplan differed</h3><p>Kaplan et al. used one learning-rate schedule for runs of different lengths, counted only non-embedding parameters and worked with smaller models; later analyses attribute most of the gap to such choices (e.g. Porian et al. 2024). The disagreement moved the field from GPT-3-style models (≈1.7 tokens per parameter) to Chinchilla-style training.</p></div>
+        <div class="panel card"><h3>Beyond compute-optimal</h3><p>Compute-optimal minimizes training cost for a given loss. A model that will serve many queries is cheaper overall if it is smaller and trained on far more tokens, accepting a less efficient training run (Sardana et al. 2024). That is why Llama 3 8B saw roughly 15T tokens, close to 2,000 tokens per parameter.</p></div>
+        <div class="panel card"><h3>What the fits don’t say</h3><p>They describe pretraining loss on one data distribution, not downstream ability; they assume data is unlimited and not repeated (Muennighoff et al. 2023 study repeated data); and constants change with data quality, tokenizer and architecture. Use them for shape and ratios, not exact numbers.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="s" aria-labelledby="read-h">
+    <div class="wrap">
+      <span class="kicker">07 · Go further</span>
+      <h2 id="read-h">Further reading</h2>
+      <ul class="reading">
+        <li>Kaplan, J., McCandlish, S., Henighan, T., Brown, T. B., Chess, B., Child, R., Gray, S., Radford, A., Wu, J. &amp; Amodei, D. (2020). Scaling Laws for Neural Language Models. <i>arXiv:2001.08361</i>.</li>
+        <li>Hoffmann, J., Borgeaud, S., Mensch, A., et al. (2022). Training Compute-Optimal Large Language Models. <i>NeurIPS</i>. (Chinchilla.)</li>
+        <li>Besiroglu, T., Erdil, E., Barnett, M. &amp; You, J. (2024). Chinchilla Scaling: A Replication Attempt. <i>arXiv:2404.10102</i>.</li>
+        <li>Porian, T., Wortsman, M., Jitsev, J., Schmidt, L. &amp; Carmon, Y. (2024). Resolving Discrepancies in Compute-Optimal Scaling of Language Models. <i>NeurIPS</i>.</li>
+        <li>Sardana, N., Portes, J., Doubov, S. &amp; Frankle, J. (2024). Beyond Chinchilla-Optimal: Accounting for Inference in Language Model Scaling Laws. <i>ICML</i>.</li>
+        <li>Muennighoff, N., Rush, A. M., Barak, B., et al. (2023). Scaling Data-Constrained Language Models. <i>NeurIPS</i>.</li>
+        <li>Hestness, J., Narang, S., Ardalani, N., et al. (2017). Deep Learning Scaling is Predictable, Empirically. <i>arXiv:1712.00409</i>.</li>
+        <li>Model sizes: Brown et al. 2020 (GPT-3); Rae et al. 2021 (Gopher); Smith et al. 2022 (MT-NLG); Chowdhery et al. 2022 (PaLM); Touvron et al. 2023a, 2023b (LLaMA, Llama 2); Meta 2024 (Llama 3).</li>
+      </ul>
+    </div>
+  </section>
+</main>
+<script type="module" src="/lab/shared/lab.js"></script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
